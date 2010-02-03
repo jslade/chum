@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+
 import android.view.View;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -16,22 +20,23 @@ import chum.util.Log;
 
  */
 public class GameActivity extends Activity 
-    implements GLSurfaceView.Renderer
+    implements GLSurfaceView.Renderer,
+               Handler.Callback
 {	
     /** GLSurfaceView **/
-    private GLSurfaceView glSurface;
+    protected GLSurfaceView glSurface;
 
     /** GL context passed to onSurfaceCreated */
-    private GL10 gl;
+    protected GL10 gl;
 
     /** EGLConfig the surface is using */
-    private EGLConfig glConfig;
+    protected EGLConfig glConfig;
 
     /** with and height of the viewport **/
-    private int width, height;
+    protected int width, height;
     
     /** GameListener **/
-    private GameListener listener = new GameListener.Dummy();
+    protected GameListener listener = new GameListener.Dummy();
 
     /** Start time of the last frame (milliseconds) */
     private long lastFrameStart;
@@ -42,10 +47,17 @@ public class GameActivity extends Activity
     /** Frame time accumulator */
     private long frameTimeAccum;
 
+    /** FPS start time */
+    private long fpsStart;
+
     /** The last calculated frame rate */
     private int fps;
 
-       
+
+    /** Handler for sending messages to the main (UI) thread */
+    protected Handler mainHandler;
+
+
     /**
        Called on creation of the Activity
      */
@@ -55,6 +67,8 @@ public class GameActivity extends Activity
         glSurface = new GLSurfaceView(this);
         glSurface.setRenderer(this);
         this.setContentView(glSurface);
+
+        mainHandler = new Handler(this);
     }
 
 
@@ -75,6 +89,19 @@ public class GameActivity extends Activity
 
 
     /**
+       Called when the GLSurfaceView has finished initialization
+    */
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        this.gl = gl;
+        this.glConfig = config;
+
+	lastFrameStart = fpsStart = android.os.SystemClock.uptimeMillis();
+        listener.onSurfaceCreated(this,gl);
+    }
+
+
+    /**
        Called when the surface size changed, e.g. due to tilting
     */
     @Override
@@ -87,18 +114,6 @@ public class GameActivity extends Activity
 
 
     /**
-       Called when the GLSurfaceView has finished initialization
-    */
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        this.gl = gl;
-        this.glConfig = config;
-
-	lastFrameStart = android.os.SystemClock.uptimeMillis();
-        listener.onSurfaceCreated(this,gl);
-    }
-
-    /**
        Called when the application is paused. We need to
        also pause the GLSurfaceView.
     */
@@ -107,6 +122,7 @@ public class GameActivity extends Activity
 	super.onPause();
 	glSurface.onPause();		
     }
+
 
     /**
        Called when the application is resumed. We need to
@@ -160,14 +176,34 @@ public class GameActivity extends Activity
     public int getFPS() {
         if ( frameTimeAccum <= 0 )
             return 0;
-        if ( frameTimeAccum < 2000 )
+
+        long now = android.os.SystemClock.uptimeMillis();
+        long elapsed = now - fpsStart;
+        if ( elapsed < 3000 )
             return fps;
 
-        fps = (int)(1000 * frameCounter / frameTimeAccum);
-        frameTimeAccum = 1000;
-        frameCounter = fps;
+        fps = (int)(1000 * frameCounter / elapsed);
+
+        frameTimeAccum = 0;
+        frameCounter = 0;
+        fpsStart = now;
 
         return fps;
     }
+
+
+
+    public Handler getMainHandler() {
+        return mainHandler;
+    }
+
+
+    /**
+       Handle a message sent to the main (UI) thread
+    */
+    public boolean handleMessage(Message msg) {
+        return false;
+    }
+
 
 }
