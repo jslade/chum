@@ -1,0 +1,10 @@
+bin
+gen
+
+tests/bin
+tests/gen
+
+.classpath
+
+local.properties
+
