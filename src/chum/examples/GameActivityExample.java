@@ -11,24 +11,27 @@ import chum.util.Log;
 
 public class GameActivityExample extends GameActivity
 {
+    private Runnable runFPS;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
-        run_showFPS = new Runnable(){
+        runFPS = new Runnable(){
                 public void run() { showFPS(); }
             };
-        showFPS();
     }
 
-    private Runnable run_showFPS;
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        mainHandler.post(runFPS);
+    }
 
     private void showFPS() {
         Log.d("GameActivityExample FPS = %d", this.getFPS());
-        mainHandler.postDelayed(run_showFPS, 3000);
+        if ( !paused ) mainHandler.postDelayed(runFPS, 3000);
     }
     
 }

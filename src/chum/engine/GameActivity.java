@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 
 import android.view.View;
 
@@ -23,6 +24,9 @@ public class GameActivity extends Activity
     implements GLSurfaceView.Renderer,
                Handler.Callback
 {	
+    /** Whether the activity is paused */
+    protected boolean paused;
+
     /** GLSurfaceView **/
     protected GLSurfaceView glSurface;
 
@@ -44,9 +48,6 @@ public class GameActivity extends Activity
     /** Frame counter */
     private int frameCounter;
     
-    /** Frame time accumulator */
-    private long frameTimeAccum;
-
     /** FPS start time */
     private long fpsStart;
 
@@ -63,6 +64,7 @@ public class GameActivity extends Activity
      */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        paused = false;
 
         glSurface = new GLSurfaceView(this);
         glSurface.setRenderer(this);
@@ -77,14 +79,13 @@ public class GameActivity extends Activity
     */
     @Override
     public void onDrawFrame(GL10 _gl) {
-	long currentFrameStart = android.os.SystemClock.uptimeMillis();
+	long currentFrameStart = SystemClock.uptimeMillis();
 	long frameDelta = currentFrameStart - lastFrameStart;
 
 	listener.step(frameDelta);
 
 	lastFrameStart = currentFrameStart;
         frameCounter++;
-        frameTimeAccum += frameDelta;
     }
 
 
@@ -96,7 +97,7 @@ public class GameActivity extends Activity
         this.gl = gl;
         this.glConfig = config;
 
-	lastFrameStart = fpsStart = android.os.SystemClock.uptimeMillis();
+	lastFrameStart = fpsStart = SystemClock.uptimeMillis();
         listener.onSurfaceCreated(this,gl);
     }
 
@@ -120,7 +121,8 @@ public class GameActivity extends Activity
     @Override
     protected void onPause() {
 	super.onPause();
-	glSurface.onPause();		
+	glSurface.onPause();
+        paused = true;
     }
 
 
@@ -131,8 +133,9 @@ public class GameActivity extends Activity
     @Override
     protected void onResume() {
 	super.onResume();
-	glSurface.onResume();		
-    }		
+	glSurface.onResume();
+        paused = false;
+    }
 
     
     /**
@@ -174,17 +177,13 @@ public class GameActivity extends Activity
        of frames per second
     */
     public int getFPS() {
-        if ( frameTimeAccum <= 0 )
-            return 0;
-
-        long now = android.os.SystemClock.uptimeMillis();
+        long now = SystemClock.uptimeMillis();
         long elapsed = now - fpsStart;
         if ( elapsed < 3000 )
             return fps;
 
         fps = (int)(1000 * frameCounter / elapsed);
 
-        frameTimeAccum = 0;
         frameCounter = 0;
         fpsStart = now;
 
