@@ -139,6 +139,12 @@ public class GameActivity extends Activity
 
     
     /**
+       @return whether the GameActivity is currently paused
+    */
+    public boolean isPaused() { return paused; }
+
+
+    /**
        Sets the {@link GameListener}
        @param listener the GameListener
     */
