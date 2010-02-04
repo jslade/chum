@@ -12,7 +12,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".GameActivityExample" android:label="GameActivity">
+        <activity android:name=".GameActivityExample"
+            android:launchMode="singleTop"
+            android:label="GameActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
