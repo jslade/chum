@@ -16,8 +16,11 @@ import chum.util.Log;
    The periodic FPS is done using a Runnable posted to the handler
    set up by the base GameActivity for just that purpose.  The
    actual FPS calculation is also handled by the base GameActivity.
+
+   Note that the FPS usually has an upper bound of 60Hz - the screen
+   refresh rate.
 */
-public class GameActivityExample extends GameActivity
+public class FastestPossibleFPS extends GameActivity
 {
     private Runnable runFPS;
 
@@ -38,7 +41,7 @@ public class GameActivityExample extends GameActivity
     }
 
     private void showFPS() {
-        Log.d("GameActivityExample FPS = %d", this.getFPS());
+        Log.d("FastestPossibleFPS FPS = %d", this.getFPS());
         if ( !paused ) mainHandler.postDelayed(runFPS, 3000);
     }
     
