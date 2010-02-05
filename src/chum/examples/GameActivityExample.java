@@ -8,7 +8,15 @@ import chum.engine.GameActivity;
 import chum.util.Log;
 
 
+/**
+   This example uses a basic GameActivity that just iterates as fast as
+   possible (drawing nothing), and periodically displays the FPS
+   to the log.
 
+   The periodic FPS is done using a Runnable posted to the handler
+   set up by the base GameActivity for just that purpose.  The
+   actual FPS calculation is also handled by the base GameActivity.
+*/
 public class GameActivityExample extends GameActivity
 {
     private Runnable runFPS;
