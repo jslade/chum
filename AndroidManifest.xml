@@ -12,9 +12,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".GameActivityExample"
+        <activity android:name=".FastestPossibleFPS"
             android:launchMode="singleTop"
-            android:label="GameActivity">
+            android:label="Fastest-possible FPS">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
