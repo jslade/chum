@@ -7,6 +7,9 @@ tests/bin
 tests/gen
 tests/local.properties
 
+tests/coverage.em
+tests/instrumented
+
 .classpath
 
 
