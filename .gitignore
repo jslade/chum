@@ -1,10 +1,12 @@
 bin
 gen
 
+local.properties
+
 tests/bin
 tests/gen
+tests/local.properties
 
 .classpath
 
-local.properties
 
