@@ -12,10 +12,10 @@
     </application>
     <!--
     This declares that this application uses the instrumentation test runner targeting
-    the package of chum.  To run the tests use the command:
-    "adb shell am instrument -w chum.tests/android.test.InstrumentationTestRunner"
+    the package of chum.examples.  To run the tests use the command:
+    "adb shell am instrument -w chum.examples.tests/android.test.InstrumentationTestRunner"
     -->
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-                     android:targetPackage="chum.tests"
+                     android:targetPackage="chum.examples"
                      android:label="Tests for Chum"/>
 </manifest>
