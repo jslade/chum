@@ -64,4 +64,31 @@
     -->
     <setup />
 
+    <target name="jar-main" depends="debug">
+        <jar
+            destfile="bin/chum-main.jar"
+            basedir="bin/classes"
+            excludes="chum/examples/**"
+        />
+    </target>
+    
+    <target name="jar-examples" depends="debug">
+        <jar
+            destfile="bin/chum-examples.jar"
+            basedir="bin/classes"
+            includes="chum/examples/**"
+        />
+    </target>
+
+    <target name="jar" depends="jar-main, jar-examples">
+        <echo>  jars created</echo>
+    </target>
+
+    <target name="test">
+        <subant target="run-tests">
+            <fileset dir="tests" includes="build.xml" />
+        </subant>
+    </target>
+
+
 </project>
