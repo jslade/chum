@@ -23,7 +23,7 @@ public class ChumExamples extends ListActivity
         super.onCreate(savedInstanceState);
 
         examples.put("Fastest-possble FPS", FastestPossibleFPS.class);
-        //examples.put("Example 2", Example2.class);
+        examples.put("Force-close test", ForceCloseExample.class);
 
         String[] items = new String[0]; // Has to be non-null for toArray()
         items = examples.keySet().toArray(items);

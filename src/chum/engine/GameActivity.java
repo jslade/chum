@@ -14,7 +14,9 @@ import android.view.View;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import chum.cfg.Config;
 import chum.util.Log;
+import chum.util.DefaultExceptionHandler;
 
 
 /**
@@ -71,6 +73,8 @@ public class GameActivity extends Activity
         this.setContentView(glSurface);
 
         mainHandler = new Handler(this);
+
+        setupExceptionHandler();
     }
 
 
@@ -210,5 +214,30 @@ public class GameActivity extends Activity
         return false;
     }
 
+
+
+    /**
+       Setup the default exception handler.
+
+       Uses the Config setting to determine what type of exception
+       handler should be used.  The handler is instantiated and
+       installed as the default exception handler for all threads.
+
+       Once the handler is installed, it is also given the chance
+       to dispatch any exception reports that may have been
+       generated on previous runs of the app.
+    */
+    protected void setupExceptionHandler() {
+        // Create the new exception handler instance and register
+        // it to handle all uncaught exceptions for all threads.
+        DefaultExceptionHandler handler =
+            Config.getConfig(this).defaultExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(handler);
+
+        // Dispatch any exceptions that may have been handled
+        // and logged on previous runs of the app, but not yet
+        // dispatched.
+        handler.dispatch(this);
+    }
 
 }

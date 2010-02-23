@@ -15,10 +15,14 @@
         <activity android:name=".FastestPossibleFPS"
             android:launchMode="singleTop"
             android:label="Fastest-possible FPS">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
         </activity>                    
+
+        <activity android:name=".ForceCloseExample"
+            android:launchMode="singleTop"
+            android:label="Force-close test">
+        </activity>                    
+
+        <activity android:name="chum.util.CrashReportMailerActivity" />
 
 
     </application>

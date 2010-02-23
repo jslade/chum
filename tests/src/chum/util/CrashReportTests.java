@@ -1,7 +1,5 @@
 package chum.util;
 
-import chum.util.Log;
-
 import android.test.AndroidTestCase;
 
 import java.io.File;
@@ -56,12 +54,15 @@ public class CrashReportTests extends AndroidTestCase {
         assertNotNull(reports);
         assertEquals("Should get 1 report", 1, reports.length);
 
-        Log.d("before reportIn");
         CrashReport reportIn = reports[0];
         assertNull(reportIn.ioError);
         assertNotNull("Should come from a file",reportIn.file);
         assertTrue("It's a real file",reportIn.file.exists());
         assertNotNull("Should have contents",reportIn.contents);
+        assertEquals("Loaded contents match saved",
+                     reportOut.contents,
+                     reportIn.contents);
+                     
     }
 }
 

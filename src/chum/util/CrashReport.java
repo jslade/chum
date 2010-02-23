@@ -83,11 +83,20 @@ public class CrashReport
 
     /** Write the crash report contents to the target file */
     public void save(String contents) {
+        this.contents = contents;
+        save();
+    }
+
+
+    /** Write the crash report contents to the target file */
+    public void save() {
+        if ( this.contents == null ) return;
         FileWriter output = openForWriting();
         if ( output != null ) {
             try {
-                this.contents = contents;
+                Log.e("CrashReport.save:\n"+this.contents);
                 output.write(this.contents);
+                output.close();
             } catch(java.io.IOException e) {
                 // Silently ignore IO exceptions...
                 ioError = e;
@@ -98,20 +107,27 @@ public class CrashReport
 
     /** Load the crash report contents from the target file */
     public void load() {
+        Log.d("load() A");
         FileReader input = openForReading();
         if ( input == null ) return;
-
+        Log.d("load() B");
         try { 
             BufferedReader reader = new BufferedReader(input);
             String line;
+            Log.d("load() C");
             contents = "";
+            Log.d("load() D");
             while ( (line = reader.readLine()) != null ) {
+                Log.d("load() E "+ line);
                 contents += line + "\n";
             }
+            Log.d("CrashReport.load:\n"+this.contents);
         } catch(java.io.IOException e) {
             // Silently ignore IO exceptions
+            Log.d("load() F");
             ioError = e;
         }
+        Log.d("load() G");
     }
         
     
@@ -124,6 +140,7 @@ public class CrashReport
     private FileWriter openForWriting() {
         pickName();
         try {
+            Log.d("Open for writing: "+file);
             return new FileWriter(file);
         } catch(java.io.IOException e) {
             // Silently ignore IO exceptions
@@ -134,12 +151,17 @@ public class CrashReport
 
 
     private FileReader openForReading() {
+        Log.d("Open for reading: "+file+" ("+file.length()+" bytes)");
         if ( file == null ) return null;
+        Log.d("  open A");
         try {
+            Log.d("  open B");
             return new FileReader(file);
         } catch(java.io.IOException e) {
+            Log.d("  open D");
             // Silently ignore IO exceptions
             ioError = e;
+            Log.d("  open E");
             return null;
         }
     }
