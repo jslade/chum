@@ -41,7 +41,7 @@ public class CrashReportTests extends AndroidTestCase {
 
         // Save the report
         String contents = ("This is a test\n"+
-                           "Second line");
+                           "Second line\n");
         reportOut.save(contents);
         assertNull(reportOut.ioError);
         assertEquals("Saved contents should match",

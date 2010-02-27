@@ -131,12 +131,15 @@ public class CrashReport
     }
         
     
+    /** Delete the CrashReport from the storage */
     public void delete() {
         if ( file == null ) return;
         file.delete();
     }
 
 
+    /** Creates a FileWriter ready to store the contents of the
+        CrashReport */
     private FileWriter openForWriting() {
         pickName();
         try {
