@@ -12,7 +12,7 @@ public class CrashReportMailerActivity extends Activity {
     public void onCreate(Bundle saved) {
         super.onCreate(saved);
 
-        Log.d("CrashReportMailerActivity onCreate()");
+        //Log.d("CrashReportMailerActivity onCreate()");
 
         Intent startIntent = getIntent();
         Intent sendIntent = new Intent(Intent.ACTION_SEND);
@@ -25,11 +25,8 @@ public class CrashReportMailerActivity extends Activity {
         sendIntent.putExtra(Intent.EXTRA_TEXT,
                             startIntent.getStringExtra(Intent.EXTRA_TEXT));
         
-        Log.d("  created intent: "+sendIntent);
-        
         startActivityForResult(Intent.createChooser(sendIntent,"Title:"),
                                SEND);
-        Log.d("  started activity");
     }
     
     @Override 
