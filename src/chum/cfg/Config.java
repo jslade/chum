@@ -56,6 +56,7 @@ public class Config {
         put("exception_handler","mailer");
         put("exception_email","chum-exceptions@crazyheadgames.com");
         put("exception_subject","Application error");
+        put("exception_intro","*** The app crashed unexpectedly.  Please send this crash report to the developers so they can use the report info to fix and improve the app ***");
     }
 
 
