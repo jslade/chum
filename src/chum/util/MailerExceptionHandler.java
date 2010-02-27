@@ -5,6 +5,9 @@ import chum.cfg.Config;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import java.util.Date;
@@ -31,6 +34,10 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
     /** The subject line for mail messages */
     protected String default_subject;
 
+    /** The header / explanation text to go at the
+        beginning of mail messages */
+    protected String default_intro;
+
 
 
     /**
@@ -50,6 +57,7 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
     public void loadConfig(Config cfg) {
         default_address = cfg.get("exception_email").toString();
         default_subject = cfg.get("exception_subject").toString();
+        default_intro = cfg.get("exception_intro").toString();
     }
 
 
@@ -74,6 +82,21 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
         String contents = "";
 
         contents += "Crash Report collected on: " + (new Date()) + "\n";
+
+        contents += "Package: " + context.getPackageName() + "\n";
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(context.getPackageName(),0);
+            ApplicationInfo ai = pi.applicationInfo;
+            contents += "App: " + pm.getApplicationLabel(ai) + "\n";
+            contents += "VersionName: " + pi.versionName + "\n";
+            contents += "VersionCode: " + pi.versionCode + "\n";
+        } catch(PackageManager.NameNotFoundException nnfe) {
+            contents += "VersionName: (unknown)\n";
+            contents += "VersionCode: (unknown)\n";
+        }
+        contents += "\n";
+
         contents += "Context: " + context + "\n";
         contents += "Thread: " + t + "\n";
 
@@ -133,11 +156,14 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
         Email email = new Email();
         email.address = default_address;
         email.subject = default_subject;
+        email.body = default_intro + "\n\n";
 
-        if ( reports.length == 1 ) { // The typical case
-            email.body = "";
-        } else {
-            email.body = "*** " + reports.length +
+        composeEmailAddress(context,reports,email);
+        composeEmailSubject(context,reports,email);
+        composeEmailIntro(context,reports,email);
+
+        if ( reports.length > 1 ) {
+            email.body += "*** " + reports.length +
                 " combined crash reports\n";
         }
         
@@ -148,6 +174,33 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
         }
 
         sendEmail(email);
+    }
+
+
+    protected void composeEmailAddress(Context context, CrashReport[] reports,
+                                       Email email) {
+    }
+
+
+    protected void composeEmailSubject(Context context, CrashReport[] reports,
+                                       Email email) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(context.getPackageName(),0);
+            ApplicationInfo ai = pi.applicationInfo;
+            CharSequence label = pm.getApplicationLabel(ai);
+            email.subject = default_subject + ": " + label +
+                " (" + pi.versionName + ")";
+        } catch(PackageManager.NameNotFoundException nnfe) {
+            // Just keep the default
+        }
+    }
+
+
+
+    protected void composeEmailIntro(Context context, CrashReport[] reports,
+                                     Email email) {
+
     }
 
 
