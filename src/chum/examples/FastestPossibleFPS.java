@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import chum.engine.GameActivity;
+import chum.engine.*;
+import chum.gl.*;
 import chum.util.Log;
 
 

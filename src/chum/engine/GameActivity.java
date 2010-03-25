@@ -15,6 +15,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import chum.cfg.Config;
+import chum.gl.RenderContext;
 import chum.util.Log;
 import chum.util.DefaultExceptionHandler;
 
@@ -22,7 +23,7 @@ import chum.util.DefaultExceptionHandler;
 /**
 
  */
-public class GameActivity extends Activity 
+public abstract class GameActivity extends Activity 
     implements GLSurfaceView.Renderer,
                Handler.Callback
 {	
@@ -32,29 +33,26 @@ public class GameActivity extends Activity
     /** GLSurfaceView **/
     protected GLSurfaceView glSurface;
 
-    /** GL context passed to onSurfaceCreated */
-    protected GL10 gl;
+    /** The RenderContext */
+    public RenderContext renderContext;
 
-    /** EGLConfig the surface is using */
-    protected EGLConfig glConfig;
+    /** GameTree that implements game logic and rendering **/
+    protected GameTree tree;
 
     /** with and height of the viewport **/
     protected int width, height;
     
-    /** GameListener **/
-    protected GameListener listener = new GameListener.Dummy();
-
     /** Start time of the last frame (milliseconds) */
-    private long lastFrameStart;
+    protected long lastFrameStart;
 
     /** Frame counter */
-    private int frameCounter;
+    protected int frameCounter;
     
     /** FPS start time */
-    private long fpsStart;
+    protected long fpsStart;
 
     /** The last calculated frame rate */
-    private int fps;
+    protected int fps;
 
 
     /** Handler for sending messages to the main (UI) thread */
@@ -66,6 +64,8 @@ public class GameActivity extends Activity
      */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setupExceptionHandler();
+
         paused = false;
 
         glSurface = new GLSurfaceView(this);
@@ -74,7 +74,15 @@ public class GameActivity extends Activity
 
         mainHandler = new Handler(this);
 
-        setupExceptionHandler();
+        setGameTree(new GameTree.Dummy(this));
+    }
+
+
+    /**
+       Set the GameTree instance to be used for this activity
+    */
+    public void setGameTree(GameTree tree) {
+        this.tree = tree;
     }
 
 
@@ -86,7 +94,7 @@ public class GameActivity extends Activity
 	long currentFrameStart = SystemClock.uptimeMillis();
 	long frameDelta = currentFrameStart - lastFrameStart;
 
-	listener.step(frameDelta);
+	tree.update(frameDelta);
 
 	lastFrameStart = currentFrameStart;
         frameCounter++;
@@ -98,11 +106,12 @@ public class GameActivity extends Activity
     */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        this.gl = gl;
-        this.glConfig = config;
+        renderContext = new RenderContext(this,gl,config);
+        renderContext.glSurface = this.glSurface;
+
+        tree.onSurfaceCreated(this.renderContext);
 
 	lastFrameStart = fpsStart = SystemClock.uptimeMillis();
-        listener.onSurfaceCreated(this,gl);
     }
 
 
@@ -111,10 +120,10 @@ public class GameActivity extends Activity
     */
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        this.gl = gl;
 	this.width = width;
 	this.height = height;
-        listener.onSurfaceChanged(this, gl, width, height);
+
+        tree.onSurfaceChanged(this,width, height);
     }
 
 
@@ -147,22 +156,6 @@ public class GameActivity extends Activity
     */
     public boolean isPaused() { return paused; }
 
-
-    /**
-       Sets the {@link GameListener}
-       @param listener the GameListener
-    */
-    public void setGameListener(GameListener listener) {
-	this.listener = listener;		
-    }
-
-
-    /**
-       @return the GL10 instance
-    */
-    public GL10 getGL() {
-        return gl;
-    }
 
 
     /**
