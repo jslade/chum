@@ -5,15 +5,9 @@ import chum.cfg.Config;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import java.util.Date;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 
 
 /**
@@ -84,17 +78,9 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
         contents += "Crash Report collected on: " + (new Date()) + "\n";
 
         contents += "Package: " + context.getPackageName() + "\n";
-        try {
-            PackageManager pm = context.getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(context.getPackageName(),0);
-            ApplicationInfo ai = pi.applicationInfo;
-            contents += "App: " + pm.getApplicationLabel(ai) + "\n";
-            contents += "VersionName: " + pi.versionName + "\n";
-            contents += "VersionCode: " + pi.versionCode + "\n";
-        } catch(PackageManager.NameNotFoundException nnfe) {
-            contents += "VersionName: (unknown)\n";
-            contents += "VersionCode: (unknown)\n";
-        }
+        contents += "App: " + report.getApplicationLabel() + "\n";
+        contents += "VersionName: " + report.getVersionName() + "\n";
+        contents += "VersionCode: " + report.getVersionCode() + "\n";
         contents += "\n";
 
         contents += "Context: " + context + "\n";
@@ -107,21 +93,8 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
         }
 
         contents += "Error:\n";
+        contents += report.getStackTrace(e);
         
-        Writer stack = new StringWriter();
-        PrintWriter writer = new PrintWriter(stack);
-        e.printStackTrace(writer);
-        contents += stack.toString();
-
-        Throwable cause = e.getCause();;
-        while ( cause != null ) {
-            contents += "\n";
-            contents += "Cause:\n";
-            cause.printStackTrace(writer);
-            contents += stack.toString();
-        }
-         
-        writer.close();
 
         report.contents = contents;
         return report;
@@ -184,16 +157,9 @@ public class MailerExceptionHandler extends DefaultExceptionHandler
 
     protected void composeEmailSubject(Context context, CrashReport[] reports,
                                        Email email) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(context.getPackageName(),0);
-            ApplicationInfo ai = pi.applicationInfo;
-            CharSequence label = pm.getApplicationLabel(ai);
-            email.subject = default_subject + ": " + label +
-                " (" + pi.versionName + ")";
-        } catch(PackageManager.NameNotFoundException nnfe) {
-            // Just keep the default
-        }
+        email.subject = default_subject + ": " + 
+            reports[0].getApplicationLabel() +
+            " (" + reports[0].getVersionName() + ")";
     }
 
 

@@ -1,12 +1,18 @@
 package chum.util;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 
 
 /**
@@ -17,6 +23,11 @@ import java.io.FileWriter;
    current app.  The methods here do not care about the content of the
    file.  These are just utilities to handle naming, creating,
    retreiving, and deleting the files.
+
+   The CrashReport class also provides some helper methods for adding some
+   of the standard info the would typically go into a crash report, such
+   as the application name and version, and a stack trace.  These methods
+   can be used when composing the crash report, but they are optional.
 */
 public class CrashReport
 {
@@ -177,4 +188,80 @@ public class CrashReport
         String name = "crash-"+System.currentTimeMillis();
         file = new File(dir, name);
     }
+
+
+
+
+    /* ------------------------------------------------------------
+     * Helper methods for adding info to the report
+     * ------------------------------------------------------------ */
+
+    private transient PackageManager pm = null;
+    private transient PackageInfo pi = null ;
+    private transient ApplicationInfo ai = null;
+
+
+    private boolean getApplicationInfo() {
+        if ( pm != null && 
+             pi != null &&
+             ai != null ) return true;
+
+        try {
+            pm = context.getPackageManager();
+            pi = pm.getPackageInfo(context.getPackageName(),0);
+            ai = pi.applicationInfo;
+            return true;
+        } catch(PackageManager.NameNotFoundException nnfe) {
+            return false;
+        }
+    }
+
+
+    public String getApplicationLabel() {
+        if ( getApplicationInfo() ) {
+            CharSequence label = pm.getApplicationLabel(ai);
+            if ( label != null ) 
+                return label.toString();
+        }
+        return "(unknown)";
+    }
+
+
+    public String getVersionName() {
+        if ( getApplicationInfo() )
+            return pi.versionName;
+        else
+            return "(unknown)";
+    }
+
+    
+    public int getVersionCode() {
+        if ( getApplicationInfo() )
+            return pi.versionCode;
+        else
+            return 0;
+    }
+
+
+    public String getStackTrace(Throwable e) {
+        String trace = "";
+
+        Writer stack = new StringWriter();
+        PrintWriter writer = new PrintWriter(stack);
+        e.printStackTrace(writer);
+        trace = stack.toString();
+
+        Throwable cause = e.getCause();;
+        while ( cause != null ) {
+            trace += "\n";
+            trace += "Cause:\n";
+            cause.printStackTrace(writer);
+            trace += stack.toString();
+        }
+         
+        writer.close();
+
+        return trace;
+    }
+
 }

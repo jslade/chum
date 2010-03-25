@@ -1,5 +1,7 @@
 package chum.util;
 
+import chum.examples.R;
+
 import android.test.AndroidTestCase;
 
 import java.io.File;
@@ -64,5 +66,19 @@ public class CrashReportTests extends AndroidTestCase {
                      reportIn.contents);
                      
     }
+
+
+    public void testGetApplicationInfo() {
+        CrashReport report = CrashReport.create(getContext());
+        //assertEquals("Tests for Chum",report.getApplicationLabel());
+        //assertEquals("x.y.z",report.getVersionName());
+        //assertEquals(10,report.getVersionCode());
+        assertNotNull(report.getApplicationLabel());
+        assertNotNull(report.getVersionName());
+    }
+
+
+
+
 }
 
