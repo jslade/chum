@@ -92,12 +92,25 @@ public abstract class GameNode {
 
 
     /**
+       Called whenever the game loop is starting
+    */
+    public void onResume() {
+    }
+
+
+    /**
+       Called whenever the game loop is stopping
+    */
+    public void onPause() {
+    }
+
+
+    /**
        Called when the game graph is being initialized.  This happens
        once the OpenGL surface is created, immediately before rendering
        the first frame.
     */
     public void onSetup(RenderContext renderContext) {
-        // default: do nothing
     }
 
 
@@ -107,25 +120,9 @@ public abstract class GameNode {
        called additional times, if the app is setup to auto-rotate, etc
     */
     public void onResized(int width, int height) {
-        // default: do nothing
     }
 
 
-    /**
-       Called whenever the game loop is starting
-    */
-    public void onStart(RenderContext renderContext) {
-
-
-    }
-
-
-    /**
-       Called whenever the game loop is stopping
-    */
-    public void onStop() {
-
-    }
 
 
     /**

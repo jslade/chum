@@ -28,20 +28,10 @@ public class RenderNode extends GameNode {
 
 
     /**
-       Called whenever rendering is starting -- before the first frame.
-       Recursively calls onStart() on all children as well.
+       Called once when the rendering surface/context is created
     */
-    public void onStart(RenderContext context) {
+    public void onSetup(RenderContext context) {
         this.context = context;
-    }
-
-
-    /**
-       Called whenever rendering is stopping
-       Recursively calls onStop() on all children as well.
-    */
-    public void onStop() {
-        this.context = null;
     }
 
 

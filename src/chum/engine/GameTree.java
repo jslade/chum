@@ -2,6 +2,7 @@ package chum.engine;
 
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
+import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -64,6 +65,7 @@ public abstract class GameTree extends GameNode {
         
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
+                    Log.d("onSurfaceCreated() visit %s",node);
                     node.onSetup(renderContext);
                 }
             };
@@ -78,6 +80,7 @@ public abstract class GameTree extends GameNode {
                                  final int width, final int height) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
+                    Log.d("onSurfaceChanged() visit %s",node);
                     node.onResized(width,height);
                 }
             };
@@ -85,6 +88,32 @@ public abstract class GameTree extends GameNode {
     }
 
 
+    /**
+       Called when starting the rendering loop
+    */
+    public void onResume(GameActivity activity) {
+        Visitor visitor = new Visitor() {
+                public void run(GameNode node) {
+                    Log.d("onResume() visit %s",node);
+                    node.onResume();
+                }
+            };
+        visit(visitor,false);
+    }
+
+
+    /**
+       Called when stopping the rendering loop
+    */
+    public void onPause(GameActivity activity) {
+        Visitor visitor = new Visitor() {
+                public void run(GameNode node) {
+                    Log.d("onPause() visit %s",node);
+                    node.onPause();
+                }
+            };
+        visit(visitor,false);
+    }
 
 
     public static class Dummy extends GameTree {

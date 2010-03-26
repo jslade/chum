@@ -1,5 +1,10 @@
 package chum.engine;
 
+import chum.cfg.Config;
+import chum.gl.RenderContext;
+import chum.util.Log;
+import chum.util.DefaultExceptionHandler;
+
 import android.app.Activity;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -8,16 +13,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-
 import android.view.View;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import chum.cfg.Config;
-import chum.gl.RenderContext;
-import chum.util.Log;
-import chum.util.DefaultExceptionHandler;
 
 
 /**
@@ -66,15 +65,23 @@ public abstract class GameActivity extends Activity
         super.onCreate(savedInstanceState);
         setupExceptionHandler();
 
+        mainHandler = new Handler(this);
         paused = false;
 
-        glSurface = new GLSurfaceView(this);
+        glSurface = createGLSurface();
         glSurface.setRenderer(this);
         this.setContentView(glSurface);
 
-        mainHandler = new Handler(this);
-
         setGameTree(new GameTree.Dummy(this));
+    }
+
+
+    /**
+       Create the GLSurfaceView
+    */
+    protected GLSurfaceView createGLSurface() {
+        GLSurfaceView glsv = new GLSurfaceView(this);
+        return glsv;
     }
 
 
@@ -136,6 +143,7 @@ public abstract class GameActivity extends Activity
 	super.onPause();
 	glSurface.onPause();
         paused = true;
+        if ( tree != null ) tree.onPause();
     }
 
 
@@ -147,6 +155,7 @@ public abstract class GameActivity extends Activity
     protected void onResume() {
 	super.onResume();
 	glSurface.onResume();
+        if ( tree != null ) tree.onResume();
         paused = false;
     }
 
