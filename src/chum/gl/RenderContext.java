@@ -31,6 +31,13 @@ public class RenderContext {
     /** GLSurfaceView **/
     public GLSurfaceView glSurface;
 
+    
+    /** The width of the surface */
+    public int width;
+
+    /** The height of the surface */
+    public int height;
+
 
     /** The app context (for loading resources, etc) */
     public Context appContext;
