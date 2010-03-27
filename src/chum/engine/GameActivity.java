@@ -129,6 +129,8 @@ public abstract class GameActivity extends Activity
     public void onSurfaceChanged(GL10 gl, int width, int height) {
 	this.width = width;
 	this.height = height;
+        renderContext.width = width;
+        renderContext.height = height;
 
         tree.onSurfaceChanged(this,width, height);
     }
