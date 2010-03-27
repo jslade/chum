@@ -20,13 +20,6 @@ public class RenderNode extends GameNode {
     public boolean visible = true;
 
        
-
-    protected RenderNode() {
-        super();
-    }
-
-
-
     /**
        Called once when the rendering surface/context is created
     */

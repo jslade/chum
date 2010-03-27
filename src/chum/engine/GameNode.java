@@ -34,7 +34,7 @@ public abstract class GameNode {
 
 
 
-    protected GameNode() {
+    public GameNode() {
     }
 
 
