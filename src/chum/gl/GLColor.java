@@ -19,11 +19,11 @@ import java.util.regex.*;
  */
 public class GLColor {
 
-    public static GLColor BLACK = new GLColor(0,0,0);
-    public static GLColor WHITE = new GLColor(0x10000,0x10000,0x10000);
-    public static GLColor RED = new GLColor(0x10000,0,0);
-    public static GLColor GREEN = new GLColor(0,0x10000,0);
-    public static GLColor BLUE = new GLColor(0,0,0x10000);
+    public static final GLColor BLACK = new GLColor(0,0,0);
+    public static final GLColor WHITE = new GLColor(0x10000,0x10000,0x10000);
+    public static final GLColor RED = new GLColor(0x10000,0,0);
+    public static final GLColor GREEN = new GLColor(0,0x10000,0);
+    public static final GLColor BLUE = new GLColor(0,0,0x10000);
 
     public int red = 0;
     public int green = 0;
