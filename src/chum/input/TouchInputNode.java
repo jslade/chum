@@ -34,7 +34,6 @@ public class TouchInputNode extends InputNode
         // todo: for now, listens to events on the glSurface, but should allow
         // for cases where another view handles events (e.g. an overlay view)
         renderContext.glSurface.setOnTouchListener(this);
-        Log.d("Did Touch onSetup()");
     }
 
 
