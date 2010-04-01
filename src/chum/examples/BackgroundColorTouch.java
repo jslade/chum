@@ -6,21 +6,20 @@ import chum.gl.GLColor;
 import chum.gl.RenderNode;
 import chum.input.TouchInputNode;
 import chum.gl.render.ClearNode;
-import chum.gl.render.OrthographicProjection;
 import chum.util.Log;
 
-import android.content.Intent;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
 
 
 /**
+   Simple demonstration of changing the background clear color, based on
+   where the screen is touched.  Uses the TouchInputNode to handle touch
+   events, and the ClearNode to set the background color.
 */
-public class BackgroundColorCycler extends GameActivity
+public class BackgroundColorTouch extends GameActivity
 {
     private GLColor bg = new GLColor("#ffffff");
 

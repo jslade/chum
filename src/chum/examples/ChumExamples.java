@@ -23,7 +23,7 @@ public class ChumExamples extends ListActivity
         super.onCreate(savedInstanceState);
 
         examples.put("Fastest-possble FPS", FastestPossibleFPS.class);
-        examples.put("Background Color test", BackgroundColorCycler.class);
+        examples.put("Background Color / Touch", BackgroundColorTouch.class);
         examples.put("Force-close test", ForceCloseExample.class);
 
         String[] items = new String[0]; // Has to be non-null for toArray()

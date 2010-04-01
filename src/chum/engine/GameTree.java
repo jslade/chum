@@ -65,7 +65,7 @@ public abstract class GameTree extends GameNode {
         
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
-                    Log.d("onSurfaceCreated() visit %s",node);
+                    //Log.d("onSurfaceCreated() visit %s",node);
                     node.onSetup(renderContext);
                 }
             };
@@ -80,7 +80,7 @@ public abstract class GameTree extends GameNode {
                                  final int width, final int height) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
-                    Log.d("onSurfaceChanged() visit %s",node);
+                    //Log.d("onSurfaceChanged() visit %s",node);
                     node.onResized(width,height);
                 }
             };
@@ -89,12 +89,32 @@ public abstract class GameTree extends GameNode {
 
 
     /**
+       Called whenever the rendering surface is resized, including once
+       at startup.
+    */
+    public void onResized(int width, int height) {
+        setViewport(width,height);
+    }
+
+
+    /**
+       Create the viewport for OpenGL rendering, using glViewport().
+
+       Standard behavior is to use the entire size of the view surface as the
+       viewport.
+    */
+    public void setViewport(int width, int height) {
+        renderContext.gl10.glViewport(0,0,width,height);
+    }
+    
+       
+    /**
        Called when starting the rendering loop
     */
     public void onResume(GameActivity activity) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
-                    Log.d("onResume() visit %s",node);
+                    //Log.d("onResume() visit %s",node);
                     node.onResume();
                 }
             };
@@ -108,7 +128,7 @@ public abstract class GameTree extends GameNode {
     public void onPause(GameActivity activity) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
-                    Log.d("onPause() visit %s",node);
+                    //Log.d("onPause() visit %s",node);
                     node.onPause();
                 }
             };

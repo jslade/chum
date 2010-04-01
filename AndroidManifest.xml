@@ -17,9 +17,9 @@
             android:label="Fastest-possible FPS">
         </activity>                    
 
-        <activity android:name=".BackgroundColorCycler"
+        <activity android:name=".BackgroundColorTouch"
             android:launchMode="singleTop"
-            android:label="Background color cycler">
+            android:label="Background color touch">
         </activity>                    
 
         <activity android:name=".ForceCloseExample"

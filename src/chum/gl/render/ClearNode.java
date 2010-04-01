@@ -21,37 +21,15 @@ public class ClearNode extends RenderNode {
 
     public ClearNode() {
         super();
-        Log.d("created ClearNode()");
     }
 
 
     public ClearNode(GLColor color) {
         super();
         this.color = color;
-        Log.d("created ClearNode(%s)", color);
     }
 
 
-    /**
-       Called whenever the rendering surface is resized, including once
-       at startup.
-    */
-    public void onResized(int width, int height) {
-        setViewport(width,height);
-    }
-
-
-    /**
-       Create the viewport for OpenGL rendering, using glViewport().
-
-       Standard behavior is to use the entire size of the view surface as the
-       viewport.
-    */
-    public void setViewport(int width, int height) {
-        context.gl10.glViewport(0,0,width,height);
-    }
-    
-       
     public void renderPrefix(GL10 gl10) {
         if ( color != null )
             gl10.glClearColorx(color.red,color.green,color.blue,color.alpha);
