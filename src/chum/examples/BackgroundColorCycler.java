@@ -3,7 +3,8 @@ package chum.examples;
 import chum.engine.*;
 import chum.gl.GLColor;
 import chum.gl.RenderNode;
-import chum.gl.render.BackgroundColor;
+import chum.gl.render.ClearNode;
+import chum.gl.render.OrthographicProjection;
 import chum.util.Log;
 
 import android.content.Intent;
@@ -32,21 +33,13 @@ public class BackgroundColorCycler extends GameActivity
 
 
                 protected RenderNode createRenderTree() {
-                    return new BackgroundColor(current_bg);
+                    RenderNode rnode = new RenderNode();
+                    rnode.addNode(new ClearNode(current_bg));
+                    rnode.addNode(new OrthographicProjection());
+                    return rnode;
                 }
             });
     }
-
-    /**
-       Create the GLSurfaceView
-    */
-    protected GLSurfaceView createGLSurface() {
-        GLSurfaceView glsv = super.createGLSurface();
-        glsv.setDebugFlags(GLSurfaceView.DEBUG_CHECK_GL_ERROR |
-                           GLSurfaceView.DEBUG_LOG_GL_CALLS);
-        return glsv;
-    }
-
 
 
 }

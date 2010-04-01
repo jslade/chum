@@ -66,8 +66,6 @@ public class OrthographicProjection extends RenderNode {
  
 
     protected void set(GL10 gl10) {
-        gl10.glViewport(0,0,context.width,context.height);
-
         gl10.glMatrixMode(GL10.GL_PROJECTION);
         gl10.glLoadIdentity();
         GLU.gluOrtho2D(gl10,left,right,bottom,top);
