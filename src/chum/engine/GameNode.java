@@ -17,7 +17,7 @@ import chum.gl.RenderContext;
    This violates pure OO encapsulation practices, but it's a standard
    trade off for higher performance.
 */
-public abstract class GameNode {
+public class GameNode {
 
     /** The parent node in the game graph */
     public GameNode parent = null;
