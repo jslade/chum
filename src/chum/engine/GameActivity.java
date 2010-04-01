@@ -32,13 +32,18 @@ public abstract class GameActivity extends Activity
     /** GLSurfaceView **/
     protected GLSurfaceView glSurface;
 
+    /** The view that handles input events */
+    protected View inputView;
+
     /** The RenderContext */
     public RenderContext renderContext;
 
     /** GameTree that implements game logic and rendering **/
     protected GameTree tree;
 
-    /** with and height of the viewport **/
+    /** with and height of the viewport
+        todo: can these be removed?  makes more sense to have in RenderContext?
+     **/
     protected int width, height;
     
     /** Start time of the last frame (milliseconds) */
@@ -72,7 +77,12 @@ public abstract class GameActivity extends Activity
         glSurface.setRenderer(this);
         this.setContentView(glSurface);
 
-        setGameTree(new GameTree.Dummy(this));
+        setGameTree(createGameTree());
+
+        // By default, the glSurface is the view that recieves
+        // the input events -- its the view the event listeners
+        // should attach to:
+        inputView = glSurface;
     }
 
 
@@ -82,6 +92,14 @@ public abstract class GameActivity extends Activity
     protected GLSurfaceView createGLSurface() {
         GLSurfaceView glsv = new GLSurfaceView(this);
         return glsv;
+    }
+
+
+    /**
+       Create the GameTree instance to be used for this activity
+    */
+    protected GameTree createGameTree() {
+        return new GameTree.Dummy(this);
     }
 
 
