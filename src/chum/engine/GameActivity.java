@@ -23,8 +23,7 @@ import javax.microedition.khronos.opengles.GL10;
 
  */
 public abstract class GameActivity extends Activity 
-    implements GLSurfaceView.Renderer,
-               Handler.Callback
+    implements GLSurfaceView.Renderer
 {	
     /** Whether the activity is paused */
     protected boolean paused;
@@ -62,6 +61,9 @@ public abstract class GameActivity extends Activity
     /** Handler for sending messages to the main (UI) thread */
     protected Handler mainHandler;
 
+    /** Handler for sending messages to the game / rendering thread */
+    protected Handler gameHandler;
+
 
     /**
        Called on creation of the Activity
@@ -70,7 +72,11 @@ public abstract class GameActivity extends Activity
         super.onCreate(savedInstanceState);
         setupExceptionHandler();
 
-        mainHandler = new Handler(this);
+        mainHandler = new Handler(new Handler.Callback(){
+                public boolean handleMessage(Message msg) {
+                    return handleMain(msg);
+                }
+            });
         paused = false;
 
         glSurface = createGLSurface();
@@ -131,6 +137,13 @@ public abstract class GameActivity extends Activity
     */
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        Looper.prepare();
+        gameHandler = new Handler(new Handler.Callback(){
+                public boolean handleMessage(Message msg) {
+                    return handleGame(msg);
+                }
+            });
+
         renderContext = new RenderContext(this,gl,config);
         renderContext.glSurface = this.glSurface;
 
@@ -229,10 +242,23 @@ public abstract class GameActivity extends Activity
     }
 
 
+    public Handler getGameHandler() {
+        return gameHandler;
+    }
+
+
     /**
        Handle a message sent to the main (UI) thread
     */
-    public boolean handleMessage(Message msg) {
+    public boolean handleMain(Message msg) {
+        return false;
+    }
+
+
+    /**
+       Handle a message sent to the game thread
+    */
+    public boolean handleGame(Message msg) {
         return false;
     }
 
