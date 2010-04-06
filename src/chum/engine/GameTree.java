@@ -136,6 +136,16 @@ public abstract class GameTree extends GameNode {
     }
 
 
+    /**
+       Any GameEvents dispatched up to the root of the GameTree get reflected
+       back down.  That allows events to propogate up on branch of the tree and
+       back down another.
+    */
+    protected void dispatchEventUp(GameEvent event) {
+        dispatchEventDown(event);
+    }
+
+
     public static class Dummy extends GameTree {
         public Dummy(GameActivity activity) { super(activity); }
         protected GameNode createLogicTree() { return null; }

@@ -1,6 +1,7 @@
 package chum.gl;
 
 
+import chum.engine.GameEvent;
 import chum.engine.GameNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -60,5 +61,12 @@ public class RenderNode extends GameNode {
     */
     public void renderPostfix(GL10 gl10) {
     }
-       
+
+
+    /**
+       Handle a GameEvent -- default behavior is to stop all propogation
+    */
+    public boolean onGameEvent(GameEvent event) {
+        return true;
+    }
 }

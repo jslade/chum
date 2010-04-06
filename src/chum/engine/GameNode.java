@@ -132,6 +132,8 @@ public class GameNode {
        @return true if something changed with the node.
     */
     public boolean update(long millis) {
+        dispatchEvents();
+
         boolean updated = false;
         if ( updatePrefix(millis) ) updated = true;
         for(int i=0; i<num_children; ++i) {
@@ -156,14 +158,6 @@ public class GameNode {
     public boolean updatePostfix(long millis) {
         return false;
     }
-
-
-
-
-
-
-
-
 
 
 
@@ -194,5 +188,112 @@ public class GameNode {
         public abstract void run(GameNode node);
     }
 
+
+
+    // Pending event chains
+    protected GameEvent pendingUpEvent;
+    protected GameEvent pendingDownEvent;
+    protected GameEvent dispatchingEvent;
+
+
+    /**
+       Post a GameEvent that propogates up the tree from this node.
+
+       The event is just added to a linked list of events to be dispatched
+       on the next call to dispatchEvents(), which happens during update()
+    */
+    public void postUp(GameEvent event) {
+        event.nextQueued = null;
+        synchronized(this) {
+            if ( pendingUpEvent == null )
+                pendingUpEvent = event;
+            else {
+                GameEvent pending = pendingUpEvent;
+                while ( pending.nextQueued != null ) pending = pending.nextQueued;
+                pending.nextQueued = event;
+            }
+        }
+    }
+
+
+
+    /**
+       Post a GameEvent that propogates down the tree from this node
+
+       The event is just added to a linked list of events to be dispatched
+       on the next call to dispatchEvents(), which happens during update()
+    */
+    public void postDown(GameEvent event) {
+        event.nextQueued = null;
+        synchronized(this) {
+            if ( pendingDownEvent == null )
+                pendingDownEvent = event;
+            else {
+                GameEvent pending = pendingDownEvent;
+                while ( pending.nextQueued != null ) pending = pending.nextQueued;
+                pending.nextQueued = event;
+            }
+        }
+    }
+
+
+    /**
+       Dispatch any pending events
+    */
+    protected void dispatchEvents() {
+        synchronized(this) {
+            while ( pendingUpEvent != null ) {
+                dispatchingEvent = pendingUpEvent;
+                pendingUpEvent = pendingUpEvent.nextQueued;
+                dispatchEventUp(dispatchingEvent);
+                dispatchingEvent.recycle();
+            }
+
+            while ( pendingDownEvent != null ) {
+                dispatchingEvent = pendingDownEvent;
+                pendingDownEvent = pendingDownEvent.nextQueued;
+                dispatchEventDown(dispatchingEvent);
+                dispatchingEvent.recycle();
+            }
+
+            dispatchingEvent = null;
+        }
+    }
+
+
+    /**
+       Dispatch an event up the tree from this node
+    */
+    protected void dispatchEventUp(GameEvent event) {
+        if ( event == dispatchingEvent ) return; // prevents cycles
+        
+        if ( onGameEvent(event) )
+            return; // consumed
+        
+        if ( parent != null )
+            parent.dispatchEventUp(event);
+    }
+
+
+    /**
+       Dispatch an event down the tree from this node
+    */
+    protected void dispatchEventDown(GameEvent event) {
+        if ( event == dispatchingEvent ) return; // prevents cycles
+
+        if ( onGameEvent(event) )
+            return; // consumed
+        
+        for(int i=0; i<num_children; ++i)
+            children[i].dispatchEventDown(event);
+    }
+
+
+    /**
+       Handle a GameEvent
+    */
+    public boolean onGameEvent(GameEvent event) {
+        return false;
+    }
 
 }
