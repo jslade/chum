@@ -4,6 +4,8 @@ import chum.gl.RenderContext;
 import chum.gl.RenderNode;
 import chum.util.Log;
 
+import android.content.Context;
+
 import javax.microedition.khronos.opengles.GL10;
 
 
@@ -11,12 +13,6 @@ import javax.microedition.khronos.opengles.GL10;
    This special GameNode is intended to be the root node of the game graph.
  */
 public abstract class GameTree extends GameNode {
-
-    /** The GameActivity */
-    public GameActivity gameActivity;
-
-    /** The RenderContext */
-    public RenderContext renderContext;
 
     /** The root GameNode for logic */
     public GameNode logic;
@@ -29,10 +25,8 @@ public abstract class GameTree extends GameNode {
     /**
        Create a new GameTree
     */
-    public GameTree(GameActivity activity) {
+    public GameTree() {
         super();
-
-        this.gameActivity = activity;
 
         logic = createLogicTree();
         if ( logic != null ) 
@@ -58,15 +52,26 @@ public abstract class GameTree extends GameNode {
 
 
     /**
+       Called when the game tree is initially created
+    */
+    public void doSetup(final GameController gameController) {
+        Visitor visitor = new Visitor() {
+                public void run(GameNode node) {
+                    node.onSetup(gameController);
+                }
+            };
+        visit(visitor,false);
+    }
+
+
+    /**
        Called when the game drawing surface is initially created
     */
-    public void onSurfaceCreated(final RenderContext renderContext) {
-        this.renderContext = renderContext;
-        
+    public void doSurfaceCreated(final RenderContext renderContext) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
                     //Log.d("onSurfaceCreated() visit %s",node);
-                    node.onSetup(renderContext);
+                    node.onSurfaceCreated(renderContext);
                 }
             };
         visit(visitor,false);
@@ -76,12 +81,11 @@ public abstract class GameTree extends GameNode {
     /**
        Called when the surface is resized
     */
-    public void onSurfaceChanged(GameActivity activity,
-                                 final int width, final int height) {
+    public void doSurfaceChanged(final int width, final int height) {
         Visitor visitor = new Visitor() {
                 public void run(GameNode node) {
                     //Log.d("onSurfaceChanged() visit %s",node);
-                    node.onResized(width,height);
+                    node.onSurfaceChanged(width,height);
                 }
             };
         visit(visitor,false);
@@ -104,7 +108,7 @@ public abstract class GameTree extends GameNode {
        viewport.
     */
     public void setViewport(int width, int height) {
-        renderContext.gl10.glViewport(0,0,width,height);
+        gameController.renderContext.gl10.glViewport(0,0,width,height);
     }
     
        
@@ -147,7 +151,7 @@ public abstract class GameTree extends GameNode {
 
 
     public static class Dummy extends GameTree {
-        public Dummy(GameActivity activity) { super(activity); }
+        public Dummy() { super(); }
         protected GameNode createLogicTree() { return null; }
         protected RenderNode createRenderTree() { return null; }
     }

@@ -38,12 +38,13 @@ public class FastestPossibleFPS extends GameActivity
     @Override
     public void onResume() {
         super.onResume();
-        mainHandler.post(runFPS);
+        gameController.uiHandler.post(runFPS);
     }
 
     private void showFPS() {
         Log.d("FastestPossibleFPS FPS = %d", this.getFPS());
-        if ( !paused ) mainHandler.postDelayed(runFPS, 3000);
+        if ( !gameController.paused )
+            gameController.uiHandler.postDelayed(runFPS, 3000);
     }
     
 }

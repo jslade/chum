@@ -20,49 +20,23 @@ import javax.microedition.khronos.opengles.GL10;
 
 
 /**
-
+   GameActivity is intended to provide the basic setup for using the rest of the engine
+   components (GameContext, GameTree, etc) along with a GLSurfaceView.
  */
 public abstract class GameActivity extends Activity 
     implements GLSurfaceView.Renderer
-{	
-    /** Whether the activity is paused */
-    protected boolean paused;
-
+{
     /** GLSurfaceView **/
-    protected GLSurfaceView glSurface;
+    public GLSurfaceView glSurface;
 
-    /** The view that handles input events */
-    protected View inputView;
+    /** The GameController */
+    public GameController gameController;
 
     /** The RenderContext */
     public RenderContext renderContext;
 
     /** GameTree that implements game logic and rendering **/
     protected GameTree tree;
-
-    /** with and height of the viewport
-        todo: can these be removed?  makes more sense to have in RenderContext?
-     **/
-    protected int width, height;
-    
-    /** Start time of the last frame (milliseconds) */
-    protected long lastFrameStart;
-
-    /** Frame counter */
-    protected int frameCounter;
-    
-    /** FPS start time */
-    protected long fpsStart;
-
-    /** The last calculated frame rate */
-    protected int fps;
-
-
-    /** Handler for sending messages to the main (UI) thread */
-    protected Handler mainHandler;
-
-    /** Handler for sending messages to the game / rendering thread */
-    protected Handler gameHandler;
 
 
     /**
@@ -72,23 +46,24 @@ public abstract class GameActivity extends Activity
         super.onCreate(savedInstanceState);
         setupExceptionHandler();
 
-        mainHandler = new Handler(new Handler.Callback(){
+        gameController = new GameController();
+        gameController.uiHandler = new Handler(new Handler.Callback(){
                 public boolean handleMessage(Message msg) {
-                    return handleMain(msg);
+                    return handleUI(msg);
                 }
             });
-        paused = false;
+        gameController.paused = false;
 
         glSurface = createGLSurface();
         glSurface.setRenderer(this);
         this.setContentView(glSurface);
 
-        setGameTree(createGameTree());
-
         // By default, the glSurface is the view that recieves
         // the input events -- its the view the event listeners
         // should attach to:
-        inputView = glSurface;
+        gameController.inputView = glSurface;
+
+        setGameTree(createGameTree());
     }
 
 
@@ -105,7 +80,7 @@ public abstract class GameActivity extends Activity
        Create the GameTree instance to be used for this activity
     */
     protected GameTree createGameTree() {
-        return new GameTree.Dummy(this);
+        return new GameTree.Dummy();
     }
 
 
@@ -114,6 +89,8 @@ public abstract class GameActivity extends Activity
     */
     public void setGameTree(GameTree tree) {
         this.tree = tree;
+        gameController.tree = tree;
+        this.tree.doSetup(gameController);
     }
 
 
@@ -122,13 +99,7 @@ public abstract class GameActivity extends Activity
     */
     @Override
     public void onDrawFrame(GL10 _gl) {
-	long currentFrameStart = SystemClock.uptimeMillis();
-	long frameDelta = currentFrameStart - lastFrameStart;
-
-	tree.update(frameDelta);
-
-	lastFrameStart = currentFrameStart;
-        frameCounter++;
+        gameController.update();
     }
 
 
@@ -138,7 +109,7 @@ public abstract class GameActivity extends Activity
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Looper.prepare();
-        gameHandler = new Handler(new Handler.Callback(){
+        gameController.gameHandler = new Handler(new Handler.Callback(){
                 public boolean handleMessage(Message msg) {
                     return handleGame(msg);
                 }
@@ -147,9 +118,10 @@ public abstract class GameActivity extends Activity
         renderContext = new RenderContext(this,gl,config);
         renderContext.glSurface = this.glSurface;
 
-        tree.onSurfaceCreated(this.renderContext);
+        tree.doSurfaceCreated(this.renderContext);
 
-	lastFrameStart = fpsStart = SystemClock.uptimeMillis();
+	gameController.lastFrameStart = 
+            gameController.fpsStart = SystemClock.uptimeMillis();
     }
 
 
@@ -158,12 +130,9 @@ public abstract class GameActivity extends Activity
     */
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-	this.width = width;
-	this.height = height;
         renderContext.width = width;
         renderContext.height = height;
-
-        tree.onSurfaceChanged(this,width, height);
+        tree.doSurfaceChanged(width, height);
     }
 
 
@@ -175,82 +144,37 @@ public abstract class GameActivity extends Activity
     protected void onPause() {
 	super.onPause();
 	glSurface.onPause();
-        paused = true;
+        gameController.paused = true;
         if ( tree != null ) tree.onPause();
     }
 
 
     /**
        Called when the application is resumed. We need to
-        also resume the GLSurfaceView.
+       also resume the GLSurfaceView.
     */
     @Override
     protected void onResume() {
 	super.onResume();
 	glSurface.onResume();
         if ( tree != null ) tree.onResume();
-        paused = false;
+        gameController.paused = false;
     }
 
     
-    /**
-       @return whether the GameActivity is currently paused
-    */
-    public boolean isPaused() { return paused; }
-
-
-
-    /**
-       @return the surface width in pixels
-    */
-    public int getWidth( ) {
-	return width;
-    }
-
-
-    /**
-       @return the surface height in pixels
-    */
-    public int getHeight( ) {
-	return height;
-    }
-
-
-
     /**
        @return the current average framerate, as an integer number
        of frames per second
     */
     public int getFPS() {
-        long now = SystemClock.uptimeMillis();
-        long elapsed = now - fpsStart;
-        if ( elapsed < 3000 )
-            return fps;
-
-        fps = (int)(1000 * frameCounter / elapsed);
-
-        frameCounter = 0;
-        fpsStart = now;
-
-        return fps;
-    }
-
-
-
-    public Handler getMainHandler() {
-        return mainHandler;
-    }
-
-
-    public Handler getGameHandler() {
-        return gameHandler;
+        return gameController.getFPS();
     }
 
 
     /**
        Handle a message sent to the main (UI) thread
     */
-    public boolean handleMain(Message msg) {
+    public boolean handleUI(Message msg) {
         return false;
     }
 

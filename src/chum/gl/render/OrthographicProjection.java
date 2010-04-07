@@ -45,7 +45,8 @@ public class OrthographicProjection extends RenderNode {
 
 
     /** Called when the surface changes size */
-    public void onResized(int width, int height) {
+    @Override
+    public void onSurfaceChanged(int width, int height) {
         // Default setup is for the origin to be lower left of the screen
         left = 0f;
         right = (float)width;
@@ -53,7 +54,7 @@ public class OrthographicProjection extends RenderNode {
         top = (float)height;
 
         if ( !isDynamic ) {
-            set(context.gl10);
+            set(renderContext.gl10);
         }
     }
 

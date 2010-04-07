@@ -19,11 +19,14 @@ import chum.gl.RenderContext;
 */
 public class GameNode {
 
+    /** The context for this node */
+    public GameController gameController;
+
     /** The parent node in the game graph */
-    public GameNode parent = null;
+    public GameNode parent;
 
     /** The set of child nodes */
-    public GameNode[] children = null;
+    public GameNode[] children;
 
     /** The number of child nodes */
     public int num_children;
@@ -106,11 +109,25 @@ public class GameNode {
 
 
     /**
-       Called when the game graph is being initialized.  This happens
-       once the OpenGL surface is created, immediately before rendering
-       the first frame.
+       Called when the game graph is being initialized.
+
+       This happens after the game tree is created, so all of the
+       nodes should exist.  This gives the nodes a chance to do final
+       setup, so as finding specific other nodes in the tree
     */
-    public void onSetup(RenderContext renderContext) {
+    public void onSetup(GameController gameController) {
+        this.gameController = gameController;
+    }
+
+
+    /**
+       Called when the game surface has been created.
+
+       This happens after the game tree is setup, and immediately before
+       the first frame is rendered.
+    */
+    public void onSurfaceCreated(RenderContext renderContext) {
+        gameController.renderContext = renderContext;
     }
 
 
@@ -119,7 +136,7 @@ public class GameNode {
        once, immediately before rendering the first frame.  It may be
        called additional times, if the app is setup to auto-rotate, etc
     */
-    public void onResized(int width, int height) {
+    public void onSurfaceChanged(int width, int height) {
     }
 
 
@@ -238,26 +255,54 @@ public class GameNode {
 
 
     /**
+       Post an event to propogate up after a certain delay
+    */
+    public void postUpDelayed(GameEvent event,long delay) {
+        GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,true);
+        gameController.gameHandler.postDelayed(delayed,delay);
+    }
+
+
+    /**
+       Post an event to propogate down after a certain delay
+    */
+    public void postDownDelayed(GameEvent event,long delay) {
+        GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,false);
+        gameController.gameHandler.postDelayed(delayed,delay);
+    }
+
+
+    /**
        Dispatch any pending events
+
+       First removes all pending events so new events can get queued during the dispatch.
+       Then dispatches all the up events, then down events.
     */
     protected void dispatchEvents() {
+        GameEvent dispatchingUpEvent;
+        GameEvent dispatchingDownEvent;
         synchronized(this) {
-            while ( pendingUpEvent != null ) {
-                dispatchingEvent = pendingUpEvent;
-                pendingUpEvent = pendingUpEvent.nextQueued;
-                dispatchEventUp(dispatchingEvent);
-                dispatchingEvent.recycle();
-            }
-
-            while ( pendingDownEvent != null ) {
-                dispatchingEvent = pendingDownEvent;
-                pendingDownEvent = pendingDownEvent.nextQueued;
-                dispatchEventDown(dispatchingEvent);
-                dispatchingEvent.recycle();
-            }
-
-            dispatchingEvent = null;
+            dispatchingUpEvent = pendingUpEvent;
+            dispatchingDownEvent = pendingDownEvent;
+            pendingUpEvent = null;
+            pendingDownEvent = null;
         }
+
+        while ( dispatchingUpEvent != null ) {
+            dispatchingEvent = dispatchingUpEvent;
+            dispatchingUpEvent = dispatchingUpEvent.nextQueued;
+            dispatchEventUp(dispatchingEvent);
+            dispatchingEvent.recycle();
+        }
+
+        while ( dispatchingDownEvent != null ) {
+            dispatchingEvent = dispatchingDownEvent;
+            dispatchingDownEvent = dispatchingDownEvent.nextQueued;
+            dispatchEventDown(dispatchingEvent);
+            dispatchingEvent.recycle();
+        }
+
+        dispatchingEvent = null;
     }
 
 

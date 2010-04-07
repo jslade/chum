@@ -152,4 +152,54 @@ public final class GameEvent
     }
 
 
+
+    /**
+       Helper class for posting delayed events.  The delayed posting is done
+       via a handler, which requires a Runnable
+    */
+    public static class Delayed implements Runnable {
+
+        private GameNode node;
+        private GameEvent event;
+        private boolean postUp;
+
+        private Delayed() {
+            super();
+        }
+
+        public void run() {
+            if ( postUp )
+                node.postUp(event);
+            else
+                node.postDown(event);
+
+            this.recycle();
+        }
+
+
+        private static Delayed first_avail;
+        private Delayed next_avail;
+        
+
+        public static Delayed obtain(GameNode node, GameEvent event, boolean postUp) {
+            if ( first_avail == null ) {
+                first_avail = new Delayed();
+            }
+            Delayed d = first_avail;
+            first_avail = d.next_avail;
+            
+            d.node = node;
+            d.event = event;
+            d.postUp = postUp;
+            return d;
+        }
+
+        
+        private void recycle() {
+            this.next_avail = first_avail;
+            first_avail = this;
+        }
+
+    }
+
 }

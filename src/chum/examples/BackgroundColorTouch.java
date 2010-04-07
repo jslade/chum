@@ -33,7 +33,7 @@ public class BackgroundColorTouch extends GameActivity
 
     @Override
     protected GameTree createGameTree() {
-        return (new GameTree(this) {
+        return (new GameTree() {
                 protected GameNode createLogicTree() {
                     return new TouchInputNode(){
                             protected void handle(View v, MotionEvent event) {

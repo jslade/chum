@@ -1,5 +1,6 @@
 package chum.input;
 
+import chum.engine.GameController;
 import chum.engine.GameNode;
 import chum.gl.RenderContext;
 import chum.util.Log;
@@ -30,10 +31,13 @@ public class TouchInputNode extends InputNode
        At setup time, registers this node as a listener for the view, so touch
        events will get sent here
     */
-    public void onSetup(RenderContext renderContext) {
+    @Override
+    public void onSetup(GameController gameController) {
+        super.onSetup(gameController);
+
         // todo: for now, listens to events on the glSurface, but should allow
         // for cases where another view handles events (e.g. an overlay view)
-        renderContext.glSurface.setOnTouchListener(this);
+        gameController.inputView.setOnTouchListener(this);
     }
 
 

@@ -15,7 +15,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class RenderNode extends GameNode {
 
     /** The current RenderContext */
-    public RenderContext context;
+    public RenderContext renderContext;
 
     /** Whether the node should be rendered */
     public boolean visible = true;
@@ -24,8 +24,12 @@ public class RenderNode extends GameNode {
     /**
        Called once when the rendering surface/context is created
     */
-    public void onSetup(RenderContext context) {
-        this.context = context;
+    public void onSurfaceCreated(RenderContext renderContext) {
+        super.onSurfaceCreated(renderContext);
+
+        // Simply for speed (one less member access for each update),
+        // keep the RenderContext in its own member
+        this.renderContext = renderContext;
     }
 
 
@@ -34,7 +38,7 @@ public class RenderNode extends GameNode {
     */
     public boolean updatePrefix(long millis) {
         if ( visible )
-            renderPrefix(context.gl10);
+            renderPrefix(renderContext.gl10);
         return false;
     }
 
@@ -44,7 +48,7 @@ public class RenderNode extends GameNode {
     */
     public boolean updatePostfix(long millis) {
         if ( visible )
-            renderPostfix(context.gl10);
+            renderPostfix(renderContext.gl10);
         return false;
     }
 
