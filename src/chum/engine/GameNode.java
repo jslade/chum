@@ -1,6 +1,7 @@
 package chum.engine;
 
 import chum.gl.RenderContext;
+import chum.util.Log;
 
 
 /**
@@ -32,7 +33,8 @@ public class GameNode {
     public int num_children;
     
 
-    /** The name of the node, for development / debugging purposes */
+    /** The name of the node, for finding nodes in the tree
+        to link them together */
     public String name;
 
 
@@ -42,10 +44,23 @@ public class GameNode {
 
 
     /**
+       Set the name of this node
+
+       @return The node
+    */
+    public GameNode setName(String n) {
+        name = n;
+        return this;
+    }
+
+
+    /**
        Add a node to this node's list of child nodes.
 
        @param n The node to add.  If it already has a parent, it is first
        removed from that parent node.
+
+       @return The node
      */
     public GameNode addNode(GameNode n) {
         if ( n.parent != null )
@@ -61,7 +76,8 @@ public class GameNode {
 
         children[num_children++] = n;
         n.parent = this;
-        return n;
+
+        return this;
     }
 
 
@@ -69,29 +85,79 @@ public class GameNode {
        Remove a node from this node's list of child nodes.
 
        @param n The node to remove
+       @returns The node
     */
-    public void removeNode(GameNode n) {
-        if ( n.parent != this ) return;
-        for ( int i=num_children-1; i>=0; --i ) {
-            if ( children[i].equals(n) ) {
-                for ( int j=i+1; j<num_children; ++i, ++j )
-                    children[i] = children[j];
-                num_children--;
-                break;
+    public GameNode removeNode(GameNode n) {
+        if ( n.parent == this ) {
+            for ( int i=num_children-1; i>=0; --i ) {
+                if ( children[i].equals(n) ) {
+                    for ( int j=i+1; j<num_children; ++i, ++j )
+                        children[i] = children[j];
+                    num_children--;
+                    break;
+                }
             }
+            n.parent = null;
         }
-        n.parent = null;
+
+        return this;
     }
 
 
     /**
        Remove this node from it's parent (if any)
+       @returns The node
     */
     public GameNode remove() {
         if ( parent != null )
             parent.removeNode(this);
         return this;
     }
+
+
+    /**
+       Find a node with a given name.
+
+       This will search the entire tree for a matching node, starting with the
+       called node -- so it can be expensive.  It should not be done frequently.
+
+       The primary intended purpose of this method is to find related nodes
+       during the onSetup() call, once all the tree has been constructed, to
+       associated related nodes (e.g. the visible rendering node corresponding
+       to a model / logic node)
+    */
+    public GameNode findNode(String name) {
+        if ( name.equals(this.name) ) return this;
+
+        if ( parent != null ) {
+            GameNode found = parent.findNode(name);
+            if ( found != null ) return found;
+        }
+
+        for( int i=0; i<num_children; ++i ) {
+            GameNode found = children[i].findNodeDown(name);
+            if ( found != null ) return found;
+        }
+
+        return null;
+    }
+
+
+    /**
+       Special findNode() helper method that only searches down the
+       hierarchy -- preventing cycles of searching up/dn/up/dn
+    */
+    protected GameNode findNodeDown(String name) {
+        if ( name.equals(this.name) ) return this;
+
+        for( int i=0; i<num_children; ++i ) {
+            GameNode found = children[i].findNodeDown(name);
+            if ( found != null ) return found;
+        }
+
+        return null;
+    }
+
 
 
     /**
@@ -259,7 +325,7 @@ public class GameNode {
     */
     public void postUpDelayed(GameEvent event,long delay) {
         GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,true);
-        gameController.gameHandler.postDelayed(delayed,delay);
+        gameController.uiHandler.postDelayed(delayed,delay);
     }
 
 
@@ -268,7 +334,7 @@ public class GameNode {
     */
     public void postDownDelayed(GameEvent event,long delay) {
         GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,false);
-        gameController.gameHandler.postDelayed(delayed,delay);
+        gameController.uiHandler.postDelayed(delayed,delay);
     }
 
 
@@ -281,6 +347,7 @@ public class GameNode {
     protected void dispatchEvents() {
         GameEvent dispatchingUpEvent;
         GameEvent dispatchingDownEvent;
+
         synchronized(this) {
             dispatchingUpEvent = pendingUpEvent;
             dispatchingDownEvent = pendingDownEvent;
@@ -310,8 +377,6 @@ public class GameNode {
        Dispatch an event up the tree from this node
     */
     protected void dispatchEventUp(GameEvent event) {
-        if ( event == dispatchingEvent ) return; // prevents cycles
-        
         if ( onGameEvent(event) )
             return; // consumed
         
@@ -324,8 +389,6 @@ public class GameNode {
        Dispatch an event down the tree from this node
     */
     protected void dispatchEventDown(GameEvent event) {
-        if ( event == dispatchingEvent ) return; // prevents cycles
-
         if ( onGameEvent(event) )
             return; // consumed
         

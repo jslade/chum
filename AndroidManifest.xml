@@ -12,20 +12,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".FastestPossibleFPS"
-            android:launchMode="singleTop"
-            android:label="Fastest-possible FPS">
-        </activity>                    
-
         <activity android:name=".BackgroundColorTouch"
-            android:launchMode="singleTop"
-            android:label="Background color touch">
-        </activity>                    
+            android:label="Background color touch" />
+
+        <activity android:name=".FastestPossibleFPS"
+            android:label="Fastest-possible FPS" />
 
         <activity android:name=".ForceCloseExample"
-            android:launchMode="singleTop"
-            android:label="Force-close test">
-        </activity>                    
+            android:label="Force-close test" />
+
+        <activity android:name=".ManyManyNodes"
+            android:label="Many-many nodes test" />
 
         <activity android:name="chum.util.CrashReportMailerActivity" />
 

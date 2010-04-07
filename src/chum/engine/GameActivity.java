@@ -90,7 +90,6 @@ public abstract class GameActivity extends Activity
     public void setGameTree(GameTree tree) {
         this.tree = tree;
         gameController.tree = tree;
-        this.tree.doSetup(gameController);
     }
 
 
@@ -118,6 +117,7 @@ public abstract class GameActivity extends Activity
         renderContext = new RenderContext(this,gl,config);
         renderContext.glSurface = this.glSurface;
 
+        tree.doSetup(gameController);
         tree.doSurfaceCreated(this.renderContext);
 
 	gameController.lastFrameStart = 

@@ -11,6 +11,14 @@ import javax.microedition.khronos.opengles.GL10;
 
 /**
    This special GameNode is intended to be the root node of the game graph.
+
+   It devides the overall graph into two parts: logic, and rendering.
+   The logic subtree is intended to control behavior, whereas the rendering
+   subtree should do all the rendering.
+
+   This almost maps to a MVC architecture -- the View is the rendering subtree.
+   The Controller is intended to be the logic side, and the Model is likely
+   split between the two for practical reasons.
  */
 public abstract class GameTree extends GameNode {
 

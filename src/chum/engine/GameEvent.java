@@ -1,5 +1,8 @@
 package chum.engine;
 
+import chum.util.Log;
+
+
 /**
    Describes an event in the game play.  
 
@@ -179,25 +182,30 @@ public final class GameEvent
 
         private static Delayed first_avail;
         private Delayed next_avail;
-        
+        private static Object sync = new Object();
+
 
         public static Delayed obtain(GameNode node, GameEvent event, boolean postUp) {
-            if ( first_avail == null ) {
-                first_avail = new Delayed();
+            synchronized(sync) {
+                if ( first_avail == null ) {
+                    first_avail = new Delayed();
+                }
+                Delayed d = first_avail;
+                first_avail = d.next_avail;
+                
+                d.node = node;
+                d.event = event;
+                d.postUp = postUp;
+                return d;
             }
-            Delayed d = first_avail;
-            first_avail = d.next_avail;
-            
-            d.node = node;
-            d.event = event;
-            d.postUp = postUp;
-            return d;
         }
 
         
         private void recycle() {
-            this.next_avail = first_avail;
-            first_avail = this;
+            synchronized(sync) {
+                this.next_avail = first_avail;
+                first_avail = this;
+            }
         }
 
     }
