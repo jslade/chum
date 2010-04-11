@@ -50,6 +50,7 @@ public class MeshTests extends AndroidTestCase {
 
         quad.onSurfaceCreated(gl10Context);
         assertEquals(0,gl10.numCommands());
+        assertEquals(false,quad.dirty);
     }
 
 
