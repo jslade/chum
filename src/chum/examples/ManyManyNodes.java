@@ -2,17 +2,10 @@ package chum.examples;
 
 import chum.engine.*;
 import chum.engine.common.*;
-import chum.fp.FP;
-import chum.gl.GLColor;
 import chum.gl.RenderNode;
-import chum.input.TouchInputNode;
-import chum.gl.render.ClearNode;
 import chum.util.Log;
 
 import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.View;
-
 
 
 /**
@@ -37,7 +30,7 @@ public class ManyManyNodes extends GameActivity
 
                 protected RenderNode createRenderTree() {
                     RenderNode node = new RenderNode();
-                    for( int i=0; i<5; ++i ) {
+                    for( int i=0; i<10; ++i ) {
                         GameNode inode = new RenderNode();
                         node.addNode(inode);
                         for( int j=0; j<5; ++j ) {
