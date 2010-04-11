@@ -28,6 +28,17 @@ public class RenderContext {
     public boolean isGL11 = false;
 
 
+    /** The GL20 rendering context (if any) */
+    //public GL20 gl20;
+
+    /** Whether GL20 is supported */
+    public boolean isGL20 = false;
+
+
+    /** Whether VBOs are supported */
+    public boolean canUseVBO = false;
+
+
     /** GLSurfaceView **/
     public GLSurfaceView glSurface;
 
@@ -54,6 +65,12 @@ public class RenderContext {
         if ( gl10 instanceof GL11 ) {
             this.gl11 = (GL11)gl10;
             this.isGL11 = true;
+            
+            // Assume VBO's can be used if this is OpenGL ES 1.1
+            // This will later be refined by device-dependent settings.
+            // todo: need a mechanism to override by device, and
+            // user settings (?)
+            this.canUseVBO = true;
         }
     }
 
