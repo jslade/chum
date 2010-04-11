@@ -40,6 +40,7 @@ public class RotateNodeTests extends MockGLTestCase {
         rot.update(0);
         assertEquals(3,mockGL.numCommands());
         assert(mockGL.contains("glPushMatrix",
+                               "glRotatex",
                                "glPopMatrix"));
 
     }
