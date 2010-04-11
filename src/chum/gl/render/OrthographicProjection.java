@@ -32,41 +32,68 @@ public class OrthographicProjection extends RenderNode {
        
     public OrthographicProjection() {
         super();
-        Log.d("created OrthographicProjection()");
         this.isDynamic = false;
     }
 
 
     public OrthographicProjection(boolean isDynamic) {
         super();
-        Log.d("created OrthographicProjection(%s)",isDynamic);
         this.isDynamic = isDynamic;
     }
 
 
-    /** Called when the surface changes size */
+    /**
+       Called when the surface changes size.  If this is a static
+       projection (meaning the camera does not ever change), then the
+       project is setup once at this time, instead of being done every
+       frame.
+    */
     @Override
     public void onSurfaceChanged(int width, int height) {
-        // Default setup is for the origin to be lower left of the screen
+        super.onSurfaceChanged(width,height);
+        setExtents(width,height);
+        if ( !isDynamic )
+            setProjection(renderContext.gl10);
+    }
+
+
+    /**
+       If the projection is dynamic, then the projection is re-established
+       on every frame.
+    */
+    public void renderPrefix(GL10 gl10) {
+        if ( isDynamic )
+            setProjection(gl10);
+    }
+ 
+
+    /**
+       Called during setup ({Link onSurfaceChanged}) to set the
+       extents of the coorinates in current view.
+       
+       This determines how the OpenGL vertex coordinates map to screen
+       coordinates.
+
+       The default behavior is to put the origin (0,0) at the lower left
+       of the screen, and the right and top of the screen correspond to
+       the width and height (number of pixels in each direction).
+    */
+    protected void setExtents(int width, int height) {
         left = 0f;
         right = (float)width;
         bottom = 0f;
         top = (float)height;
-
-        if ( !isDynamic ) {
-            set(renderContext.gl10);
-        }
     }
 
 
-    public void renderPrefix(GL10 gl10) {
-        if ( isDynamic ) {
-            set(gl10);
-        }
-    }
- 
+    /**
+       Make this projection active.
 
-    protected void set(GL10 gl10) {
+       Sets the matrix mode to GL_PROJECTION, then loads the orthographic
+       projection into the current matrix, and finally sets the
+       maxtrix mode back to GL_MODELVIEW.
+    */
+    protected void setProjection(GL10 gl10) {
         gl10.glMatrixMode(GL10.GL_PROJECTION);
         gl10.glLoadIdentity();
         GLU.gluOrtho2D(gl10,left,right,bottom,top);
