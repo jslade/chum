@@ -18,13 +18,20 @@ public class FPSNode extends GameNode {
     /** The most recent FPS */
     public int fps = 0;
 
-
     /** Whether to log to the logger */
     public boolean toLogger = true;
+
+    /** Callback to be executed on each update */
+    public Callback callback;
 
 
     public FPSNode() {
         super();
+    }
+        
+    public FPSNode(Callback callback) {
+        super();
+        this.callback = callback;
     }
         
 
@@ -49,11 +56,19 @@ public class FPSNode extends GameNode {
 
     public void showFPS() {
         fps = gameController.getFPS();
+        if ( callback != null )
+            callback.run(this, fps);
+
         if ( toLogger )
             Log.d("FPS = %d", fps);
-        
+
         // Show it again in the future
         postUpDelayed(GameEvent.obtain(0,this),interval);
+    }
+
+
+    public interface Callback {
+        public void run(FPSNode node, int fps);
     }
 
 }
