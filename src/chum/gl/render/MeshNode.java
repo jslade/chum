@@ -23,7 +23,7 @@ public class MeshNode extends RenderNode {
     public Mesh mesh;
 
     /** The primitive type to be rendered */
-    public int primitiveType = GL10.GL_TRIANGLES;
+    public int type = GL10.GL_TRIANGLES;
 
     /** The offset into the index list to render */
     public int offset;
@@ -34,6 +34,25 @@ public class MeshNode extends RenderNode {
     
     public MeshNode() {
         super();
+    }
+
+    public MeshNode(Mesh mesh) {
+        super();
+        this.mesh = mesh;
+    }
+
+    public MeshNode(Mesh mesh,int type) {
+        super();
+        this.mesh = mesh;
+        this.type = type;
+    }
+
+    public MeshNode(Mesh mesh, int type, int offset, int count) {
+        super();
+        this.mesh = mesh;
+        this.type = type;
+        this.offset = offset;
+        this.count = count;
     }
 
 
@@ -64,7 +83,7 @@ public class MeshNode extends RenderNode {
         if ( renderContext.isGL20 ) {
             //render(shader,...);
         } else {
-            render( this.primitiveType, this.offset, this.count );
+            render( this.type, this.offset, this.count );
         }
     }
     
