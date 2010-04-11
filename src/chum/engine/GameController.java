@@ -1,14 +1,14 @@
 package chum.engine;
 
-
 import chum.gl.RenderContext;
-
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.view.View;
+
+import java.util.Random;
 
 
 /**
@@ -58,6 +58,10 @@ public class GameController {
     /** Handler for sending messages to the game / rendering thread */
     public Handler gameHandler;
 
+
+    /** Global randomizer instance available throughout the game */
+    public static final Random random =
+        new Random( android.os.SystemClock.uptimeMillis() );
 
 
     /**
