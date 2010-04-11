@@ -11,8 +11,9 @@ import chum.util.Log;
 
 /**
    This example uses a basic GameActivity that just iterates as fast as
-   possible (drawing nothing), and periodically displays the FPS
-   to the log.
+   possible (drawing nothing), and periodically displays the FPS in the
+   title bar.
+   
 
    The periodic FPS is done using a Runnable posted to the handler
    set up by the base GameActivity for just that purpose.  The
@@ -25,6 +26,9 @@ public class FastestPossibleFPS extends GameActivity
 {
     private Runnable runFPS;
 
+    /** Keep track of the original title string, so it can be updated (appended) */
+    private CharSequence origTitle;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -33,6 +37,8 @@ public class FastestPossibleFPS extends GameActivity
         runFPS = new Runnable(){
                 public void run() { showFPS(); }
             };
+
+        origTitle = getTitle();
     }
 
     @Override
@@ -42,7 +48,8 @@ public class FastestPossibleFPS extends GameActivity
     }
 
     private void showFPS() {
-        Log.d("FastestPossibleFPS FPS = %d", this.getFPS());
+        setTitle(""+origTitle + " -- "+this.getFPS()+"fps");
+        
         if ( !gameController.paused )
             gameController.uiHandler.postDelayed(runFPS, 3000);
     }
