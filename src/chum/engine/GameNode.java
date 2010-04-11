@@ -193,7 +193,8 @@ public class GameNode {
        the first frame is rendered.
     */
     public void onSurfaceCreated(RenderContext renderContext) {
-        gameController.renderContext = renderContext;
+        if ( gameController != null )
+            gameController.renderContext = renderContext;
     }
 
 

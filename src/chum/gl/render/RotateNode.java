@@ -21,7 +21,7 @@ public class RotateNode extends RenderNode {
     public boolean push;
 
 
-    public RotateNode(Vec3 x, int deg) {
+    public RotateNode(int deg, Vec3 x) {
         super();
         rotation = new Vec3(x);
         degrees = deg;
