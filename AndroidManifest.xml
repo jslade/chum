@@ -24,6 +24,9 @@
         <activity android:name=".ManyManyNodes"
             android:label="Many-many nodes test" />
 
+        <activity android:name=".RandomRectangles"
+            android:label="Random color rects (2D)" />
+
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
 
