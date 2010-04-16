@@ -30,6 +30,9 @@
         <activity android:name=".SpinningColorPyramid"
             android:label="Colored spinning pyramid (3D)" />
 
+        <activity android:name=".TexturedCube"
+            android:label="A cube with texture applied (3D)" />
+
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
 

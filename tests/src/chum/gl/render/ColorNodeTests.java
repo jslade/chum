@@ -14,7 +14,7 @@ public class ColorNodeTests extends MockGLTestCase {
 
 
     public void testWhite() {
-        ColorNode colorNode = new ColorNode(new GLColor(GLColor.WHITE));
+        ColorNode colorNode = new ColorNode(new Color(Color.WHITE));
 
         colorNode.onSurfaceCreated(mockContext);
         assertEquals(0,mockGL.numCommands());

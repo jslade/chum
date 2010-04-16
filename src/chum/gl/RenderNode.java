@@ -38,15 +38,6 @@ public class RenderNode extends GameNode {
     */
     public void onSurfaceChanged(int width, int height) {
         super.onSurfaceChanged(width,height);
-        init(width,height,renderContext.gl10);
-    }
-
-    /**
-       Perform one-time initialization of the graphics setup
-    */
-    public void init(int width, int height, GL10 gl10) {
-
-
     }
 
 

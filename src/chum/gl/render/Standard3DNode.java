@@ -1,5 +1,6 @@
 package chum.gl.render;
 
+import chum.gl.RenderContext;
 import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -14,14 +15,24 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Standard3DNode extends PerspectiveProjection {
 
+    public boolean enableTexture2D = false;
+
+
     public Standard3DNode() {
         super();
 
     }
 
 
-    public void init(int width, int height, GL10 gl) {
-        super.init(width,height,gl);
+    /**
+       When the surface is being setup, initialize the standard
+       3D settings to control the depth buffer, culling, etc
+    */
+    @Override
+    public void onSurfaceCreated(RenderContext renderContext) {
+        super.onSurfaceCreated(renderContext);
+
+        GL10 gl = renderContext.gl10;
 
         gl.glEnable(GL10.GL_DEPTH_TEST);
         gl.glClearDepthf(1f);
@@ -32,6 +43,10 @@ public class Standard3DNode extends PerspectiveProjection {
         gl.glCullFace(GL10.GL_BACK);
         
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+
+        
+        if ( enableTexture2D )
+            gl.glEnable(GL10.GL_TEXTURE_2D);
     }
 }
 

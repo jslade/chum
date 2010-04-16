@@ -13,12 +13,13 @@ import javax.microedition.khronos.opengles.GL10;
 
 
 /**
-   Draw a pyramid and spin it around various axes
+   Draw a texture-mapped cube
 */
-public class SpinningColorPyramid extends GameActivity
+public class TexturedCube extends GameActivity
 {
-    MeshNode pyramidNode;
-    Mesh pyramid;
+    MeshNode cubeNode;
+    Mesh cube;
+    Texture tex;
     RotateNode rot_x, rot_y, rot_z;
 
     
@@ -73,12 +74,18 @@ public class SpinningColorPyramid extends GameActivity
                 */
                 protected RenderNode createRenderTree() {
                     Standard3DNode base = new chum.gl.render.Standard3DNode();
-                    base.setPerspective(90f,0f,1f,20f);
-                    base.addNode(new CameraNode(new Vec3(0f,2f,-10f), Vec3.ORIGIN));
-                    base.addNode(new ClearNode(new Color("#111133")));
+                    base.enableTexture2D = true;
+                                
+                    base.setPerspective(120f,0f,.5f,5f);
+                    base.addNode(new CameraNode(new Vec3(0f,2f,-2f), Vec3.ORIGIN));
+                    base.addNode(new ClearNode(new Color("#880000")));
                                         
-                    pyramid = createPyramid();
-                    pyramidNode = new MeshNode(pyramid);
+                    cube = createCube();
+                    cubeNode = new MeshNode(cube);
+
+                    tex = new Texture();
+                    tex.setResource(R.drawable.textured_cube);
+                    cubeNode.texture = tex;
 
                     rot_x = new RotateNode(0,Vec3.X_AXIS);
                     rot_y = new RotateNode(0,Vec3.Y_AXIS);
@@ -86,7 +93,7 @@ public class SpinningColorPyramid extends GameActivity
                     base.addNode(rot_x);
                     rot_x.addNode(rot_y);
                     rot_y.addNode(rot_z);
-                    rot_z.addNode(pyramidNode);
+                    rot_z.addNode(cubeNode);
 
                     // The first RotateNode has push=true, so that it pushes
                     // the modelview matrix onto the stack going in, the pops it off
@@ -95,9 +102,9 @@ public class SpinningColorPyramid extends GameActivity
 
                     // Add an extra node displaying a 3D axis
                     // just to show orientation more clearly
-                    MeshNode axisNode = new MeshNode(chum.util.mesh.Axis.create3D(6f));
-                    rot_z.addNode(axisNode);
-                                 
+                    //MeshNode axisNode = new MeshNode(chum.util.mesh.Axis.create3D(6f));
+                    //rot_z.addNode(axisNode);
+
                     return base;
                 }
             });
@@ -106,28 +113,52 @@ public class SpinningColorPyramid extends GameActivity
 
 
     /**
-       This gets called once to create the Mesh representing the pyrimid shape.
-       The mesh is comprised of 4 vertices forming 6 triangles.  Each vertex is
-       colored differently, and the points between the vertices are a linear blend
-       of the colors at the corners.
+       This gets called once to create the Mesh representing the cube shape.
+
+       For the sake of simplicity, each face of the cube is defined by four vertices,
+       each with tex coords mapping to a face of the cube texture.  Technically some of the
+       vertices could be shared, but that just takes a bit more effort.
     */
-    protected Mesh createPyramid() {
+    protected Mesh createCube() {
         MeshBuilder builder = new MeshBuilder(true,
                                               new VertexAttribute(VertexAttributes.Usage.Position),
-                                              new VertexAttribute(VertexAttributes.Usage.Color));
-        builder.addVertex(new Vec3(-3f,-2f,-3f), Color.BLACK);
-        builder.addVertex(new Vec3(3f,-2f,-3f), Color.RED);
-        builder.addVertex(new Vec3(3f,-2f,3f), Color.WHITE);
-        builder.addVertex(new Vec3(-3f,-2f,3f), Color.BLUE);
-        builder.addVertex(new Vec3(0f,4f,0f), Color.GREEN);
+                                              new VertexAttribute(VertexAttributes.Usage.Texture));
+        builder.addVertex(new Vec3(-1f,-1f,-1f), new Vec2(.0f,.33f));
+        builder.addVertex(new Vec3(1f,-1f,-1f), new Vec2(.33f,.33f));
+        builder.addVertex(new Vec3(1f,-1f,1f), new Vec2(.33f,.66f));
+        builder.addVertex(new Vec3(-1f,-1f,1f), new Vec2(.0f,.66f));
+        builder.addIndex( 0, 1, 2, 0, 2, 3 ); // bottom = '1' (-y)
 
-        builder.addIndex( 0, 1, 2,
-                          0, 2, 3 ); // base
-        builder.addIndex( 0, 4, 1,
-                          1, 4, 2,
-                          2, 4, 3,
-                          3, 4, 0 ); // top
-        
+        builder.addVertex(new Vec3(-1f,1f,-1f), new Vec2(.66f,.33f));
+        builder.addVertex(new Vec3(1f,1f,-1f), new Vec2(1f,.33f));
+        builder.addVertex(new Vec3(1f,1f,1f), new Vec2(1f,.66f));
+        builder.addVertex(new Vec3(-1f,1f,1f), new Vec2(.66f,.66f));
+        builder.addIndex( 4, 6, 5, 4, 7, 6 ); // top = '3' (+y)
+
+        builder.addVertex(new Vec3(-1f,-1f,-1f), new Vec2(.33f,.33f));
+        builder.addVertex(new Vec3(1f,-1f,-1f), new Vec2(.66f,.33f));
+        builder.addVertex(new Vec3(1f,1f,-1f), new Vec2(.66f,.66f));
+        builder.addVertex(new Vec3(-1f,1f,-1f), new Vec2(.33f,.66f));
+        builder.addIndex( 8, 10, 9, 8, 11, 10 ); // side = '2' (-z)
+
+        builder.addVertex(new Vec3(-1f,-1f,1f), new Vec2(.66f,.66f));
+        builder.addVertex(new Vec3(1f,-1f,1f), new Vec2(1f,.66f));
+        builder.addVertex(new Vec3(1f,1f,1f), new Vec2(1f,1f));
+        builder.addVertex(new Vec3(-1f,1f,1f), new Vec2(.66f,1f));
+        builder.addIndex( 12, 13, 14, 12, 14, 15 ); // side = '4' (+z)
+
+        builder.addVertex(new Vec3(-1f,-1f,-1f), new Vec2(.33f,.66f));
+        builder.addVertex(new Vec3(-1f,1f,-1f), new Vec2(.66f,.66f));
+        builder.addVertex(new Vec3(-1f,1f,1f), new Vec2(.66f,1f));
+        builder.addVertex(new Vec3(-1f,-1f,1f), new Vec2(.33f,1f));
+        builder.addIndex( 16, 18, 17, 16, 19, 18 ); // side = '5' (-x)
+
+        builder.addVertex(new Vec3(1f,-1f,-1f), new Vec2(.33f,0f));
+        builder.addVertex(new Vec3(1f,1f,-1f), new Vec2(.66f,0f));
+        builder.addVertex(new Vec3(1f,1f,1f), new Vec2(.66f,.33f));
+        builder.addVertex(new Vec3(1f,-1f,1f), new Vec2(.33f,.33f));
+        builder.addIndex( 20, 21, 22, 20, 22, 23 ); // side = '6' (+x)
+
         return builder.build(true,false);
     }
 

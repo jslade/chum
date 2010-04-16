@@ -3,6 +3,7 @@ package chum.gl.render;
 import chum.gl.Mesh;
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
+import chum.gl.Texture;
 import chum.gl.VertexAttribute;
 import chum.gl.VertexAttributes.Usage;
 import chum.util.Log;
@@ -24,6 +25,11 @@ public class MeshNode extends RenderNode {
 
     /** The primitive type to be rendered */
     public int type = GL10.GL_TRIANGLES;
+
+
+    /** The Texture to be applied */
+    public Texture texture;
+
 
     /** The offset into the index list to render */
     public int offset;
@@ -48,13 +54,14 @@ public class MeshNode extends RenderNode {
         this.type = type;
     }
 
-    public MeshNode(Mesh mesh, int type, int offset, int count) {
+
+    public MeshNode(Mesh mesh,int type,Texture tex) {
         super();
         this.mesh = mesh;
         this.type = type;
-        this.offset = offset;
-        this.count = count;
+        this.texture = tex;
     }
+
 
 
     /** When the surface is created, ensure that the mesh is setup to render */
@@ -63,6 +70,9 @@ public class MeshNode extends RenderNode {
 
         if ( mesh != null ) 
             mesh.onSurfaceCreated(renderContext);
+
+        if ( texture != null )
+            texture.onSurfaceCreated(renderContext);
     }
 
        
@@ -108,11 +118,21 @@ public class MeshNode extends RenderNode {
         
         if ( count == 0 )
             count = mesh.maxIndices > 0? mesh.getNumIndices(): mesh.getNumVertices();
-    
+
+        // The texture is bound before hand, so any tex coords in the
+        // vertices apply to this texture
+        if ( texture != null )
+            texture.bind(renderContext.gl10);
+
         if( mesh.vertexBufferObjectHandle != 0 )
             renderVBO( primitiveType, offset, count );
         else
             renderVA( primitiveType, offset, count );
+
+
+        // Assume it is not necessary to unbind the texture afterward
+        //if ( texture != null )
+        //    texture.unbind();
     }
 
     
