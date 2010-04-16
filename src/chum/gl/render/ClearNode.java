@@ -1,6 +1,6 @@
 package chum.gl.render;
 
-import chum.gl.GLColor;
+import chum.gl.Color;
 import chum.gl.RenderNode;
 import chum.util.Log;
 
@@ -13,7 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class ClearNode extends RenderNode {
 
     /** The color to clear to (if any) */
-    public GLColor color;
+    public Color color;
 
     /** The clear bits */
     public int clearBits = (GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
@@ -24,7 +24,7 @@ public class ClearNode extends RenderNode {
     }
 
 
-    public ClearNode(GLColor color) {
+    public ClearNode(Color color) {
         super();
         this.color = color;
     }

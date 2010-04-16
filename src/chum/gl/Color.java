@@ -15,60 +15,60 @@ import java.util.regex.*;
  * because these colors are primarily intended to be paired with
  * vertexes for glDrawElements()
  *
- * Adapted from Android ApiDemos 'kube' sample (GLColor.java).p
+ * Adapted from Android ApiDemos 'kube' sample (Color.java).p
  */
-public class GLColor {
+public class Color {
 
-    public static final GLColor BLACK = new GLColor(0,0,0);
-    public static final GLColor WHITE = new GLColor(0x10000,0x10000,0x10000);
-    public static final GLColor RED = new GLColor(0x10000,0,0);
-    public static final GLColor GREEN = new GLColor(0,0x10000,0);
-    public static final GLColor BLUE = new GLColor(0,0,0x10000);
+    public static final Color BLACK = new Color(0,0,0);
+    public static final Color WHITE = new Color(0x10000,0x10000,0x10000);
+    public static final Color RED = new Color(0x10000,0,0);
+    public static final Color GREEN = new Color(0,0x10000,0);
+    public static final Color BLUE = new Color(0,0,0x10000);
 
     public int red = 0;
     public int green = 0;
     public int blue = 0;
     public int alpha = 0x10000;
 	
-    public GLColor() {
+    public Color() {
     }
 
-    public GLColor(int red, int green, int blue, int alpha) {
+    public Color(int red, int green, int blue, int alpha) {
         this.red = red;
         this.green = green;
         this.blue = blue;
         this.alpha = alpha;
     }
 
-    public GLColor(int red, int green, int blue) {
+    public Color(int red, int green, int blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;
         this.alpha = 0x10000;
     }
 	
-    public GLColor(float red, float green, float blue) {
+    public Color(float red, float green, float blue) {
         this.red = FP.floatToFP(red);
         this.green = FP.floatToFP(green);
         this.blue = FP.floatToFP(blue);
         this.alpha = 0x10000;
     }
 
-    public GLColor(float red, float green, float blue, float alpha) {
+    public Color(float red, float green, float blue, float alpha) {
         this.red = FP.floatToFP(red);
         this.green = FP.floatToFP(green);
         this.blue = FP.floatToFP(blue);
         this.alpha = FP.floatToFP(alpha);
     }
 
-    public GLColor(GLColor cp) {
+    public Color(Color cp) {
         this.red = cp.red;
         this.green = cp.green;
         this.blue = cp.blue;
         this.alpha = cp.alpha;
     }
 
-    public GLColor(String str) {
+    public Color(String str) {
         set(str);
     }
 
@@ -92,8 +92,8 @@ public class GLColor {
 
 	
     public boolean equals(Object other) {
-        if (other instanceof GLColor) {
-            GLColor color = (GLColor)other;
+        if (other instanceof Color) {
+            Color color = (Color)other;
             return (red == color.red && green == color.green &&
                     blue == color.blue && alpha == color.alpha);
         }

@@ -33,10 +33,8 @@ public class RandomRectangles extends GameActivity
 
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         origTitle = getTitle();
     }
 
@@ -88,7 +86,7 @@ public class RandomRectangles extends GameActivity
 
                     ortho.addNode(new ClearNode());
 
-                    ortho.addNode(colorNode = new ColorNode(new GLColor()));
+                    ortho.addNode(colorNode = new ColorNode(new Color()));
 
                     Mesh quad = createQuad();
                     ortho.addNode(quadNode = new MeshNode(quad,GL10.GL_TRIANGLE_FAN));
@@ -141,8 +139,7 @@ public class RandomRectangles extends GameActivity
     protected void showFPSInTitle() {
         gameController.uiHandler.post(new Runnable(){
                 public void run() {
-                    setTitle(""+origTitle + " -- "+
-                             gameController.getFPS()+"fps");
+                    setTitle(""+origTitle + " -- "+gameController.getFPS()+"fps");
                 }
             });
     }

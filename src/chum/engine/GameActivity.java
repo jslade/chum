@@ -44,7 +44,7 @@ public abstract class GameActivity extends Activity
      */
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setupExceptionHandler();
+        //setupExceptionHandler();
 
         gameController = new GameController();
         gameController.uiHandler = new Handler(new Handler.Callback(){

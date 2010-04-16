@@ -68,7 +68,11 @@ public class Mesh {
     
     /** fixed point? */
     public final boolean useFixedPoint;
-    
+
+    /** The primitive type used to render this mesh */
+    public int type;
+
+
     /**
        Creates a new Mesh with the given attributes
        
@@ -88,6 +92,29 @@ public class Mesh {
         this.maxVertices = maxVertices;
         this.maxIndices = maxIndices;
         this.attributes = new VertexAttributes( attributes );
+        
+        createCPUBuffers();
+    }
+
+    /**
+       Creates a new Mesh with the given attributes
+       
+       @param graphics the graphics instance
+       @param managed whether this mesh should be managed or not.
+       @param useFixedPoint whether to use fixed point or floats
+       @param maxVertices the maximum number of vertices this mesh can hold
+       @param maxIndices the maximum number of indices this mesh can hold
+       @param attributes the {@link VertexAttributes}.
+    */
+    public Mesh( boolean managed, boolean isStatic,
+                 boolean useFixedPoint, int maxVertices, int maxIndices,
+                 VertexAttributes attributes ) {
+        this.managed = managed;
+        this.isStatic = isStatic;
+        this.useFixedPoint = useFixedPoint;
+        this.maxVertices = maxVertices;
+        this.maxIndices = maxIndices;
+        this.attributes = attributes;
         
         createCPUBuffers();
     }

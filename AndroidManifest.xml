@@ -27,6 +27,9 @@
         <activity android:name=".RandomRectangles"
             android:label="Random color rects (2D)" />
 
+        <activity android:name=".SpinningColorPyramid"
+            android:label="Colored spinning pyramid (3D)" />
+
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
 

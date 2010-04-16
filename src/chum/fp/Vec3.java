@@ -53,10 +53,11 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final void set (Vec3 o) {
+    public final Vec3 set (Vec3 o) {
         x = o.x;
         y = o.y;
         z = o.z;
+        return this;
     }
 
 

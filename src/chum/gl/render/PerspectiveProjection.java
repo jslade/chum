@@ -9,12 +9,15 @@ import javax.microedition.khronos.opengles.GL10;
 
 
 /**
-   Sets up an orthographic (2D) projection
+   Sets up a perspective (3D) projection
 */
-public class OrthographicProjection extends RenderNode {
+public class PerspectiveProjection extends RenderNode {
 
-    /** Whether the viewport is static (one time setup) or updates every frame */
+    /** Whether the projection is static (one time setup) or updates every frame */
     public boolean isDynamic = false;
+
+    /** Whether the projection has been changed */
+    public boolean isDirty = false;
 
     /** The width of the viewport */
     protected int width;
@@ -22,32 +25,42 @@ public class OrthographicProjection extends RenderNode {
     /** The height of the viewport */
     protected int height;
 
-    /** The left edge of the projection */
-    protected float left;
+    /** The fov setting */
+    public float fov;
+
+    /** The aspect ratio */
+    public float aspect = 0f;
     
-    /** The right edge of the projection */
-    protected float right;
+    /** The near clipping plane */
+    public float nearPlane;
 
-    /** The top edge of the projection */
-    protected float top;
+    /** The far clipping plane */
+    public float farPlane;
 
-    /** The bottom edge of the projection */
-    protected float bottom;
 
-       
-       
-    public OrthographicProjection() {
+    public PerspectiveProjection() {
         super();
         this.isDynamic = false;
+        this.isDirty = true;
     }
 
 
-    public OrthographicProjection(boolean isDynamic) {
+    public PerspectiveProjection(boolean isDynamic) {
         super();
         this.isDynamic = isDynamic;
+        this.isDirty = true;
     }
 
 
+    public void setPerspective(float fov, float aspect, float near, float far) {
+        this.fov = fov;
+        this.aspect = aspect;
+        this.nearPlane = near;
+        this.farPlane = far;
+        this.isDirty = true;
+    }
+
+        
     /**
        Called when the surface changes size.  If this is a static
        projection (meaning the camera does not ever change), then the
@@ -61,9 +74,7 @@ public class OrthographicProjection extends RenderNode {
         this.width = width;
         this.height = height;
 
-        setExtents(width,height);
-
-        if ( !isDynamic )
+        if ( !isDynamic || isDirty )
             setProjection(renderContext.gl10);
     }
 
@@ -73,29 +84,10 @@ public class OrthographicProjection extends RenderNode {
        on every frame.
     */
     public void renderPrefix(GL10 gl10) {
-        if ( isDynamic )
+        if ( isDynamic || isDirty )
             setProjection(gl10);
     }
  
-
-    /**
-       Called during setup ({Link onSurfaceChanged}) to set the
-       extents of the coorinates in current view.
-       
-       This determines how the OpenGL vertex coordinates map to screen
-       coordinates.
-
-       The default behavior is to put the origin (0,0) at the lower left
-       of the screen, and the right and top of the screen correspond to
-       the width and height (number of pixels in each direction).
-    */
-    protected void setExtents(int width, int height) {
-        left = 0f;
-        right = (float)width;
-        bottom = 0f;
-        top = (float)height;
-    }
-
 
     /**
        Make this projection active.
@@ -105,9 +97,15 @@ public class OrthographicProjection extends RenderNode {
        maxtrix mode back to GL_MODELVIEW.
     */
     protected void setProjection(GL10 gl10) {
+        isDirty = false;
+        if ( aspect == 0f ) {
+            aspect = 1.0f * width/height;
+        }
+
         gl10.glMatrixMode(GL10.GL_PROJECTION);
         gl10.glLoadIdentity();
-        GLU.gluOrtho2D(gl10,left,right,bottom,top);
-        gl10.glMatrixMode(GL10.GL_MODELVIEW);
+
+        GLU.gluPerspective(gl10,fov,aspect,nearPlane,farPlane);
     }
+
 }

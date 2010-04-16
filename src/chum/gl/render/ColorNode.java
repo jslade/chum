@@ -1,6 +1,6 @@
 package chum.gl.render;
 
-import chum.gl.GLColor;
+import chum.gl.Color;
 import chum.gl.RenderNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -12,10 +12,10 @@ import javax.microedition.khronos.opengles.GL10;
 public class ColorNode extends RenderNode {
 
     /** The color to set */
-    public GLColor color;
+    public Color color;
 
 
-    public ColorNode(GLColor color) {
+    public ColorNode(Color color) {
         super();
         this.color = color;
     }

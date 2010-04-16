@@ -34,6 +34,36 @@ public class RenderNode extends GameNode {
 
 
     /**
+       Called when the game surface is resized.
+    */
+    public void onSurfaceChanged(int width, int height) {
+        super.onSurfaceChanged(width,height);
+        init(width,height,renderContext.gl10);
+    }
+
+    /**
+       Perform one-time initialization of the graphics setup
+    */
+    public void init(int width, int height, GL10 gl10) {
+
+
+    }
+
+
+    /**
+       RenderNodes only render if visible
+    */
+    public boolean update(long millis) {
+        if ( visible ) {
+            return super.update(millis);
+        } else {
+            dispatchEvents();
+            return false;
+        }
+    }
+
+
+    /**
        RenderNodes just render but do not do any updates
     */
     public boolean updatePrefix(long millis) {

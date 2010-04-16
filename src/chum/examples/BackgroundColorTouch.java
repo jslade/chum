@@ -2,7 +2,7 @@ package chum.examples;
 
 import chum.engine.*;
 import chum.fp.FP;
-import chum.gl.GLColor;
+import chum.gl.Color;
 import chum.gl.RenderNode;
 import chum.input.TouchInputNode;
 import chum.gl.render.ClearNode;
@@ -21,7 +21,7 @@ import android.view.View;
 */
 public class BackgroundColorTouch extends GameActivity
 {
-    private GLColor bg = new GLColor("#ffffff");
+    private Color bg = new Color("#ffffff");
 
 
     @Override

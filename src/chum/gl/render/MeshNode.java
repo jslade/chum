@@ -39,6 +39,7 @@ public class MeshNode extends RenderNode {
     public MeshNode(Mesh mesh) {
         super();
         this.mesh = mesh;
+        if ( mesh.type != 0 ) this.type = mesh.type;
     }
 
     public MeshNode(Mesh mesh,int type) {
