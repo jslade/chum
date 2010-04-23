@@ -21,7 +21,6 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Texture {
 
-    private boolean initialized;
     private int[] tex_ids;
     private int[] res_ids;
     private int tex_dim;
@@ -33,6 +32,8 @@ public class Texture {
     /** The magnification filter */
     public int magFilter = GL10.GL_LINEAR;
 
+    /** The texture environment */
+    public int texEnv = GL10.GL_MODULATE;
 
 
     /**

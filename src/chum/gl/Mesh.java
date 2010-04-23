@@ -352,6 +352,20 @@ public class Mesh {
     }
     
     /**
+       Sets the indices of this Mesh
+       
+       @param indices the indices
+       @param offset the offset into the indices array
+       @param count the number of indices to use
+    */
+    public void setIndices( short[] indices, int offset, int count )
+    {	
+        this.indices.put( indices, offset, count );
+        this.indices.position(0);
+        dirty = true;
+    }
+    
+    /**
      * @return the number of defined indices
      */
     public int getNumIndices() {

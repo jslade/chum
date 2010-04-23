@@ -203,6 +203,13 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
+    public final void put ( int[] vertBuffer, int offset ) {
+        vertBuffer[offset++] = x;
+        vertBuffer[offset++] = y;
+        vertBuffer[offset++] = z;
+    }
+
+
     @Override
     public String toString() {
         return String.format("[%.3f,%.3f,%.3f]",

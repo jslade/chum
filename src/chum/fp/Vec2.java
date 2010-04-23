@@ -53,6 +53,12 @@ public class Vec2 {
     }
 
 
+    public final void put ( int[] vertBuffer, int offset ) {
+        vertBuffer[offset++] = u;
+        vertBuffer[offset++] = v;
+    }
+
+
     @Override
     public String toString() {
         return "("+
