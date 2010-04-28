@@ -1,6 +1,7 @@
 package chum.gl;
 
 import chum.fp.FP;
+import chum.util.Log;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -50,6 +51,13 @@ public class Font {
     public Font(RenderContext renderContext, String assetName) {
         init(renderContext);
         loadFromAsset(assetName);
+    }
+
+
+    /** Create a new Font, loading the font from the given typeface */
+    public Font(RenderContext renderContext, Typeface typeface, int size) {
+        init(renderContext);
+        loadFromTypeface(typeface,size);
     }
 
 
@@ -173,11 +181,7 @@ public class Font {
     public Text buildText(String str) {
         int len = str.length();
         Glyph[] glyphs = getGlyphs(len);
-        for (int i=0; i<len; ++i ) {
-            char ch = str.charAt(i);
-            Glyph glyph = getGlyph(ch);
-            glyphs[i] = glyph;
-        }
+        getGlyphs(str,glyphs);
         return buildText(glyphs,0,len);
     }
 
@@ -208,7 +212,8 @@ public class Font {
        Populate the given Text mesh with the given glyphs
     */
     public Text buildText(Glyph[] glyphs, int offset, int count) {
-        Text text = new Text(this,count);
+        Text text = new Text(count);
+        text.font = this;
         return buildText(glyphs, offset, count, text);
     }
 
@@ -275,6 +280,16 @@ public class Font {
     }
     
     private Glyph[] reusableGlyphs;
+
+
+    /** Populate a Glyph array with the glyphs for a given string */
+    public void getGlyphs(String str, Glyph[] glyphs) {
+        for (int i=0, len=str.length(); i<len; ++i ) {
+            char ch = str.charAt(i);
+            Glyph glyph = getGlyph(ch);
+            glyphs[i] = glyph;
+        }
+    }
 
     
 
@@ -399,7 +414,7 @@ public class Font {
 
         protected char[] chars = new char[1];
         protected Rect charBounds = new Rect();
-        protected int maxw;
+        protected int maxw, maxh;
 
         
         /**
@@ -425,7 +440,7 @@ public class Font {
         }
 
         protected void createBitmap() {
-            int bitmapSize = 256;
+            int bitmapSize = 256; // todo: dynamically size bitmap as needed
             bitmap = Bitmap.createBitmap(bitmapSize,bitmapSize, Bitmap.Config.ARGB_8888);
         }
 
@@ -459,12 +474,13 @@ public class Font {
             // Keep track of max width seen, which will be reserved for space
             if ( width == 0 ) width = maxw;
             if ( width > maxw ) maxw = width;
+            if ( height > maxh ) maxh = height;
 
             // Advance to next line if no space left on current
             if ( nextX + width > bitmap.getWidth() ) {
                 if ( nextY + height > bitmap.getHeight() )
                     throw new IllegalStateException("Exceded capacity of font texture bitmap");
-                nextY += height;
+                nextY += maxh;
                 nextX = 0;
             }
 

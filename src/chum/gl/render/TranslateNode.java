@@ -18,9 +18,16 @@ public class TranslateNode extends RenderNode {
     public boolean push;
 
 
-    public TranslateNode(Vec3 x) {
+    public TranslateNode(Vec3 v,boolean push) {
         super();
-        position = new Vec3(x);
+        position = new Vec3(v);
+        this.push = push;
+    }
+
+
+    public TranslateNode(Vec3 v) {
+        super();
+        position = new Vec3(v);
     }
 
 

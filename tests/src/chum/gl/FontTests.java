@@ -55,4 +55,32 @@ public class FontTests extends AndroidTestCase {
         assert(big_a.texU != lil_a.texV);
     }
 
+
+    public void testLoadFontAsset() {
+        Font testFont = new Font(renderContext);
+        testFont.loadFromAsset("fonts/Tattooz1.ttf");
+
+        Glyph space = testFont.getGlyph(' ');
+        Log.d("testLoaddFontAsset: space = "+space);
+        assertNotNull(space);
+        assert(space.width != 0);
+
+        Glyph big_a = testFont.getGlyph('A');
+        Glyph lil_a = testFont.getGlyph('a');
+        assertNotNull(big_a);
+        assertNotNull(lil_a);
+        Log.d("testLoadFontAsset: A = "+big_a);
+        Log.d("testLoadFontAsset: a = "+lil_a);
+
+        assert(big_a.x != lil_a.x);
+        assert(big_a.texU != lil_a.texV);
+    }
+
+
+    public void testBuildText() {
+        Font testFont = new Font(renderContext,Typeface.DEFAULT,30);
+        Text text = testFont.buildText("This is a test");
+        assertEquals(testFont,text.font);
+        assertEquals(14,text.maxGlyphs);
+    }
 }

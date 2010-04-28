@@ -1,8 +1,9 @@
 package chum.gl;
 
+import chum.fp.FP;
 import chum.gl.Font.Glyph;
 import chum.gl.VertexAttributes.Usage;
-
+import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -27,11 +28,11 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Text extends Mesh {
 
-    /** The font being displayed */
-    public final Font font;
-
     /** The maximum number of characters */
     public final int maxGlyphs;
+
+    /** The font being displayed */
+    public Font font;
 
     /** The raw vertex data, made accessible for updates */
     public int[] dynVertices;
@@ -39,10 +40,11 @@ public class Text extends Mesh {
     /** The raw index data, made accessible for updates */
     public short[] dynIndices;
 
+
     /**
        Construct the mesh to hold the given number of glyphs
     */
-    public Text(Font font, int count) {
+    public Text(int count) {
         super(true,true,
               
               // always fixed-point for now
@@ -61,13 +63,35 @@ public class Text extends Mesh {
               new VertexAttribute(Usage.Texture));
         
         this.type = GL10.GL_TRIANGLES;
-        this.font = font;
         this.maxGlyphs = count;
 
         dynVertices = new int[maxVertices * 5]; // 3 + 2 per vertex
         dynIndices = new short[maxIndices];
+
+        this.font = null;
     }
 
+
+
+    /**
+       Populate the text with a new string, provided it fits within the maxGlyphs
+       limit
+    */
+    public void setString(String str) {
+        if ( str.length() > maxGlyphs )
+            throw new IllegalArgumentException("string length exceeds maxGlyphs");
+        if ( font == null )
+            throw new IllegalStateException("Can't call setString() without a font defined");
+
+        if ( reusableGlyphs == null )
+            reusableGlyphs = new Glyph[maxGlyphs];
+        font.getGlyphs(str,reusableGlyphs);
+        setGlyphs(reusableGlyphs,0,str.length());
+    }
+
+        private Glyph[] reusableGlyphs;
+
+ 
 
     /**
        Populate the mesh with vertices corresponding to the given set of glyphs
@@ -92,8 +116,8 @@ public class Text extends Mesh {
 
         for (int g=0; g < count; ++g ) {
             Glyph glyph = glyphs[offset + g];
-            int x2 = x1 + glyph.width;
-            int y2 = y1 + glyph.height;
+            int x2 = x1 + FP.intToFP(glyph.width);
+            int y2 = y1 + FP.intToFP(glyph.height);
 
             int u1 = glyph.texU;
             int v1 = glyph.texV;
@@ -132,6 +156,12 @@ public class Text extends Mesh {
             dynVertices[v++] = v2;
             short ul = vert++;
 
+//             Log.d("Text glyph[%d] '%c' (%.3f,%.3f) (%.3f,%.3f) [%d,%d,%d,%d]",
+//                   g, glyph.ch,
+//                   FP.toFloat(x1), FP.toFloat(y1),
+//                   FP.toFloat(x2), FP.toFloat(y2),
+//                   ll,lr,ur,ul);
+
             x1 = x2;
 
             // Now the two triangles
@@ -141,6 +171,7 @@ public class Text extends Mesh {
             dynIndices[i++] = ll;
             dynIndices[i++] = ur;
             dynIndices[i++] = ul;
+
         }
 
         this.setVertices(dynVertices,0,v);

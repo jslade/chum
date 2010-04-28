@@ -86,8 +86,10 @@ public class MeshNode extends RenderNode {
        throw an IllegalStateException when OpenGL ES 2.0 is used.
     */
     public void renderPrefix(GL10 gl10) {
-        if ( mesh == null )
-            throw new IllegalStateException("can't render without a Mesh");
+        if ( mesh == null ) {
+            //throw new IllegalStateException("can't render without a Mesh");
+            return;
+        }
 
         mesh.checkManagedAndDirty();
 
