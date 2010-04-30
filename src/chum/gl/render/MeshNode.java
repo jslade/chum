@@ -64,6 +64,26 @@ public class MeshNode extends RenderNode {
     }
 
 
+    /**
+       Set the mesh to be rendered
+       @param mesh The mesh to render
+    */
+    public void setMesh(Mesh mesh) {
+        this.mesh = mesh;
+        if ( mesh.type != 0 ) this.type = mesh.type;
+    }
+
+
+    /**
+       Set the mesh to be rendered, as a specific primitive type
+       @param mesh The mesh to render
+       @param type The OpenGL primitive type to render
+    */
+    public void setMesh(Mesh mesh, int type) {
+        this.mesh = mesh;
+        this.type = type;
+    }
+
 
     /** When the surface is created, ensure that the mesh is setup to render */
     public void onSurfaceCreated(RenderContext renderContext) {
