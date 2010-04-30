@@ -29,7 +29,7 @@ public class RandomRectangles extends GameActivity
     };
 
     FPSNode fpsNode;
-    Text fpsText;
+    TextNode fpsTextNode;
 
     
     /** Keep track of the original title string, so it can be updated (appended) */
@@ -80,7 +80,7 @@ public class RandomRectangles extends GameActivity
                 //   - MeshNode to draw the mesh (just a two-triangle quad)
                 //   - TextNode to display the FPS
                 protected RenderNode createRenderTree() {
-                    OrthographicProjection ortho = new OrthographicProjection() {
+                    Standard2DNode base = new chum.gl.render.Standard2DNode() {
                             protected void setExtents(int width, int height) {
                                 left = 0f;
                                 right = 1f;
@@ -89,31 +89,44 @@ public class RandomRectangles extends GameActivity
                             }
                         };
 
-                    ortho.addNode(new ClearNode());
+                    base.addNode(new ClearNode());
 
                     // Draw the rect
-                    ortho.addNode(colorNode = new ColorNode(new Color()));
+                    base.addNode(colorNode = new ColorNode(new Color()));
 
                     Mesh quad = createQuad();
-                    ortho.addNode(quadNode = new MeshNode(quad,GL10.GL_TRIANGLE_FAN));
+                    base.addNode(quadNode = new MeshNode(quad));
 
                     // Draw the FPS text
-                    fpsText = new Text(3);
-                    fpsNode.setText(fpsText);
-
-                    TextNode fpsTextNode = new TextNode(fpsText);
-                    fpsTextNode.setPosition(new Vec3(new Vec3(.1f,.1f,0f)));
+                    fpsTextNode = new TextNode();
+                    fpsTextNode.setPosition(new Vec3(.1f,.1f,0f));
                     fpsTextNode.setScale(FP.floatToFP(0.005f));
-                    fpsTextNode.setColor(Color.WHITE);
-                    ortho.addNode(fpsTextNode);
+                    fpsTextNode.setColor(Color.RED);
+                    base.addNode(fpsTextNode);
 
-                    return ortho;
+                    return base;
                 }
 
                 
                 public void onSurfaceCreated(RenderContext renderContext) {
                     super.onSurfaceCreated(renderContext);
-                    fpsText.font = new Font(renderContext,Typeface.DEFAULT,30);
+
+                    Font font = new Font(renderContext,Typeface.DEFAULT,30);
+                    fpsTextNode.setText(font.buildText("--"));
+                    fpsNode.setText(fpsTextNode.text);
+
+
+//                     // TESTING:
+//                     try {
+//                         java.io.File file = new java.io.File
+//                             (android.os.Environment.getExternalStorageDirectory(),"font.png");
+//                         java.io.FileOutputStream out = 
+//                             new java.io.FileOutputStream(file);
+//                         fpsText.font.painter.bitmap.compress
+//                             (android.graphics.Bitmap.CompressFormat.PNG, 90, out);
+//                     } catch( Exception e ) {
+//                         e.printStackTrace();
+//                     }
                 }
             });
     }
@@ -127,13 +140,16 @@ public class RandomRectangles extends GameActivity
 
         short[] indices = { 0, 1, 2, 3 };
         quad.setIndices(indices);
+
+        quad.type = GL10.GL_TRIANGLE_FAN;
+
         return quad;
     }
 
 
     protected void randomizeQuad() {
-        int x2 = GameController.random.nextInt(FP.ONE);
-        int y2 = GameController.random.nextInt(FP.ONE);
+        int x2 = GameController.random.nextInt(FP.ONE) + 1;
+        int y2 = GameController.random.nextInt(FP.ONE) + 1;
         int x1 = GameController.random.nextInt(x2);
         int y1 = GameController.random.nextInt(y2);
             

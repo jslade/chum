@@ -6,6 +6,8 @@ import chum.util.Log;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
@@ -134,8 +136,6 @@ public class Font {
 
         // After characters are added to the texture, it needs to be
         // pushed to the GPU.
-        // todo: timing of this is not right... should be a onSurfaceCreated(),
-        // which calls Texture's onSurfaceCreated()
         texture.load(renderContext.gl10, painter.bitmap);
     }
 
@@ -143,9 +143,15 @@ public class Font {
     /**
        Define the location of a character that already exists in the font's bitmap.
        This is intended to be used in conjunction with loadFromBitmap()
+       @param ch the character
+       @param x the x location of the left edge of the character in the bitmap
+       @param y the y location of the bottom edge of the character in the bitmap
+       @param baseline the y offset from the bottom edge to the baseline of the character
+       @param width the width of the character on the bitmap
+       @param height the height of the character on the bitmap
     */
-    public void defineCharacter(char ch, int x, int y, int width, int height) {
-        Glyph glyph = painter.defineCharacter(ch, x, y, width, height);
+    public void defineCharacter(char ch, int x, int y, int baseline, int width, int height) {
+        Glyph glyph = painter.defineCharacter(ch, x, y, baseline, width, height);
         putGlyph(glyph);
     }
 
@@ -307,6 +313,9 @@ public class Font {
         /** x location of the glyph in the bitmap, in pixels */
         public int y;
 
+        /** The baseline location (y offset), in pixels */
+        public int baseline;
+
         /** width of the glyph in the bitmap, in pixels */
         public int width;
         
@@ -357,11 +366,12 @@ public class Font {
         }
 
 
-        public Glyph set(char ch, int x, int y, int w, int h,
+        public Glyph set(char ch, int x, int y, int b, int w, int h,
                         int u, int v, int uw, int vh) {
             this.ch = ch;
             this.x = x;
             this.y = y;
+            this.baseline = b;
             this.width = w;
             this.height = h;
             this.texU = u;
@@ -426,6 +436,9 @@ public class Font {
             createBitmap();
             createCanvas();
             createPaint();
+
+            nextX = 0;
+            nextY = bitmap.getHeight() - (int)Math.ceil(paint.descent());
         }
 
         /**
@@ -437,6 +450,7 @@ public class Font {
             this.bitmap = bitmap;
             createCanvas();
             createPaint();
+            clearCanvas();
         }
 
         protected void createBitmap() {
@@ -456,7 +470,13 @@ public class Font {
             paint.setAntiAlias(true);
         }
 
-        
+
+        protected void clearCanvas() {
+            canvas.drawColor(0x00000000, PorterDuff.Mode.CLEAR);
+            canvas.drawColor(0xffff0000);
+        }
+
+
         /**
            Paint a character on the bitmap, and return the corresponding Glyph representing
            its location and size
@@ -469,7 +489,13 @@ public class Font {
             chars[0] = ch;
             paint.getTextBounds(chars,0,1,charBounds);
             int width = charBounds.right - charBounds.left;
-            int height = charBounds.bottom - charBounds.top;
+            int height = (int)Math.ceil(paint.descent() - paint.ascent());
+//             Log.d("paint '%c' x=%d y=%d bounds=[%d,%d %d,%d] w=%d h=%d asc=%.1f des=%.1f",
+//                   ch, nextX, nextY,
+//                   charBounds.left, charBounds.bottom,
+//                   charBounds.right, charBounds.top,
+//                   width, height,
+//                   paint.ascent(), paint.descent());
 
             // Keep track of max width seen, which will be reserved for space
             if ( width == 0 ) width = maxw;
@@ -477,19 +503,25 @@ public class Font {
             if ( height > maxh ) maxh = height;
 
             // Advance to next line if no space left on current
-            if ( nextX + width > bitmap.getWidth() ) {
-                if ( nextY + height > bitmap.getHeight() )
+            int advance = width+2;
+            if ( nextX + advance > bitmap.getWidth() ) {
+                if ( nextY - maxh < 0 )
                     throw new IllegalStateException("Exceded capacity of font texture bitmap");
-                nextY += maxh;
+                nextY -= maxh;
                 nextX = 0;
             }
 
-            // Paint the character
-            canvas.drawText(chars, 0, 1, (float)nextX, (float)nextY, paint);
+            
+
+            // Paint the character.  The coord given to drawText() is where
+            // the baseline of the character goes.
+            int baseline = (int)Math.ceil(paint.descent());
+            canvas.drawText(chars, 0, 1, (float)(nextX-charBounds.left), (float)(nextY-baseline),
+                            paint);
 
             // Fill in the Glyph
-            Glyph glyph = defineCharacter(ch, nextX, nextY, width, height);
-            nextX += width;
+            Glyph glyph = defineCharacter(ch, nextX, nextY, baseline, width, height);
+            nextX += advance;
                                           
             return glyph;
         }
@@ -498,7 +530,8 @@ public class Font {
         /**
            Define a glyph for a character that already exists in the bitmap.
         */
-        public Glyph defineCharacter(char ch, int x, int y, int width, int height) {
+        public Glyph defineCharacter(char ch, int x, int y, int baseline,
+                                     int width, int height) {
             int u = FP.floatToFP(x / (float)bitmap.getWidth());
             int v = FP.floatToFP(y / (float)bitmap.getHeight());
             int uw = FP.floatToFP(width / (float)bitmap.getWidth());
@@ -506,7 +539,7 @@ public class Font {
 
             Glyph glyph = Glyph.obtain();
             glyph.set(ch,
-                      x, y, width, height,
+                      x, y, baseline, width, height,
                       u, v, uw, vh);
 
             return glyph;

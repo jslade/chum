@@ -19,6 +19,14 @@ public class MeshTests extends AndroidTestCase {
 
         assertEquals(1,quad.attributes.size());
         assertEquals(4*3,quad.getVertexSize());
+
+
+        Mesh.Bounds bounds = Mesh.Bounds.obtain();
+        bounds.update(quad);
+        assertEquals("[0.000,0.000,-1.000]",bounds.minimum.toString());
+        assertEquals("[1.000,1.000,1.000]",bounds.maximum.toString());
+        assertEquals("[0.500,0.500,0.000]",bounds.center.toString());
+        assertEquals("[1.000,1.000,2.000]",bounds.size.toString());
     }
 
     private Mesh createQuadMesh() {
@@ -26,10 +34,10 @@ public class MeshTests extends AndroidTestCase {
                              new VertexAttribute(VertexAttributes.Usage.Position));
 
         float[] verts = {
-            0.0f, 0.0f, 0.0f,  // lower left
-            1.0f, 0.0f, 0.0f,  // lower right
-            1.0f, 1.0f, 0.0f,  // upper right
-            0.0f, 1.0f, 0.0f,  // upper left 
+            0.0f, 0.0f, -1.0f,  // lower left
+            1.0f, 0.0f, -1.0f,  // lower right
+            1.0f, 1.0f, 1.0f,  // upper right
+            0.0f, 1.0f, 1.0f,  // upper left 
         };
         quad.setVertices(verts);
 

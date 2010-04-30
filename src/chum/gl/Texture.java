@@ -23,6 +23,7 @@ public class Texture {
 
     private int[] tex_ids;
     private int[] res_ids;
+    private Bitmap[] load_bitmap;
     private int tex_dim;
 
 
@@ -34,7 +35,6 @@ public class Texture {
 
     /** The texture environment */
     public int texEnv = GL10.GL_MODULATE;
-
 
     /**
        Create a Texture for managing a single standard 2D texture image
@@ -65,6 +65,7 @@ public class Texture {
 
         tex_ids = new int[num_tex];
         res_ids = new int[num_tex];
+        load_bitmap = new Bitmap[num_tex];
     }
 
 
@@ -96,16 +97,38 @@ public class Texture {
        This will typically be called from a TextureNode or MeshNode.
     */
     public void onSurfaceCreated(RenderContext renderContext) {
-        IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
-        renderContext.gl10.glGenTextures(tex_ids.length,tex_ids_buf);
+        Log.d("%s onSurfaceCreated()", this);
+        tex_ids[0] = 0; // force redefined...
+        define(renderContext.gl10);
 
         for(int num=0; num<res_ids.length; ++num) {
-            int res_id = res_ids[num];
-            if ( res_id > 0 )
-                load(renderContext.gl10,num, res_id,renderContext.appContext);
+            if ( load_bitmap[num] != null )
+                load(renderContext.gl10, num, load_bitmap[num]);
+            else if ( res_ids[num] > 0 )
+                load(renderContext.gl10, num, res_ids[num],renderContext.appContext);
         }
     }
         
+
+    /**
+       Define the texture
+    */
+    protected void define(GL10 gl) {
+        if ( !isDefined() ) {
+            IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
+            gl.glGenTextures(tex_ids.length,tex_ids_buf);
+            Log.d("%s[%d] generated tex buf", this, tex_ids[0]);
+        }
+    }
+
+
+    /**
+       @return true if the texture has been defined on the GPU
+    */
+    public boolean isDefined() {
+        return tex_ids[0] > 0;
+    }
+
 
     /**
        Load the texture from a specific Resource
@@ -127,6 +150,7 @@ public class Texture {
         Bitmap bmp = BitmapFactory.decodeResource(res,res_id);
         load(gl, num, bmp);
         bmp.recycle();
+        this.load_bitmap[num] = null;
     }
 
     
@@ -142,12 +166,17 @@ public class Texture {
        Load the texture image data and filters onto the GPU
     */
     void load(GL10 gl, int num, Bitmap bmp) {
+        load_bitmap[num] = bmp;
+        if ( !isDefined() ) return;
+
         gl.glBindTexture(tex_dim, tex_ids[num]);
 
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
 
         GLUtils.texImage2D(tex_dim, 0, bmp, 0);
+        Log.d("%s[%d] loaded bitmap %dx%d", this,
+              tex_ids[num], bmp.getWidth(), bmp.getHeight());
     }
 
 

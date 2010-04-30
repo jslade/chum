@@ -26,16 +26,17 @@ public class MeshNode extends RenderNode {
     /** The primitive type to be rendered */
     public int type = GL10.GL_TRIANGLES;
 
-
     /** The Texture to be applied */
     public Texture texture;
-
 
     /** The offset into the index list to render */
     public int offset;
 
     /** The number of indices to render.  0 means all */
     public int count;
+
+    /** Whether blending should be enabled */
+    public boolean blend;
 
     
     public MeshNode() {
@@ -90,6 +91,9 @@ public class MeshNode extends RenderNode {
             //throw new IllegalStateException("can't render without a Mesh");
             return;
         }
+
+        if ( blend )
+            gl10.glEnable(GL10.GL_BLEND);
 
         mesh.checkManagedAndDirty();
 
@@ -171,6 +175,7 @@ public class MeshNode extends RenderNode {
             }
                 
             if( attribute.usage == Usage.Texture ) {
+                gl.glEnable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
                 gl.glTexCoordPointer( attribute.numComponents, type,
@@ -196,6 +201,7 @@ public class MeshNode extends RenderNode {
             if( attribute.usage == Usage.Normal )
                 gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
             if( attribute.usage == Usage.Texture ) {
+                gl.glDisable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
                 textureUnit--;
@@ -238,6 +244,7 @@ public class MeshNode extends RenderNode {
             }
             
             if( attribute.usage == Usage.Texture ) {
+                gl.glEnable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
                 mesh.vertices.position( attribute.offset );
@@ -262,6 +269,7 @@ public class MeshNode extends RenderNode {
             if( attribute.usage == Usage.Normal )
                 gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
             if( attribute.usage == Usage.Texture ) {
+                gl.glDisable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
                 textureUnit--;
@@ -310,6 +318,19 @@ public class MeshNode extends RenderNode {
 //         }
 //     }	
     
+
+    /**
+       Restore the previous drawing state after the text is drawn.
+       If a translation or a scaling were a applied, restores the previous
+       ModelView matrix
+    */
+    public void renderPostfix(GL10 gl) {
+        if ( blend )
+            gl.glDisable(GL10.GL_BLEND);
+
+        super.renderPostfix(gl);
+    }
+
 
 
 }

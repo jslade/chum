@@ -13,12 +13,12 @@ import javax.microedition.khronos.opengles.GL10;
    * Enables depth test
    * Enables face culling, using CCW direction as the front
 */
-public class Standard3DNode extends PerspectiveProjection {
+public class Standard2DNode extends OrthographicProjection {
 
     public boolean enableTexture2D = true;
 
 
-    public Standard3DNode() {
+    public Standard2DNode() {
         super();
 
     }
@@ -38,15 +38,8 @@ public class Standard3DNode extends PerspectiveProjection {
         gl.glClearDepthf(1f);
         gl.glDepthFunc(GL10.GL_LEQUAL);
         
-        gl.glEnable(GL10.GL_CULL_FACE);
-        gl.glFrontFace(GL10.GL_CCW);
-        gl.glCullFace(GL10.GL_BACK);
-        
         gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
-        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-
-        
         if ( enableTexture2D )
             gl.glEnable(GL10.GL_TEXTURE_2D);
     }

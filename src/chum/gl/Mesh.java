@@ -1,5 +1,6 @@
 package chum.gl;
 
+import chum.fp.*;
 import chum.gl.RenderContext;
 import chum.util.Log;
 
@@ -450,10 +451,7 @@ public class Mesh {
        @return the VertexAttribute or null if no attribute with that usage was found.
     */
     public VertexAttribute getVertexAttribute(int usage) {
-        for( int i = 0; i < attributes.size(); i++ )
-            if( attributes.get(i).usage == usage )
-                return attributes.get(i);
-        return null;
+        return attributes.getByUsage(usage);
     }
     
     /**
@@ -501,6 +499,7 @@ public class Mesh {
         verticesFixed.position(0);
     }
     
+
     /**
      * Returns getNumIndices() indices in the short array
      * @param indices the destination array
@@ -508,5 +507,270 @@ public class Mesh {
     public void getIndices( short[] indices ) {
         this.indices.get(indices);
         this.indices.position(0);
+    }
+
+
+    /**
+       Populate the VertexFixedPoint structure with the vertex info from
+       the specified vertex.
+
+       Note that extracting vertex info is fairly expensive.
+
+       @param vert the vertex number
+       @param data the structure to hold the vertex data
+    */
+    public void getVertex(int vert,VertexFixedPoint data) {
+        if ( data.positionAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.positionAttr.offset;
+            Log.d("getVertex(%d) position base=%d size=%d offset=%d",
+                  vert, base, attributes.vertexSize, data.positionAttr.offset);
+
+            if ( useFixedPoint ) {
+                data.position.x = verticesFixed.get(base);
+                data.position.y = verticesFixed.get(base+1);
+                data.position.z = verticesFixed.get(base+2);
+            } else {
+                data.position.x = FP.floatToFP(verticesFloat.get(base));
+                data.position.y = FP.floatToFP(verticesFloat.get(base+1));
+                data.position.z = FP.floatToFP(verticesFloat.get(base+2));
+            }
+        }
+
+        if ( data.normalAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.normalAttr.offset;
+            if ( useFixedPoint ) {
+                data.normal.x = verticesFixed.get(base);
+                data.normal.y = verticesFixed.get(base+1);
+                data.normal.z = verticesFixed.get(base+2);
+            } else {
+                data.normal.x = FP.floatToFP(verticesFloat.get(base));
+                data.normal.y = FP.floatToFP(verticesFloat.get(base+1));
+                data.normal.z = FP.floatToFP(verticesFloat.get(base+2));
+            }
+        }
+
+        if ( data.colorAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.colorAttr.offset;
+            if ( useFixedPoint ) {
+                data.color.red = verticesFixed.get(base);
+                data.color.green = verticesFixed.get(base+1);
+                data.color.blue = verticesFixed.get(base+2);
+                data.color.alpha = verticesFixed.get(base+3);
+            } else {
+                data.color.red = FP.floatToFP(verticesFloat.get(base));
+                data.color.green = FP.floatToFP(verticesFloat.get(base+1));
+                data.color.blue = FP.floatToFP(verticesFloat.get(base+2));
+                data.color.alpha = FP.floatToFP(verticesFloat.get(base+3));
+            }
+        }
+
+        if ( data.textureAttr != null ) {
+            for( int t=0; t < data.textureAttr.length; ++t) {
+                int base = (vert * attributes.vertexSize/4) + data.textureAttr[t].offset;
+                if ( useFixedPoint ) {
+                    data.texture[t].u = verticesFixed.get(base);
+                    data.texture[t].v = verticesFixed.get(base+1);
+                } else {
+                    data.texture[t].u = FP.floatToFP(verticesFloat.get(base));
+                    data.texture[t].v = FP.floatToFP(verticesFloat.get(base+1));
+                }
+            }
+        }
+    }
+
+
+
+
+    /**
+       Helper class for working with individual vertices in the mesh
+    */
+    public static class VertexFixedPoint {
+
+        /** The Position attribute (if any) */
+        public VertexAttribute positionAttr;
+
+        /** The position */
+        public Vec3 position;
+
+
+        /** The Normal attribute (if any) */
+        public VertexAttribute normalAttr;
+
+        /** The normal */
+        public Vec3 normal;
+
+
+        /** The Color attribute (if any) */
+        public VertexAttribute colorAttr;
+
+        /** The color */
+        public Color color;
+
+
+        /** The texture attributes (if any) */
+        public VertexAttribute[] textureAttr;
+
+        /** The texture coords */
+        public Vec2[] texture;
+
+
+        /** Create an empty instance */
+        public VertexFixedPoint() {
+            
+        }
+
+        public VertexFixedPoint(VertexAttributes attributes) {
+            for ( int i=0,n=attributes.size(); i<n; ++i ) {
+                VertexAttribute attr = attributes.get(i);
+                prep(attr);
+            }
+        }
+
+
+        /**
+           Set up the structure to extract info for the given atribute.
+        */
+        public void prep(VertexAttribute attr) {
+            if ( attr == null )
+                throw new IllegalArgumentException("attr can't be null");
+
+            switch(attr.usage) {
+            case Usage.Position:
+                positionAttr = attr;
+                position = new Vec3();
+                break;
+            case Usage.Normal:
+                normalAttr = attr;
+                normal = new Vec3();
+                break;
+            case Usage.Color:
+                colorAttr = attr;
+                color = new Color();
+                break;
+            case Usage.Texture:
+                if ( textureAttr == null ) {
+                    textureAttr = new VertexAttribute[1];
+                    textureAttr[0] = attr;
+                    
+                    texture = new Vec2[1];
+                    texture[0] = new Vec2();
+                } else {
+                    VertexAttribute[] old_attrs = textureAttr;
+                    textureAttr = new VertexAttribute[old_attrs.length+1];
+                    for(int a=0; a<old_attrs.length; ++a) textureAttr[a] = old_attrs[a];
+                    textureAttr[textureAttr.length-1] = attr;
+                    
+                    Vec2[] old_tex = texture;
+                    texture = new Vec2[old_tex.length+1];
+                    for(int t=0; t<old_tex.length; ++t) texture[t] = old_tex[t];
+                    texture[texture.length-1] = new Vec2();
+                }
+                break;
+            }
+        }
+    }
+
+
+
+    /**
+       Helper class for computing bounding box and other info for a mesh.
+
+       All bounding info is currently only availabled via FP values.
+    */
+    public static class Bounds {
+        
+        /** The mesh */
+        public Mesh mesh;
+
+        /** The size of the mesh in all three dimensions */
+        public Vec3 size = new Vec3();
+
+        /** The min bounds (min x,y,z) of the mesh */
+        public Vec3 minimum = new Vec3();
+
+        /** The max bounds (max x,y,z) of the mesh */
+        public Vec3 maximum = new Vec3();
+
+        /** The center point of the mesh (midpoint between minimum and maximum) */
+        public Vec3 center = new Vec3();
+
+        /** The 'center of mass' point of the mesh (geometric average of all vertices) */
+        public Vec3 centerMass = new Vec3();
+
+        /** The radius of the mesh, for bounding-sphere tests */
+        public int radius;
+
+        
+           
+        /** Create an empty instance */
+        protected Bounds() {
+        }
+
+
+        private Bounds next_avail;
+        private static Bounds first_avail;
+
+        /** Obtain an instance from a pool */
+        public static Bounds obtain() {
+            if ( first_avail == null )
+                first_avail = new Bounds();
+            Bounds b = first_avail;
+            first_avail = b.next_avail;
+            return b;
+        }
+
+        /** Return an instance to the pool */
+        public void recycle() {
+            next_avail = first_avail;
+            first_avail = this;
+        }
+
+
+        public void update(Mesh mesh) {
+            this.mesh = mesh;
+            update();
+        }
+
+
+        /** Update the bounding info from the mesh's current geometry */
+        public void update() {
+            if ( mesh == null ) 
+                throw new IllegalStateException("No mesh to update bounds");
+            
+            // Only need the position info for each vertex
+            VertexFixedPoint vert = new VertexFixedPoint();
+            vert.prep(mesh.getVertexAttribute(Usage.Position));
+
+            // Extract each vertex, update the min/max,
+            // and add all together for the centerMass
+            centerMass.set(0,0,0);
+            minimum.set(FP.MAX,FP.MAX,FP.MAX);
+            maximum.set(FP.MIN,FP.MIN,FP.MIN);
+            
+            int numVerts = mesh.getNumVertices();
+            for( int v=0; v < numVerts; ++v ) {
+                mesh.getVertex(v,vert);
+                centerMass.add(vert.position,centerMass);
+                minimum.minimum(vert.position,minimum);
+                maximum.maximum(vert.position,maximum);
+            }
+
+            // Divide centerMass total by num verts, for geometric average
+            centerMass.scale( FP.floatToFP(1f/numVerts), centerMass );
+
+            // The size is just the delta between min and max
+            maximum.delta(minimum, size);
+
+            // The center is the midpoint between min and max
+            minimum.add(maximum,center);
+            center.scale(FP.ONE >> 1, center);
+            
+            //Log.d("Mesh.Bounds: "+
+            //      " min="+minimum+
+            //      " max="+maximum+
+            //      " ctr="+center+
+            //      " size="+size);
+        }
+
     }
 }

@@ -100,4 +100,18 @@ public final class VertexAttributes
     public VertexAttribute get( int index ) {
         return attributes.get(index);
     }
+
+    
+    /**
+       @param usage the vertex attribute requested
+       @return the VertexAttribute corresponding to the given usage
+    */
+    public VertexAttribute getByUsage(int usage) {
+        for(int i=0, n = attributes.size(); i<n; ++i ) {
+            VertexAttribute attr = attributes.get(i);
+            if ( attr.usage == usage ) return attr;
+        }
+        return null;
+    }
+
 }

@@ -97,12 +97,11 @@ public class FPSNode extends GameNode {
         Font font = text.font;
         if ( font == null ) return;
 
-        if ( glyphs == null ) glyphs = new Glyph[3];
-        glyphs[0] = font.getGlyph((char)('0' + hundreds));
-        glyphs[1] = font.getGlyph((char)('0' + tens));
-        glyphs[2] = font.getGlyph((char)('0' + ones));
+        if ( glyphs == null ) glyphs = new Glyph[2];
+        glyphs[0] = font.getGlyph((char)('0' + tens));
+        glyphs[1] = font.getGlyph((char)('0' + ones));
         
-        text.setGlyphs(glyphs,0,3);
+        text.setGlyphs(glyphs,0,2);
     }
 
 

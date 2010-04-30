@@ -74,7 +74,6 @@ public class TexturedCube extends GameActivity
                 */
                 protected RenderNode createRenderTree() {
                     Standard3DNode base = new chum.gl.render.Standard3DNode();
-                    base.enableTexture2D = true;
                                 
                     base.setPerspective(120f,0f,.5f,5f);
                     base.addNode(new CameraNode(new Vec3(0f,2f,-2f), Vec3.ORIGIN));

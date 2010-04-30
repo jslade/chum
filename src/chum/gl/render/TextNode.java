@@ -11,6 +11,7 @@ import chum.util.Log;
 
 
 import javax.microedition.khronos.opengles.GL10;
+import javax.microedition.khronos.opengles.GL11;
 
 
 /**
@@ -34,13 +35,36 @@ public class TextNode extends MeshNode {
     private boolean pushed;
 
 
+    /**
+       Create a TextNode, initially not displaying any text
+    */
     public TextNode() {
         super();
+        blend = true;
     }
 
+
+    /**
+       Create a TextNode to display the given text
+    */
     public TextNode(Text text) {
-        super(text);
-        this.text = text;
+        super();
+        blend = true;
+        setText(text);
+    }
+
+    
+    /**
+       Create a TextNode to displace the given string.
+
+       A Text instance is created, but it is created without reference
+       to a specific Font.  The Font must be set before any text will
+       actually be rendered.
+    */
+    public TextNode(String str) {
+        super();
+        blend = true;
+        setText(new Text(str));
     }
 
 
@@ -50,6 +74,8 @@ public class TextNode extends MeshNode {
     public void setText(Text text) {
         this.mesh = text;
         this.text = text;
+        if ( text.font != null )
+            this.texture = text.font.texture;
     }
 
 
@@ -81,6 +107,20 @@ public class TextNode extends MeshNode {
 
 
 
+    /** When the surface is created, ensure that the mesh is setup to render */
+    public void onSurfaceCreated(RenderContext renderContext) {
+        if ( this.texture == null ) {
+            if ( text.font != null )
+                this.texture = text.font.texture;
+
+            if ( this.texture == null )
+                throw new IllegalStateException("Text for TextNode has no Texture");
+        }
+
+        super.onSurfaceCreated(renderContext);
+    }
+
+        
     /**
        Prepares the render state for drawing the text
     */

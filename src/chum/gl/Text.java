@@ -29,7 +29,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class Text extends Mesh {
 
     /** The maximum number of characters */
-    public final int maxGlyphs;
+    public int maxGlyphs;
 
     /** The font being displayed */
     public Font font;
@@ -46,22 +46,42 @@ public class Text extends Mesh {
     */
     public Text(int count) {
         super(true,true,
-              
-              // always fixed-point for now
-              true, 
-              
-              // 4 vertices per glyph (two triangles)
-              4 * count,
-
-              // 6 indices per glyph (two triangles)
-              6 * count,
+              true, // always fixed-point for now
+              4 * count, // 4 vertices per glyph (two triangles)
+              6 * count, // 6 indices per glyph (two triangles)
 
               // Only supports position and texture at present.
               // would it be helpful to specify per-vertex colors?
               // e.g. for gradients, etc?
               new VertexAttribute(Usage.Position),
               new VertexAttribute(Usage.Texture));
-        
+
+        init(count);
+    }
+
+
+
+    /**
+       Construct the mesh to hold the given string
+    */
+    public Text(String str) {
+        super(true,true,
+              true, // always fixed-point for now
+              4 * str.length(), // 4 vertices per glyph (two triangles)
+              6 * str.length(), // 6 indices per glyph (two triangles)
+
+              // Only supports position and texture at present.
+              // would it be helpful to specify per-vertex colors?
+              // e.g. for gradients, etc?
+              new VertexAttribute(Usage.Position),
+              new VertexAttribute(Usage.Texture));
+
+        init(str.length());
+        setString(str);
+    }
+
+
+    protected void init(int count) {
         this.type = GL10.GL_TRIANGLES;
         this.maxGlyphs = count;
 
@@ -70,7 +90,7 @@ public class Text extends Mesh {
 
         this.font = null;
     }
-
+        
 
 
     /**
@@ -89,7 +109,7 @@ public class Text extends Mesh {
         setGlyphs(reusableGlyphs,0,str.length());
     }
 
-        private Glyph[] reusableGlyphs;
+    private Glyph[] reusableGlyphs;
 
  
 
@@ -109,20 +129,20 @@ public class Text extends Mesh {
             throw new IllegalArgumentException("count exceeds maxGlyphs");
 
         int x1 = 0;
-        int y1 = 0;
         int v = 0;
         int i = 0;
         short vert = 0;
 
         for (int g=0; g < count; ++g ) {
             Glyph glyph = glyphs[offset + g];
+            int y1 = FP.intToFP(-glyph.baseline);
             int x2 = x1 + FP.intToFP(glyph.width);
             int y2 = y1 + FP.intToFP(glyph.height);
 
             int u1 = glyph.texU;
             int v1 = glyph.texV;
             int u2 = u1 + glyph.texWidth;
-            int v2 = v1 + glyph.texHeight;
+            int v2 = v1 - glyph.texHeight;
 
             // lower left
             dynVertices[v++] = x1;
@@ -152,7 +172,7 @@ public class Text extends Mesh {
             dynVertices[v++] = x1;
             dynVertices[v++] = y2;
             dynVertices[v++] = 0;
-            dynVertices[v++] = u2;
+            dynVertices[v++] = u1;
             dynVertices[v++] = v2;
             short ul = vert++;
 
@@ -161,6 +181,9 @@ public class Text extends Mesh {
 //                   FP.toFloat(x1), FP.toFloat(y1),
 //                   FP.toFloat(x2), FP.toFloat(y2),
 //                   ll,lr,ur,ul);
+//             Log.d("    u,v = (%.3f,%.3f) (%.3f,%.3f)",
+//                   FP.toFloat(u1), FP.toFloat(v1),
+//                   FP.toFloat(u2), FP.toFloat(v2));
 
             x1 = x2;
 

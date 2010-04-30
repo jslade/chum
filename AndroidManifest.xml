@@ -35,6 +35,5 @@
 
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
-
     </application>
 </manifest> 
