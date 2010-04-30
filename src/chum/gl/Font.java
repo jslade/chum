@@ -385,8 +385,8 @@ public class Font {
         /** String representation (mainly for debugging/logging) */
         @Override
         public String toString() {
-            return String.format("['%c'|%d,%d %dx%d|%.3f,%.3f %.3fx%.3f]",
-                                 ch, x, y, width, height,
+            return String.format("['%c'|%d,%d %dx%d %d|%.3f,%.3f %.3fx%.3f]",
+                                 ch, x, y, width, height, baseline,
                                  FP.toFloat(texU),
                                  FP.toFloat(texV),
                                  FP.toFloat(texWidth),

@@ -23,12 +23,12 @@ public class FontTests extends AndroidTestCase {
 
     
     public void testCreateGlpyhs() {
-        Glyph g1 = Glyph.obtain().set('a',0,0,10,10,0,0,1,1);
+        Glyph g1 = Glyph.obtain().set('a',0,0,2,10,10,0,0,1,1);
         g1.recycle();
 
         int before = Glyph.instanceCount();
 
-        Glyph g2 = Glyph.obtain().set('b',10,0,20,20,0,0,1,1);
+        Glyph g2 = Glyph.obtain().set('b',10,0,2,20,20,0,0,1,1);
         g2.recycle();
 
         assertEquals(before,Glyph.instanceCount());
