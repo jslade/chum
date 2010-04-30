@@ -97,7 +97,6 @@ public class Texture {
        This will typically be called from a TextureNode or MeshNode.
     */
     public void onSurfaceCreated(RenderContext renderContext) {
-        Log.d("%s onSurfaceCreated()", this);
         tex_ids[0] = 0; // force redefined...
         define(renderContext.gl10);
 
@@ -117,7 +116,6 @@ public class Texture {
         if ( !isDefined() ) {
             IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
             gl.glGenTextures(tex_ids.length,tex_ids_buf);
-            Log.d("%s[%d] generated tex buf", this, tex_ids[0]);
         }
     }
 
@@ -175,8 +173,6 @@ public class Texture {
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
 
         GLUtils.texImage2D(tex_dim, 0, bmp, 0);
-        Log.d("%s[%d] loaded bitmap %dx%d", this,
-              tex_ids[num], bmp.getWidth(), bmp.getHeight());
     }
 
 
