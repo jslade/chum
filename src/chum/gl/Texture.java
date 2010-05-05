@@ -40,7 +40,7 @@ public class Texture {
        Create a Texture for managing a single standard 2D texture image
     */
     public Texture() {
-        init(1,GL10.GL_TEXTURE_2D);
+        this(1);
     }
 
 
@@ -48,7 +48,7 @@ public class Texture {
        Create a Texture for managing a number of standard 2D texture images.
     */
     public Texture(int num_tex) {
-        init(num_tex,GL10.GL_TEXTURE_2D);
+        this(num_tex,GL10.GL_TEXTURE_2D);
     }
 
         
@@ -56,11 +56,6 @@ public class Texture {
        Create a Texture for managing a number of texture images
     */
     public Texture(int tex_dim,int num_tex) {
-        init(num_tex,tex_dim);
-    }
-
-
-    protected void init(int num_tex,int tex_dim) {
         this.tex_dim = tex_dim;
 
         tex_ids = new int[num_tex];
@@ -163,7 +158,7 @@ public class Texture {
     /**
        Load the texture image data and filters onto the GPU
     */
-    void load(GL10 gl, int num, Bitmap bmp) {
+    protected void load(GL10 gl, int num, Bitmap bmp) {
         load_bitmap[num] = bmp;
         if ( !isDefined() ) return;
 

@@ -82,6 +82,14 @@ public class MeshNode extends RenderNode {
     public void setMesh(Mesh mesh, int type) {
         this.mesh = mesh;
         this.type = type;
+
+        if ( mesh == null )
+            texture = null;
+        else {
+            Texture tex = mesh.getTexture();
+            if ( tex != null ) texture = tex;
+            else ;// keep the texture already set
+        }
     }
 
 
@@ -89,8 +97,11 @@ public class MeshNode extends RenderNode {
     public void onSurfaceCreated(RenderContext renderContext) {
         super.onSurfaceCreated(renderContext);
 
-        if ( mesh != null ) 
+        if ( mesh != null ) {
             mesh.onSurfaceCreated(renderContext);
+            if ( texture == null )
+                texture = mesh.getTexture();
+        }
 
         if ( texture != null )
             texture.onSurfaceCreated(renderContext);

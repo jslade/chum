@@ -87,15 +87,11 @@ public class Mesh {
     public Mesh( boolean managed, boolean isStatic,
                  boolean useFixedPoint, int maxVertices, int maxIndices,
                  VertexAttribute ... attributes ) {
-        this.managed = managed;
-        this.isStatic = isStatic;
-        this.useFixedPoint = useFixedPoint;
-        this.maxVertices = maxVertices;
-        this.maxIndices = maxIndices;
-        this.attributes = new VertexAttributes( attributes );
-        
-        createCPUBuffers();
+        this(managed,isStatic,useFixedPoint,
+             maxVertices,maxIndices,
+             new VertexAttributes( attributes ));
     }
+
 
     /**
        Creates a new Mesh with the given attributes
@@ -578,6 +574,12 @@ public class Mesh {
         }
     }
 
+
+    /**
+       Get the Texture (if any) associated with this Mesh.  Used by the MeshNode
+       when rendering the mesh.
+    */
+    public Texture getTexture() { return null; }
 
 
 

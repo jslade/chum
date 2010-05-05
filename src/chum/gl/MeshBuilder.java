@@ -68,13 +68,22 @@ public class MeshBuilder {
     }
     
 
+    public void ensureCapacity(int numVerts, int numIndices) {
+        int deltaVerts = numVerts - count;
+        if ( deltaVerts > 0 ) extendVerts(deltaVerts);
+
+        int deltaInd = numIndices - ind_count;
+        if ( deltaInd > 0 ) extendIndices(deltaInd);
+    }
+
+
     public void addVertex(Vec3 pos, Vec3 norm, Color col) {
         if ( !checkAttributes(Usage.Position,
                               Usage.Normal,
                               Usage.Color) )
             throw new IllegalArgumentException("Vertex data doesn't match attributes");
 
-        extendVerts();
+        extendVerts(1);
         put(pos);
         put(norm);
         put(col);
@@ -86,7 +95,7 @@ public class MeshBuilder {
                               Usage.Normal) )
             throw new IllegalArgumentException("Vertex data doesn't match attributes");
 
-        extendVerts();
+        extendVerts(1);
         put(pos);
         put(norm);
         count++;
@@ -97,7 +106,7 @@ public class MeshBuilder {
                               Usage.Color) )
             throw new IllegalArgumentException("Vertex data doesn't match attributes");
 
-        extendVerts();
+        extendVerts(1);
         put(pos);
         put(col);
         count++;
@@ -109,7 +118,7 @@ public class MeshBuilder {
                               Usage.Texture) )
             throw new IllegalArgumentException("Vertex data doesn't match attributes");
 
-        extendVerts();
+        extendVerts(1);
         put(pos);
         put(norm);
         put(tex);
@@ -121,7 +130,7 @@ public class MeshBuilder {
                               Usage.Texture) )
             throw new IllegalArgumentException("Vertex data doesn't match attributes");
 
-        extendVerts();
+        extendVerts(1);
         put(pos);
         put(tex);
         count++;
@@ -130,7 +139,7 @@ public class MeshBuilder {
 
     /** Get the number of vertices added so far */
     public int getNumVertices() {
-        return ind_count;
+        return count;
     }
 
 
@@ -138,14 +147,6 @@ public class MeshBuilder {
         extendIndices(index.length);
         for( int i=0; i<index.length; ++i )
             indices.put(index[i]);
-        ind_count += index.length;
-    }
-
-
-    public void addIndex( int ... index ) {
-        extendIndices(index.length);
-        for( int i=0; i<index.length; ++i )
-            indices.put((short)index[i]);
         ind_count += index.length;
     }
 
@@ -211,23 +212,33 @@ public class MeshBuilder {
     }
 
 
-    protected void extendVerts() {
+    /**
+       Extend the vertices array to hold at least 'additional' vertices
+       @param additional number of additional vertices to allocate
+    */
+    protected void extendVerts(int additional) {
         // Check if there is room for another vert
         if ( useFixedPoint ) {
             if ( fixedVerts != null &&
-                 fixedVerts.position() < fixedVerts.capacity() )
+                 (fixedVerts.position() + additional) < fixedVerts.capacity() )
                 return;
         } else {
             if ( floatVerts != null &&
-                 floatVerts.position() < floatVerts.capacity() )
+                 (floatVerts.position() + additional) < floatVerts.capacity() )
                 return;
         }
 
         // Increase capacity
-        if ( capacity == 0 )
-            capacity = 10 * (attributes.vertexSize / 4); // sizeof(int) or sizeof(float)
-        else
-            capacity = capacity * 2;
+        int vertexInts = (attributes.vertexSize/4); // sizeof(int) or sizeof(float)
+        int minCapacity = (count + additional) * vertexInts;
+        while ( capacity < minCapacity ) {
+            if ( capacity == 0 )
+                capacity = 10 * vertexInts;
+            else if ( additional > 1 )
+                capacity += additional * vertexInts;
+            else
+                capacity = capacity * 2;
+        }
         Log.d("increased vert capacity to %d", capacity);
 
         // Allocate / Re-allocate the buffers for new capacity
@@ -265,8 +276,12 @@ public class MeshBuilder {
 
         // Increase capacity
         if ( ind_capacity == 0 ) ind_capacity = (additional < 10) ? 10 : additional;
-        while ( ind_capacity < ind_count + additional )
-            ind_capacity = ind_capacity * 2;
+        while ( ind_capacity < ind_count + additional ) {
+            if ( additional > 1 )
+                ind_capacity += additional;
+            else
+                ind_capacity = ind_capacity * 2;
+        }
         Log.d("increased index capacity to %d", ind_capacity);
 
         // Allocate / re-allocate for increased capacity

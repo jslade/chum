@@ -56,32 +56,6 @@ public class Text extends Mesh {
               new VertexAttribute(Usage.Position),
               new VertexAttribute(Usage.Texture));
 
-        init(count);
-    }
-
-
-
-    /**
-       Construct the mesh to hold the given string
-    */
-    public Text(String str) {
-        super(true,true,
-              true, // always fixed-point for now
-              4 * str.length(), // 4 vertices per glyph (two triangles)
-              6 * str.length(), // 6 indices per glyph (two triangles)
-
-              // Only supports position and texture at present.
-              // would it be helpful to specify per-vertex colors?
-              // e.g. for gradients, etc?
-              new VertexAttribute(Usage.Position),
-              new VertexAttribute(Usage.Texture));
-
-        init(str.length());
-        setString(str);
-    }
-
-
-    protected void init(int count) {
         this.type = GL10.GL_TRIANGLES;
         this.maxGlyphs = count;
 
@@ -90,7 +64,16 @@ public class Text extends Mesh {
 
         this.font = null;
     }
-        
+
+
+
+    /**
+       Construct the mesh to hold the given string
+    */
+    public Text(String str) {
+        this(str.length());
+        setString(str);
+    }
 
 
     /**
@@ -152,7 +135,7 @@ public class Text extends Mesh {
             dynVertices[v++] = v1;
             short ll = vert++;
 
-            // lower right;
+            // lower right
             dynVertices[v++] = x2;
             dynVertices[v++] = y1;
             dynVertices[v++] = 0;
@@ -160,7 +143,7 @@ public class Text extends Mesh {
             dynVertices[v++] = v1;
             short lr = vert++;
             
-            // top right;
+            // top right
             dynVertices[v++] = x2;
             dynVertices[v++] = y2;
             dynVertices[v++] = 0;
@@ -168,7 +151,7 @@ public class Text extends Mesh {
             dynVertices[v++] = v2;
             short ur = vert++;
             
-            // top left;
+            // top left
             dynVertices[v++] = x1;
             dynVertices[v++] = y2;
             dynVertices[v++] = 0;
@@ -201,7 +184,13 @@ public class Text extends Mesh {
         this.setIndices(dynIndices,0,i);
     }
               
-              
+
+    @Override
+    public Texture getTexture() {
+        if ( font != null ) return font.texture;
+        else return null;
+    }
+
 }
 
 
