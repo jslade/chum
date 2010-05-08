@@ -25,8 +25,11 @@ public class TextNode extends MeshNode {
     /** Optional translation before drawing */
     public Vec3 position;
     
-    /** Optional scaling before drawing */
+    /** Optional scaling before drawing (FP) */
     public int scale = FP.ONE;
+
+    /** The rotation angle (FP degrees 0-360) -- always around z-axis */
+    public int angle = 0;
 
     /** Optional color */
     public Color color;
@@ -72,10 +75,8 @@ public class TextNode extends MeshNode {
        Set new text
     */
     public void setText(Text text) {
-        this.mesh = text;
+        setMesh(text);
         this.text = text;
-        if ( text.font != null )
-            this.texture = text.font.texture;
     }
 
 
@@ -126,13 +127,6 @@ public class TextNode extends MeshNode {
     */
     public void renderPrefix(GL10 gl) {
         pushed = false;
-        if ( position != null ) {
-            gl.glPushMatrix();
-            gl.glTranslatex(position.x,
-                            position.y,
-                            position.z);
-            pushed = true;
-        }
 
         if ( scale != FP.ONE ) {
             if ( pushed == false ) gl.glPushMatrix();
@@ -140,6 +134,21 @@ public class TextNode extends MeshNode {
             pushed = true;
         }
 
+        if ( angle != 0 ) {
+            if ( pushed == false ) gl.glPushMatrix();
+            gl.glRotatex(angle,0,0,FP.ONE);
+            pushed = true;
+        }
+            
+        if ( position != null ) {
+            if ( pushed == false ) gl.glPushMatrix();
+            gl.glTranslatex(position.x,
+                            position.y,
+                            position.z);
+            pushed = true;
+        }
+
+            
         if ( color != null ) {
             gl.glColor4x(color.red,color.green,color.blue,color.alpha);
         }
