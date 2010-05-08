@@ -40,7 +40,7 @@ public class Texture {
        Create a Texture for managing a single standard 2D texture image
     */
     public Texture() {
-        this(1);
+        this(1,GL10.GL_TEXTURE_2D);
     }
 
 
@@ -55,7 +55,7 @@ public class Texture {
     /**
        Create a Texture for managing a number of texture images
     */
-    public Texture(int tex_dim,int num_tex) {
+    public Texture(int num_tex,int tex_dim) {
         this.tex_dim = tex_dim;
 
         tex_ids = new int[num_tex];
