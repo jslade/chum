@@ -37,4 +37,32 @@ public class GameNodeTests extends TestCase {
         assertEquals(n4,n2.findNode("n4"));
     }
 
+
+    public void test_findNodeHierarchical() {
+        GameNode root = new GameNode().setName("root");
+        GameNode a = new GameNode().setName("a");
+        GameNode b = new GameNode().setName("b");
+        GameNode c1 = new GameNode().setName("c");
+        GameNode c2 = new GameNode().setName("c");
+        GameNode d = new GameNode().setName("d");
+
+        root.addNode(a);
+        root.addNode(b);
+        a.addNode(c1);
+        b.addNode(c2);
+        c1.addNode(d);
+
+        assertEquals(c1,root.findNode("c"));
+        assertEquals(c1,a.findNode("c"));
+        assertEquals(c2,b.findNode("c"));
+
+        assertEquals(c1,root.findNode("a.c"));
+        assertEquals(c2,root.findNode("b.c"));
+
+        assertEquals(c1,c2.findNode("a.c"));
+        assertEquals(c2,c1.findNode("b.c"));
+
+        assertEquals(d,c2.findNode("c.d"));
+    }
+
 }

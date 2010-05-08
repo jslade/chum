@@ -39,7 +39,19 @@ public class GameNode {
 
 
 
+    /** Create a new node, not initially in the tree */
     public GameNode() {
+    }
+
+
+    /** 
+        Create a new node, and add it as a child of the given
+        parent node
+    */
+    public GameNode(GameNode parent) {
+        parent.addNode(this);
+        if ( parent.gameController != null )
+            onSetup(parent.gameController);
     }
 
 
@@ -121,23 +133,48 @@ public class GameNode {
        This will search the entire tree for a matching node, starting with the
        called node -- so it can be expensive.  It should not be done frequently.
 
+       The name can be a hierarchical name, with name parts separated by '.'.  For example,
+       
+         find("foo.bar");
+
+       would search for a node named "bar" contained in a node named "foo"
+
        The primary intended purpose of this method is to find related nodes
        during the onSetup() call, once all the tree has been constructed, to
        associated related nodes (e.g. the visible rendering node corresponding
        to a model / logic node)
     */
     public GameNode findNode(String name) {
+        return findNode(name,null);
+    }
+
+
+    protected GameNode findNode(String name, GameNode skipNode) {
+        if ( this == skipNode ) return null;
         if ( name.equals(this.name) ) return this;
 
-        if ( parent != null ) {
-            GameNode found = parent.findNode(name);
-            if ( found != null ) return found;
+        String[] parts = name.split("\\.",2);
+
+        // First go down the tree
+        for( int i=0; i<num_children; ++i ) {
+            GameNode child = children[i];
+            if ( child == skipNode ) continue;
+            GameNode found = child.findNodeDown(parts[0],child);
+            if ( found != null ) {
+                if ( parts.length > 1 ) return found.findNodeDown(parts[1],child);
+                else return found;
+            }
         }
 
-        for( int i=0; i<num_children; ++i ) {
-            GameNode found = children[i].findNodeDown(name);
-            if ( found != null ) return found;
+        // Then go up the tree, down parallel branches
+        if ( parent != null ) {
+            GameNode found = parent.findNode(parts[0],this);
+            if ( found != null ) {
+                if ( parts.length > 1 ) return found.findNodeDown(parts[1],this);
+                else return found;
+            }
         }
+
 
         return null;
     }
@@ -147,12 +184,17 @@ public class GameNode {
        Special findNode() helper method that only searches down the
        hierarchy -- preventing cycles of searching up/dn/up/dn
     */
-    protected GameNode findNodeDown(String name) {
+    protected GameNode findNodeDown(String name,GameNode skipNode) {
         if ( name.equals(this.name) ) return this;
 
+        String[] parts = name.split("\\.",2);
+
         for( int i=0; i<num_children; ++i ) {
-            GameNode found = children[i].findNodeDown(name);
-            if ( found != null ) return found;
+            GameNode found = children[i].findNodeDown(parts[0],skipNode);
+            if ( found != null ) {
+                if ( parts.length > 1 ) return found.findNodeDown(parts[1],skipNode);
+                else return found;
+            }
         }
 
         return null;
