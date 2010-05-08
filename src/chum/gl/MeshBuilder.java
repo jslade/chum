@@ -14,6 +14,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import javax.microedition.khronos.opengles.GL10;
 
 
 /**
@@ -143,10 +144,10 @@ public class MeshBuilder {
     }
 
 
-    public void addIndex( short ... index ) {
+    public void addIndex( int ... index ) {
         extendIndices(index.length);
         for( int i=0; i<index.length; ++i )
-            indices.put(index[i]);
+            indices.put((short)index[i]);
         ind_count += index.length;
     }
 
@@ -159,9 +160,15 @@ public class MeshBuilder {
 
     /** Build a new mesh */
     public Mesh build(boolean managed, boolean isStatic) {
+        return build(managed,isStatic,GL10.GL_TRIANGLES);
+    }
+
+
+    /** Build a new mesh */
+    public Mesh build(boolean managed, boolean isStatic,int type) {
         Mesh newMesh = new Mesh(managed, isStatic, useFixedPoint,
                                 count, indices.position(), attributes);
-        return build(newMesh);
+        return build(newMesh,type);
     }
 
 
@@ -178,6 +185,11 @@ public class MeshBuilder {
 
     
     public Mesh build(Mesh mesh) {
+        return build(mesh,mesh.type);
+    }
+
+    
+    public Mesh build(Mesh mesh, int type) {
         if ( useFixedPoint ) {
             int[] verts = new int[count * (attributes.vertexSize / 4)]; // 4=sizeof(int)
             fixedVerts.clear();
@@ -195,6 +207,7 @@ public class MeshBuilder {
         indices.get(i_array);
         mesh.setIndices(i_array);
 
+        mesh.type = type;
         return mesh;
     }
 
