@@ -30,8 +30,6 @@ public final class GameEvent
     /** Reference to next event in the queue */
     GameEvent nextQueued = null;
 
-    private static Object sync = new Object();
-
 
     /** Create a new event.  This is not public, because the public use
         of the class is intended to be through obtain() */
@@ -45,6 +43,8 @@ public final class GameEvent
     // GameEvent instances for obtain() / recycle()
     private static GameEvent first_avail = null;
     private GameEvent next_avail = null;
+    private static Object sync = new Object();
+
 
 
     /**
@@ -209,5 +209,25 @@ public final class GameEvent
         }
 
     }
+
+
+
+    /* ------------------------------------------------------------
+       These are pre-defined GameEvent type codes for common events,
+       and for built-in functionality in the engine
+       ------------------------------------------------------------ */
+
+    // Game flow control
+    public static final int GAME_START = 0x7fff0001;
+    public static final int GAME_END = 0x7fff0002;
+    public static final int GAME_PAUSE = 0x7fff0003;
+    public static final int GAME_UNPAUSE = 0x7fff0004;
+
+
+    // GameSequence control
+    public static final int SEQUENCE_START = 0x7fff0010;
+    public static final int SEQUENCE_STEP = 0x7fff0011;
+    public static final int SEQUENCE_END = 0x7fff0012;
+
 
 }
