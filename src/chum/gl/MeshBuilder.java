@@ -252,7 +252,7 @@ public class MeshBuilder {
             else
                 capacity = capacity * 2;
         }
-        Log.d("increased vert capacity to %d", capacity);
+        //Log.d("increased vert capacity to %d", capacity);
 
         // Allocate / Re-allocate the buffers for new capacity
         if ( useFixedPoint ) {
@@ -265,8 +265,8 @@ public class MeshBuilder {
                     moreVerts.put(fixedVerts.get());
                 fixedVerts = moreVerts;
             }
-            Log.d("extendVerts: vert capacity=%d, buf position=%d, capacity=%d",
-                  capacity, fixedVerts.position(), fixedVerts.capacity());
+            //Log.d("extendVerts: vert capacity=%d, buf position=%d, capacity=%d",
+            //      capacity, fixedVerts.position(), fixedVerts.capacity());
         } else {
             if ( floatVerts == null )
                 floatVerts = FloatBuffer.allocate(capacity);
@@ -295,7 +295,7 @@ public class MeshBuilder {
             else
                 ind_capacity = ind_capacity * 2;
         }
-        Log.d("increased index capacity to %d", ind_capacity);
+        //Log.d("increased index capacity to %d", ind_capacity);
 
         // Allocate / re-allocate for increased capacity
         if ( indices == null )
@@ -307,8 +307,8 @@ public class MeshBuilder {
                 moreIndices.put(indices.get());
             indices = moreIndices;
         }
-        Log.d("extendIndices: index count=%d, capacity=%d, buf position=%d, capacity=%d",
-              ind_count, ind_capacity, indices.position(), indices.capacity());
+        //Log.d("extendIndices: index count=%d, capacity=%d, buf position=%d, capacity=%d",
+        //      ind_count, ind_capacity, indices.position(), indices.capacity());
     }
 
 
