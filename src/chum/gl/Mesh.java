@@ -518,9 +518,6 @@ public class Mesh {
     public void getVertex(int vert,VertexFixedPoint data) {
         if ( data.positionAttr != null ) {
             int base = (vert * attributes.vertexSize/4) + data.positionAttr.offset;
-            Log.d("getVertex(%d) position base=%d size=%d offset=%d",
-                  vert, base, attributes.vertexSize, data.positionAttr.offset);
-
             if ( useFixedPoint ) {
                 data.position.x = verticesFixed.get(base);
                 data.position.y = verticesFixed.get(base+1);
@@ -569,6 +566,72 @@ public class Mesh {
                 } else {
                     data.texture[t].u = FP.floatToFP(verticesFloat.get(base));
                     data.texture[t].v = FP.floatToFP(verticesFloat.get(base+1));
+                }
+            }
+        }
+    }
+
+
+    /**
+       Store the values from  the VertexFixedPoint structure into the specified
+       vertex of the mesh.
+
+       Note that update vertex info is fairly expensive.
+
+       @param vert the vertex number
+       @param data the structure to hold the vertex data
+    */
+    public void putVertex(int vert,VertexFixedPoint data) {
+        if ( data.positionAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.positionAttr.offset;
+            if ( useFixedPoint ) {
+                verticesFixed.put(base,data.position.x);
+                verticesFixed.put(base+1,data.position.y);
+                verticesFixed.put(base+2,data.position.z);
+            } else {
+                verticesFloat.put(base,FP.toFloat(data.position.x));
+                verticesFloat.put(base+1,FP.toFloat(data.position.y));
+                verticesFloat.put(base+2,FP.toFloat(data.position.z));
+            }
+        }
+
+        if ( data.normalAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.normalAttr.offset;
+            if ( useFixedPoint ) {
+                verticesFixed.put(base,data.normal.x);
+                verticesFixed.put(base+1,data.normal.y);
+                verticesFixed.put(base+2,data.normal.z);
+            } else {
+                verticesFloat.put(base,FP.toFloat(data.normal.x));
+                verticesFloat.put(base+1,FP.toFloat(data.normal.y));
+                verticesFloat.put(base+2,FP.toFloat(data.normal.z));
+            }
+        }
+
+        if ( data.colorAttr != null ) {
+            int base = (vert * attributes.vertexSize/4) + data.colorAttr.offset;
+            if ( useFixedPoint ) {
+                verticesFixed.put(base,data.color.red);
+                verticesFixed.put(base+1,data.color.green);
+                verticesFixed.put(base+2,data.color.blue);
+                verticesFixed.put(base+3,data.color.alpha);
+            } else {
+                verticesFloat.put(base,FP.toFloat(data.color.red));
+                verticesFloat.put(base+1,FP.toFloat(data.color.green));
+                verticesFloat.put(base+2,FP.toFloat(data.color.blue));
+                verticesFloat.put(base+3,FP.toFloat(data.color.alpha));
+            }
+        }
+
+        if ( data.textureAttr != null ) {
+            for( int t=0; t < data.textureAttr.length; ++t) {
+                int base = (vert * attributes.vertexSize/4) + data.textureAttr[t].offset;
+                if ( useFixedPoint ) {
+                    verticesFixed.put(base,data.texture[t].u);
+                    verticesFixed.put(base+1,data.texture[t].v);
+                } else {
+                    verticesFloat.put(base,FP.toFloat(data.texture[t].u));
+                    verticesFloat.put(base+1,FP.toFloat(data.texture[t].v));
                 }
             }
         }
@@ -711,26 +774,33 @@ public class Mesh {
 
         private Bounds next_avail;
         private static Bounds first_avail;
+        private static Object sync = new Object();
+
 
         /** Obtain an instance from a pool */
         public static Bounds obtain() {
-            if ( first_avail == null )
-                first_avail = new Bounds();
-            Bounds b = first_avail;
-            first_avail = b.next_avail;
-            return b;
+            synchronized(sync) {
+                if ( first_avail == null )
+                    first_avail = new Bounds();
+                Bounds b = first_avail;
+                first_avail = b.next_avail;
+                return b;
+            }
         }
 
         /** Return an instance to the pool */
         public void recycle() {
-            next_avail = first_avail;
-            first_avail = this;
+            synchronized(sync) {
+                next_avail = first_avail;
+                first_avail = this;
+            }
         }
 
 
-        public void update(Mesh mesh) {
+        public Bounds update(Mesh mesh) {
             this.mesh = mesh;
             update();
+            return this;
         }
 
 
@@ -767,11 +837,171 @@ public class Mesh {
             minimum.add(maximum,center);
             center.scale(FP.ONE >> 1, center);
             
-            //Log.d("Mesh.Bounds: "+
-            //      " min="+minimum+
-            //      " max="+maximum+
-            //      " ctr="+center+
-            //      " size="+size);
+            Log.d("Mesh.Bounds: "+mesh+
+                  " min="+minimum+
+                  " max="+maximum+
+                  " ctr="+center+
+                  " size="+size);
+        }
+
+
+        /**
+           Test whether the given point is within the bounding box
+           of the mesh -- does not check for inclusion within the actual
+           volume of the mesh itself, that's a much harder problem.
+        */
+        public boolean contains(Vec3 pt) {
+            final int x = pt.x;
+            if ( x < minimum.x || x > maximum.x ) return false;
+            
+            final int y = pt.y;
+            if ( y < minimum.y || y > maximum.y ) return false;
+            
+            final int z = pt.z;
+            if ( z < minimum.z || z > maximum.z ) return false;
+            
+            return true;
+        }
+        
+        
+        /**
+           Test whether the given points is within the bounds of the mesh,
+           or whether the line joining the points passes through the mesh.
+        */
+        public boolean contains(Vec3 pt1, Vec3 pt2) {
+            if ( contains(pt1) ) return true;
+            if ( contains(pt2) ) return true;
+            
+            // Doesn't contain either point, but perhaps the line passes through?
+            // Need essentially a ray-box intersection test
+            
+            if ( pt1.x <= pt2.x ) {
+                if ( pt2.x < minimum.x ) return false;
+            } else {
+                if ( pt1.x > maximum.x ) return false;
+            }
+            
+            if ( pt1.y <= pt2.y ) {
+                if ( pt2.y < minimum.y ) return false;
+            } else {
+                if ( pt1.y > maximum.y ) return false;
+            }
+            
+            if ( pt1.z <= pt2.z ) {
+                if ( pt2.z < minimum.z ) return false;
+            } else {
+                if ( pt1.z > maximum.z ) return false;
+            }
+            
+            return true;
+        }
+        
+    }
+
+
+    /**
+       Helper class for modifying the points in a mesh
+    */
+    public static class Transform {
+
+        /** The matrix to use for the transformation */
+        public M4 matrix;
+
+
+        /** Construcct a new Transform */
+        public Transform() {
+            this(new M4());
+        }
+
+        
+        /** Construcct a new Transform using the given matrix */
+        public Transform(M4 matrix) {
+            this.matrix = matrix;
+        }
+
+
+        /** Modify the matrix to translate the vertices of the mesh */
+        public Transform translate(Vec3 delta) {
+            matrix.translate(delta);
+            return this;
+        }
+
+
+        /** Modify the matrix to translate the vertices of the mesh around the origin */
+        public Transform rotate(Vec3 dir, int theta) {
+            matrix.rotate(dir,theta);
+            return this;
+        }
+
+
+        /** Modify the matrix to translate the vertices of the mesh around the origin */
+        public Transform rotate(Vec4 q) {
+            matrix.rotate(q);
+            return this;
+        }
+
+
+        /** Modify the matrix to scale all the vertices of the mesh uniformly */
+        public Transform scale(int scale) {
+            matrix.scale(scale);
+            return this;
+        }
+
+
+        /** Modify the matrix to scale the vertices in different do*/
+        public Transform scale(int x, int y, int z) {
+            matrix.scale(x,y,z);
+            return this;
+        }
+
+
+        /**
+           Apply the transform to a specific mesh
+        */
+        public void apply(Mesh mesh) {
+            Log.d("Mesh.Transform: apply to "+mesh);
+            Log.d("%s", matrix);
+
+            // Need the position info for each vertex
+            VertexFixedPoint vert = new VertexFixedPoint();
+            vert.prep(mesh.getVertexAttribute(Usage.Position));
+
+            // Also need to update normals if present
+            VertexAttribute normalAttr = mesh.attributes.getByUsage(Usage.Normal);
+            if ( normalAttr != null )
+                vert.prep(normalAttr);
+            
+            for( int v=0, num=mesh.getNumVertices(); v<num; ++v ) {
+                mesh.getVertex(v,vert);
+                matrix.multiply(vert.position,vert.position);
+                if ( vert.normal != null )
+                    matrix.multiply(vert.normal,vert.normal);
+                mesh.putVertex(v,vert);
+            }
+        }
+
+
+        /**
+           Helper method that translates the mesh so that it is centered
+           on the origin
+        */
+        public void center(Mesh mesh) {
+            center(mesh,Vec3.ORIGIN);
+        }
+
+        /**
+           Helper method that translates the mesh so that it is centered
+           on the given point
+        */
+        public void center(Mesh mesh, Vec3 pos) {
+            Bounds bounds = Bounds.obtain().update(mesh);
+            Vec3 delta = new Vec3();
+            pos.delta(bounds.center,delta);
+
+            matrix.setIdentity();
+            matrix.translate(delta);
+
+            apply(mesh);
         }
 
     }
