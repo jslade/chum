@@ -61,9 +61,9 @@ public class Vec2 {
 
     @Override
     public String toString() {
-        return "("+
-            FP.toFloat(u)+","+
-            FP.toFloat(v)+")";
+        return String.format("(%.3f,%.3f)",
+                             FP.toFloat(u),
+                             FP.toFloat(v));
     }
 
 }
