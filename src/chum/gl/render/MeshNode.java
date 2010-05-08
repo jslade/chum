@@ -24,7 +24,7 @@ public class MeshNode extends RenderNode {
     public Mesh mesh;
 
     /** The primitive type to be rendered */
-    public int type = GL10.GL_TRIANGLES;
+    public int type;
 
     /** The Texture to be applied */
     public Texture texture;
@@ -44,15 +44,15 @@ public class MeshNode extends RenderNode {
     }
 
     public MeshNode(Mesh mesh) {
-        super();
-        this.mesh = mesh;
-        if ( mesh.type != 0 ) this.type = mesh.type;
+        this(mesh,
+             mesh.type != 0 ? mesh.type : GL10.GL_TRIANGLES,
+             mesh.getTexture());
     }
 
     public MeshNode(Mesh mesh,int type) {
-        super();
-        this.mesh = mesh;
-        this.type = type;
+        this(mesh,
+             type,
+             mesh.getTexture());
     }
 
 
@@ -69,8 +69,7 @@ public class MeshNode extends RenderNode {
        @param mesh The mesh to render
     */
     public void setMesh(Mesh mesh) {
-        this.mesh = mesh;
-        if ( mesh.type != 0 ) this.type = mesh.type;
+        setMesh(mesh, mesh.type != 0 ? mesh.type : this.type);
     }
 
 
