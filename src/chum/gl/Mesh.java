@@ -913,6 +913,7 @@ public class Mesh {
         /** Construcct a new Transform */
         public Transform() {
             this(new M4());
+            this.matrix.setIdentity();
         }
 
         
@@ -961,8 +962,8 @@ public class Mesh {
            Apply the transform to a specific mesh
         */
         public void apply(Mesh mesh) {
-            Log.d("Mesh.Transform: apply to "+mesh);
-            Log.d("%s", matrix);
+            //Log.d("Mesh.Transform: apply to "+mesh);
+            //Log.d("%s", matrix);
 
             // Need the position info for each vertex
             VertexFixedPoint vert = new VertexFixedPoint();
