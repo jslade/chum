@@ -30,6 +30,9 @@ public class Font {
     /** The Painter used to create the glyphs */
     public Painter painter;
 
+    /** The spacing to use between characters (FP) */
+    public int spacing = FP.ONE;
+
     /** The Texture the manages the bitmap */
     public Texture texture;
 
@@ -218,7 +221,7 @@ public class Font {
        Populate the given Text mesh with the given glyphs
     */
     public Text buildText(Glyph[] glyphs, int offset, int count) {
-        Text text = new Text(count);
+        Text text = new Text(count,spacing);
         text.font = this;
         return buildText(glyphs, offset, count, text);
     }
@@ -503,7 +506,7 @@ public class Font {
 //                   paint.ascent(), paint.descent());
 
             // Keep track of max width seen, which will be reserved for space
-            if ( width == 0 ) width = maxw;
+            if ( width == 0 ) width = maxw /2; // for space
             if ( width > maxw ) maxw = width;
             if ( height > maxh ) maxh = height;
 

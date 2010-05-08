@@ -34,6 +34,9 @@ public class Text extends Mesh {
     /** The font being displayed */
     public Font font;
 
+    /** The spacing between characters (FP) */
+    public int spacing;
+
     /** The raw vertex data, made accessible for updates */
     public int[] dynVertices;
 
@@ -45,6 +48,15 @@ public class Text extends Mesh {
        Construct the mesh to hold the given number of glyphs
     */
     public Text(int count) {
+        this(count,FP.ONE);
+    }
+
+
+    /**
+       Construct the mesh to hold the given number of glyphs,
+       and the given spacing
+    */
+    public Text(int count, int spacing) {
         super(true,true,
               true, // always fixed-point for now
               4 * count, // 4 vertices per glyph (two triangles)
@@ -58,6 +70,7 @@ public class Text extends Mesh {
 
         this.type = GL10.GL_TRIANGLES;
         this.maxGlyphs = count;
+        this.spacing = spacing;
 
         dynVertices = new int[maxVertices * 5]; // 3 + 2 per vertex
         dynIndices = new short[maxIndices];
@@ -170,7 +183,7 @@ public class Text extends Mesh {
 //                   FP.toFloat(u1), FP.toFloat(v1),
 //                   FP.toFloat(u2), FP.toFloat(v2));
 
-            x1 = x2;
+            x1 = x2 + spacing;
 
             // Now the two triangles
             dynIndices[i++] = ll;
@@ -179,7 +192,6 @@ public class Text extends Mesh {
             dynIndices[i++] = ll;
             dynIndices[i++] = ur;
             dynIndices[i++] = ul;
-
         }
 
         this.setVertices(dynVertices,0,v);
