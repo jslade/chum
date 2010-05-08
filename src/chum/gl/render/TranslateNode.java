@@ -26,14 +26,12 @@ public class TranslateNode extends RenderNode {
 
 
     public TranslateNode(Vec3 v) {
-        super();
-        position = new Vec3(v);
+        this(v,false);
     }
 
 
     public TranslateNode() {
-        super();
-        position = new Vec3();
+        this(Vec3.ORIGIN,false);
     }
 
 
