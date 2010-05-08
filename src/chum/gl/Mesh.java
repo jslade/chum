@@ -516,56 +516,58 @@ public class Mesh {
        @param data the structure to hold the vertex data
     */
     public void getVertex(int vert,VertexFixedPoint data) {
+        int per_vert = attributes.vertexSize/4; // 4 = sizeof int or sizeof float
+
         if ( data.positionAttr != null ) {
-            int base = (vert * attributes.vertexSize/4) + data.positionAttr.offset;
+            int base = (vert * per_vert) + data.positionAttr.offset/4;
             if ( useFixedPoint ) {
-                data.position.x = verticesFixed.get(base);
-                data.position.y = verticesFixed.get(base+1);
-                data.position.z = verticesFixed.get(base+2);
+                data.position.x = verticesFixed.get(base++);
+                data.position.y = verticesFixed.get(base++);
+                data.position.z = verticesFixed.get(base++);
             } else {
-                data.position.x = FP.floatToFP(verticesFloat.get(base));
-                data.position.y = FP.floatToFP(verticesFloat.get(base+1));
-                data.position.z = FP.floatToFP(verticesFloat.get(base+2));
+                data.position.x = FP.floatToFP(verticesFloat.get(base++));
+                data.position.y = FP.floatToFP(verticesFloat.get(base++));
+                data.position.z = FP.floatToFP(verticesFloat.get(base++));
             }
         }
 
         if ( data.normalAttr != null ) {
-            int base = (vert * attributes.vertexSize/4) + data.normalAttr.offset;
+            int base = (vert * per_vert) + data.normalAttr.offset/4;
             if ( useFixedPoint ) {
-                data.normal.x = verticesFixed.get(base);
-                data.normal.y = verticesFixed.get(base+1);
-                data.normal.z = verticesFixed.get(base+2);
+                data.normal.x = verticesFixed.get(base++);
+                data.normal.y = verticesFixed.get(base++);
+                data.normal.z = verticesFixed.get(base++);
             } else {
-                data.normal.x = FP.floatToFP(verticesFloat.get(base));
-                data.normal.y = FP.floatToFP(verticesFloat.get(base+1));
-                data.normal.z = FP.floatToFP(verticesFloat.get(base+2));
+                data.normal.x = FP.floatToFP(verticesFloat.get(base++));
+                data.normal.y = FP.floatToFP(verticesFloat.get(base++));
+                data.normal.z = FP.floatToFP(verticesFloat.get(base++));
             }
         }
 
         if ( data.colorAttr != null ) {
-            int base = (vert * attributes.vertexSize/4) + data.colorAttr.offset;
+            int base = (vert * per_vert) + data.colorAttr.offset/4;
             if ( useFixedPoint ) {
-                data.color.red = verticesFixed.get(base);
-                data.color.green = verticesFixed.get(base+1);
-                data.color.blue = verticesFixed.get(base+2);
-                data.color.alpha = verticesFixed.get(base+3);
+                data.color.red = verticesFixed.get(base++);
+                data.color.green = verticesFixed.get(base++);
+                data.color.blue = verticesFixed.get(base++);
+                data.color.alpha = verticesFixed.get(base++);
             } else {
-                data.color.red = FP.floatToFP(verticesFloat.get(base));
-                data.color.green = FP.floatToFP(verticesFloat.get(base+1));
-                data.color.blue = FP.floatToFP(verticesFloat.get(base+2));
-                data.color.alpha = FP.floatToFP(verticesFloat.get(base+3));
+                data.color.red = FP.floatToFP(verticesFloat.get(base++));
+                data.color.green = FP.floatToFP(verticesFloat.get(base++));
+                data.color.blue = FP.floatToFP(verticesFloat.get(base++));
+                data.color.alpha = FP.floatToFP(verticesFloat.get(base++));
             }
         }
 
         if ( data.textureAttr != null ) {
             for( int t=0; t < data.textureAttr.length; ++t) {
-                int base = (vert * attributes.vertexSize/4) + data.textureAttr[t].offset;
+                int base = (vert * per_vert) + data.textureAttr[t].offset/4;
                 if ( useFixedPoint ) {
-                    data.texture[t].u = verticesFixed.get(base);
-                    data.texture[t].v = verticesFixed.get(base+1);
+                    data.texture[t].u = verticesFixed.get(base++);
+                    data.texture[t].v = verticesFixed.get(base++);
                 } else {
-                    data.texture[t].u = FP.floatToFP(verticesFloat.get(base));
-                    data.texture[t].v = FP.floatToFP(verticesFloat.get(base+1));
+                    data.texture[t].u = FP.floatToFP(verticesFloat.get(base++));
+                    data.texture[t].v = FP.floatToFP(verticesFloat.get(base++));
                 }
             }
         }
@@ -1005,4 +1007,52 @@ public class Mesh {
         }
 
     }
+
+
+
+    /**
+       Class to dump mesh vertex data out, for debugging
+    */
+    public static class Dumper {
+
+        public static void dump(Mesh mesh) {
+            String typeStr = "unknown";
+            switch(mesh.type) {
+            case GL10.GL_POINTS: typeStr="GL_POINTS"; break;
+            case GL10.GL_LINES: typeStr="GL_LINES"; break;
+            case GL10.GL_LINE_STRIP: typeStr="GL_LINE_STRIP"; break;
+            case GL10.GL_LINE_LOOP: typeStr="GL_LINE_LOOP"; break;
+            case GL10.GL_TRIANGLES: typeStr="GL_TRIANGLES"; break;
+            case GL10.GL_TRIANGLE_FAN: typeStr="GL_TRIANGLE_FAN"; break;
+            case GL10.GL_TRIANGLE_STRIP: typeStr="GL_TRIANGLE_STRIP"; break;
+            }
+
+            Log.d("Mesh dump %s: %d vertices, %d indices, type=%d(%s)",
+                  mesh, mesh.getNumVertices(), mesh.getNumIndices(),
+                  mesh.type, typeStr);
+
+            VertexFixedPoint vert = new VertexFixedPoint();
+            for(int u=0; u<Usage.Generic; ++u) {
+                VertexAttribute attr = mesh.getVertexAttribute(u);
+                if ( attr != null ) vert.prep(attr);
+            }
+            Log.d("  vertex layout (%d bytes): p=%d n=%d c=%d t=%d",
+                  mesh.getVertexSize(),
+                  vert.positionAttr == null ? -1 : vert.positionAttr.offset,
+                  vert.normalAttr == null ? -1 : vert.normalAttr.offset,
+                  vert.colorAttr == null ? -1 : vert.colorAttr.offset,
+                  vert.textureAttr == null ? -1 : vert.textureAttr[0].offset);
+
+
+            // Extract each vertex, dump it out
+            int numVerts = mesh.getNumVertices();
+            for( int v=0; v < numVerts; ++v ) {
+                mesh.getVertex(v,vert);
+                Log.d("  vert[%d] p=%s n=%s c=%s t=%s",
+                      v, vert.position, vert.normal, vert.color,
+                      vert.texture == null ? null : vert.texture[0]);
+            }
+        }
+    }
+
 }
