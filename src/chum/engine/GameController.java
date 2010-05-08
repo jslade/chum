@@ -18,7 +18,7 @@ import java.util.Random;
 */
 public class GameController {
 
-    
+
     /** The GameTree representing the game logic, controllers, renderers */
     public GameTree tree;
        
@@ -37,6 +37,10 @@ public class GameController {
 
     /** Whether the activity is paused */
     public boolean paused;
+
+
+    /** Total amount of elapsed game time (wall clock - paused time) (milliseconds) */
+    public long totalElapsed;
 
 
     /** Start time of the last frame (milliseconds) */
@@ -68,7 +72,6 @@ public class GameController {
        
     */
     public GameController() {
-        
 
     }
 
@@ -79,11 +82,13 @@ public class GameController {
     public void update() {
 	long currentFrameStart = SystemClock.uptimeMillis();
 	long frameDelta = currentFrameStart - lastFrameStart;
-
+        totalElapsed += frameDelta;
+        
 	tree.update(frameDelta);
 
 	lastFrameStart = currentFrameStart;
         frameCounter++;
+
     }
 
 
