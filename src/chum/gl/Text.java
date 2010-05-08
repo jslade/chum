@@ -105,7 +105,9 @@ public class Text extends Mesh {
 
 
     /**
-       Populate the mesh with vertices corresponding to the given set of glyphs
+       Populate the mesh with vertices corresponding to the given set of glyphs.
+
+       todo: perhaps this would be cleaner / clearer if done with a MeshBuilder?
     */
     public void setGlyphs(Glyph[] glyphs, int offset, int count) {
         if ( count > maxGlyphs )
