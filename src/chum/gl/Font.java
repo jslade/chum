@@ -37,7 +37,7 @@ public class Font {
     protected Glyph[] commonGlyphs;
 
     /** The common characters */
-    protected static final String commonChars = "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ";
+    protected static final String commonChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#$%^&*()-_=+[]\\{}|;':\",./<>? ";
 
     /** The character metrics for less-common characters (extended unicode) */
     protected HashMap<Character,Glyph> moreGlyphs;
