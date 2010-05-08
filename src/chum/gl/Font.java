@@ -346,23 +346,28 @@ public class Font {
 
         private static Glyph first_avail;
         private transient Glyph next_avail;
+        private static Object sync = new Object();
         private static int instance_count;
 
         public static int instanceCount() { return instance_count; }
 
 
         public static Glyph obtain() {
-            if ( first_avail == null )
-                first_avail = new Glyph();
-            Glyph g = first_avail;
-            first_avail = g.next_avail;
-            return g;
+            synchronized(sync) {
+                if ( first_avail == null )
+                    first_avail = new Glyph();
+                Glyph g = first_avail;
+                first_avail = g.next_avail;
+                return g;
+            }
         }
 
 
         public void recycle() {
-            next_avail = first_avail;
-            first_avail = this;
+            synchronized(sync) {
+                next_avail = first_avail;
+                first_avail = this;
+            }
         }
 
 

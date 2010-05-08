@@ -56,16 +56,20 @@ public class Sprite extends Mesh {
 
     private static Sprite first_avail;
     private Sprite next_avail;
+    private static Object sync = new Object();
 
+    
     /**
        Obtain a Sprite instance from a pool
     */
     public static Sprite obtain() {
-        if ( first_avail == null )
-            first_avail = new Sprite();
-        Sprite sp = first_avail;
-        first_avail = sp.next_avail;
-        return sp;
+        synchronized(sync) {
+            if ( first_avail == null )
+                first_avail = new Sprite();
+            Sprite sp = first_avail;
+            first_avail = sp.next_avail;
+            return sp;
+        }
     }
 
 
@@ -73,8 +77,10 @@ public class Sprite extends Mesh {
        Return a Sprite instance to a pool
     */
     public void recycle() {
-        next_avail = first_avail;
-        first_avail = this;
+        synchronized(sync) {
+            next_avail = first_avail;
+            first_avail = this;
+        }
     }
 
 
