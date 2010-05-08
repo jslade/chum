@@ -105,7 +105,7 @@ public class M4 {
     public final M4 setIdentity() {
         for (int i = 1; i < 16; ++i)
             m[i] = 0;
-        m[0] = m[5] = m[10] = m[15] = 1;
+        m[0] = m[5] = m[10] = m[15] = FP.ONE;
         return this;
     }
 
@@ -220,7 +220,7 @@ public class M4 {
         m[12] = 0;
         m[13] = 0;
         m[14] = 0;
-        m[15] = 1;
+        m[15] = FP.ONE;
 
         return this;
     }
