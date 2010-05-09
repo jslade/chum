@@ -838,12 +838,9 @@ public class Mesh {
             // The center is the midpoint between min and max
             minimum.add(maximum,center);
             center.scale(FP.ONE >> 1, center);
-            
-            Log.d("Mesh.Bounds: "+mesh+
-                  " min="+minimum+
-                  " max="+maximum+
-                  " ctr="+center+
-                  " size="+size);
+
+            // The radius is the length of the size vector
+            radius = size.length();
         }
 
 
@@ -896,6 +893,14 @@ public class Mesh {
             }
             
             return true;
+        }
+
+
+        @Override
+        public String toString() {
+            return String.format("(min=%s max=%s ctr=%s size=%s rad=%.3f)",
+                                 minimum, maximum, center, size,
+                                 FP.toFloat(radius));
         }
         
     }
