@@ -62,14 +62,18 @@ public class Color {
     }
 
     public Color(Color cp) {
-        this.red = cp.red;
-        this.green = cp.green;
-        this.blue = cp.blue;
-        this.alpha = cp.alpha;
+        set(cp);
     }
 
     public Color(String str) {
         set(str);
+    }
+
+    public void set(Color cp) {
+        this.red = cp.red;
+        this.green = cp.green;
+        this.blue = cp.blue;
+        this.alpha = cp.alpha;
     }
 
     public void set(String str) {
