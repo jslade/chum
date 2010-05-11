@@ -50,8 +50,6 @@ public class GameNode {
     */
     public GameNode(GameNode parent) {
         parent.addNode(this);
-        if ( parent.gameController != null )
-            onSetup(parent.gameController);
     }
 
 
@@ -75,22 +73,32 @@ public class GameNode {
        @return The node
      */
     public GameNode addNode(GameNode n) {
+        if ( n == null )
+            throw new IllegalArgumentException("node can't be null");
+
         if ( n.parent != null )
             n.parent.removeNode(n);
 
-        if ( children == null ) children = new GameNode[2];
-        if ( num_children == children.length ) {
-            GameNode[] new_children = new GameNode[children.length*2];
-            for( int i=0; i<num_children; ++i )
-                new_children[i] = children[i];
-            children = new_children;
+        synchronized(this) {
+            if ( children == null ) children = new GameNode[2];
+            if ( num_children == children.length ) {
+                GameNode[] new_children = new GameNode[children.length*2];
+                for( int i=0; i<num_children; ++i )
+                    new_children[i] = children[i];
+                children = new_children;
+            }
+            
+            children[num_children++] = n;
+            _added(n);
         }
-
-        children[num_children++] = n;
-        n.parent = this;
 
         return this;
     }
+
+
+
+    // Track nodes that get removed during iteration (update())
+    protected GameNode removedNode;
 
 
     /**
@@ -100,16 +108,53 @@ public class GameNode {
        @returns The node
     */
     public GameNode removeNode(GameNode n) {
+        if ( n == null )
+            throw new IllegalArgumentException("node can't be null");
+
         if ( n.parent == this ) {
-            for ( int i=num_children-1; i>=0; --i ) {
-                if ( children[i].equals(n) ) {
-                    for ( int j=i+1; j<num_children; ++i, ++j )
-                        children[i] = children[j];
-                    num_children--;
-                    break;
+            synchronized(this) {
+                for ( int i=num_children-1; i>=0; --i ) {
+                    if ( children[i].equals(n) ) {
+                        for ( int j=i+1; j<num_children; ++i, ++j )
+                            children[i] = children[j];
+                        num_children--;
+                        removedNode = n;
+                        break;
+                    }
+                }
+                n.parent = null;
+                n.onRemoved(this);
+            }
+        }
+
+        return this;
+    }
+
+
+    /**
+       Replace a node in this node's list of child nodes with another node
+
+       @param oldNode The node to replace
+       @param newNode The node to put in its place
+       @returns The node
+    */
+    public GameNode replaceNode(GameNode oldNode,GameNode newNode) {
+        if ( oldNode == null )
+            throw new IllegalArgumentException("oldNode can't be null");
+        if ( newNode == null )
+            throw new IllegalArgumentException("newNode can't be null");
+
+        if ( oldNode.parent == this ) {
+            synchronized(this) {
+                for ( int i=num_children-1; i>=0; --i ) {
+                    if ( children[i].equals(oldNode) ) {
+                        _removed(oldNode);
+                        children[i] = newNode;
+                        _added(newNode);
+                        break;
+                    }
                 }
             }
-            n.parent = null;
         }
 
         return this;
@@ -125,6 +170,45 @@ public class GameNode {
             parent.removeNode(this);
         return this;
     }
+
+
+    protected void _added(GameNode n) {
+        n.parent = this;
+        n.onAdded(this);
+
+        // Need to also call onSetup() on the node, and
+        // any of its children, if onSetup() was previously
+        // called on this node
+        if ( gameController != null ) {
+            _addedSetupVisitor.gameController = this.gameController;
+            n.visit(_addedSetupVisitor,false);
+        }
+    }
+
+
+    private static class AddedSetupVisitor implements Visitor {
+        GameController gameController;
+        public void run(GameNode node) {
+            node.onSetup(gameController);
+        }
+    };
+    static final private AddedSetupVisitor _addedSetupVisitor = new AddedSetupVisitor();
+
+
+
+    protected void _removed(GameNode n) {
+        n.parent = null;
+        //n.gameController = null;
+        n.onRemoved(this);
+    }
+
+
+    /** Called when the node is added into the tree */
+    public void onAdded(GameNode newParent) {}
+
+    /** Called when the node is remove from the tree */
+    public void onRemoved(GameNode oldParent) {}
+
 
 
     /**
@@ -262,9 +346,16 @@ public class GameNode {
 
         boolean updated = false;
         if ( updatePrefix(millis) ) updated = true;
-        for(int i=0; i<num_children; ++i) {
-            if ( children[i].update(millis) ) updated = true;
+
+        synchronized(this) {
+            for(int i=0; i<num_children; ++i) {
+                GameNode child = children[i];
+                removedNode = null;
+                if ( child.update(millis) ) updated = true;
+                if ( removedNode == child ) i--;
+            }
         }
+
         if ( updatePostfix(millis) ) updated = true;
         return updated;
     }
@@ -330,6 +421,7 @@ public class GameNode {
     */
     public void postUp(GameEvent event) {
         event.nextQueued = null;
+        event.origin = this;
         synchronized(this) {
             if ( pendingUpEvent == null )
                 pendingUpEvent = event;
@@ -351,6 +443,7 @@ public class GameNode {
     */
     public void postDown(GameEvent event) {
         event.nextQueued = null;
+        event.origin = this;
         synchronized(this) {
             if ( pendingDownEvent == null )
                 pendingDownEvent = event;
