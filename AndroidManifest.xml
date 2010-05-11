@@ -33,6 +33,9 @@
         <activity android:name=".TexturedCube"
             android:label="A cube with texture applied (3D)" />
 
+        <activity android:name=".AnimatedTextExample"
+            android:label="Text animated in various ways (2D)" />
+
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
     </application>

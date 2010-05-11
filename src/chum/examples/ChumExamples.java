@@ -29,6 +29,7 @@ public class ChumExamples extends ListActivity
         examples.put("Random color rects (2D)", RandomRectangles.class);
         examples.put("Colored spinning pyramid (3D)", SpinningColorPyramid.class);
         examples.put("Textured cube (3D)", TexturedCube.class);
+        examples.put("Animated Text (2D)", AnimatedTextExample.class);
 
         String[] items = new String[0]; // Has to be non-null for toArray()
         items = examples.keySet().toArray(items);
