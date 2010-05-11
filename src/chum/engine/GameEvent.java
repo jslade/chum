@@ -26,6 +26,8 @@ public final class GameEvent
     /** Boolean payload for the event */
     public boolean bval;
 
+    /** Where the event came from */
+    public GameNode origin;
 
     /** Reference to next event in the queue */
     GameEvent nextQueued = null;
