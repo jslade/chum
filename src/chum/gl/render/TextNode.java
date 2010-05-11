@@ -1,5 +1,6 @@
 package chum.gl.render;
 
+import chum.engine.common.TextAnimation;
 import chum.fp.FP;
 import chum.fp.Vec3;
 import chum.gl.Color;
@@ -85,7 +86,8 @@ public class TextNode extends MeshNode {
        @param color the color to set as the current draw color before drawing the text
     */
     public void setColor(Color color) {
-        this.color = color;
+        if ( this.color == null ) this.color = new Color();
+        this.color.set(color);
     }
 
 
@@ -94,7 +96,8 @@ public class TextNode extends MeshNode {
        @param position the vector to translate to before drawing the text
     */
     public void setPosition(Vec3 position) {
-        this.position = position;
+        if ( this.position == null ) this.position = new Vec3();
+        this.position.set(position);
     }
 
 
@@ -104,6 +107,15 @@ public class TextNode extends MeshNode {
     */
     public void setScale(int scale) {
         this.scale = scale;
+    }
+
+
+    /**
+       Set the angle of the text
+       @param angle an FP angle from 0-360
+    */
+    public void setAngle(int angle) {
+        this.angle = angle;
     }
 
 
@@ -121,16 +133,18 @@ public class TextNode extends MeshNode {
         super.onSurfaceCreated(renderContext);
     }
 
-        
+
     /**
        Prepares the render state for drawing the text
     */
     public void renderPrefix(GL10 gl) {
         pushed = false;
 
-        if ( scale != FP.ONE ) {
+        if ( position != null ) {
             if ( pushed == false ) gl.glPushMatrix();
-            gl.glScalex(scale,scale,scale);
+            gl.glTranslatex(position.x,
+                            position.y,
+                            position.z);
             pushed = true;
         }
 
@@ -140,11 +154,9 @@ public class TextNode extends MeshNode {
             pushed = true;
         }
             
-        if ( position != null ) {
+        if ( scale != FP.ONE ) {
             if ( pushed == false ) gl.glPushMatrix();
-            gl.glTranslatex(position.x,
-                            position.y,
-                            position.z);
+            gl.glScalex(scale,scale,scale);
             pushed = true;
         }
 
@@ -167,6 +179,125 @@ public class TextNode extends MeshNode {
         if ( pushed ) gl.glPopMatrix();
         super.renderPostfix(gl);
     }
+
+
+
+
+    /**
+       Scale the text smoothly
+       @param start the starting scale factor (FP)
+       @param end the ending scale factor (FP)
+       @param duration the duration for the animation (millis)
+       @return the new {@link TextAnimation.Scale instance}
+    */
+    public TextAnimation.Scale animateScale(int start, int end, long duration) {
+        TextAnimation.Scale anim = new TextAnimation.Scale(this,duration);
+        anim.setScale(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+
+
+    public TextAnimation.Scale animateScale(int end,long duration) {
+        return this.animateScale(this.scale,end);
+    }
+
+        
+
+    /**
+       Rotate the text smoothly
+       @param start the starting angle (FP degrees)
+       @param end the ending angle (FP degrees)
+       @param duration the duration for the animation (millis)
+       @return the new {@link TextAnimation.Angle instance}
+    */
+    public TextAnimation.Angle animateAngle(int start, int end, long duration) {
+        TextAnimation.Angle anim = new TextAnimation.Angle(this,duration);
+        anim.setAngle(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+
+
+    public TextAnimation.Angle animateAngle(int end,long duration) {
+        return this.animateAngle(this.angle,end);
+    }
+
+
+    /**
+       Move the text smoothly
+       @param start the starting position
+       @param end the ending ending postion
+       @param duration the duration for the animation (millis)
+       @return the new {@link TextAnimation.Position instance}
+    */
+    public TextAnimation.Position animatePosition(Vec3 start, Vec3 end, long duration) {
+        if ( this.position == null ) this.position = new Vec3();
+        TextAnimation.Position anim = new TextAnimation.Position(this,duration);
+        anim.setPosition(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+
+
+    public TextAnimation.Position animatePosition(Vec3 end,long duration) {
+        if ( this.position == null ) this.position = new Vec3();
+        return this.animatePosition(this.position,end,duration);
+    }
+
+
+    /**
+       Change the text color smoothly
+       @param start the starting color
+       @param end the ending ending color
+       @param duration the duration for the animation (millis)
+       @return the new {@link TextAnimation.Color instance}
+    */
+    public TextAnimation.Color animateColor(Color start, Color end, long duration) {
+        if ( this.color == null ) this.color = new Color();
+        TextAnimation.Color anim = new TextAnimation.Color(this,duration);
+        anim.setColor(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+
+
+    public TextAnimation.Color animateColor(Color end,long duration) {
+        if ( this.color == null ) this.color = new Color();
+        return this.animateColor(this.color,end,duration);
+    }
+
+
+    /**
+       Change the text alpha smoothly
+       @param start the starting alpha
+       @param end the ending alpha
+       @param duration the duration for the animation (millis)
+       @return the new {@link TextAnimation.Color instance}
+    */
+    public TextAnimation.Color animateAlpha(int start, int end, long duration) {
+        if ( this.color == null ) this.color = new Color(Color.BLACK);
+        TextAnimation.Color anim = new TextAnimation.Color(this,duration);
+        Color startColor = new Color(this.color);
+        Color endColor = new Color(this.color);
+        startColor.alpha = start;
+        endColor.alpha = end;
+        anim.setColor(startColor,endColor);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+
+
+    public TextAnimation.Color animateAlpha(int end,long duration) {
+        if ( this.color == null ) this.color = new Color();
+        return this.animateAlpha(this.color.alpha,end,duration);
+    }
+
 
 
 }
