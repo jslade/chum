@@ -47,7 +47,6 @@ public class AnimatedTextExample extends GameActivity
     static final int AnimationStarted = 2;
     static final int AnimationEnded = 3;
     static final int ResetStarted = 4;
-    static final int ResetEnded = 5;
 
 
     // The StateNode tracks the current game state, manages state
@@ -80,15 +79,7 @@ public class AnimatedTextExample extends GameActivity
             case ResetStarted:
                 Log.d("ResetStarted!");
                 reset();
-                return true;
-
-            case ResetEnded:
-                Log.d("ResetEnded!");
                 state = WaitForTouch;
-                return true;
-
-
-            case GameEvent.SEQUENCE_START:
                 return true;
 
             case GameEvent.SEQUENCE_END:
@@ -103,26 +94,19 @@ public class AnimatedTextExample extends GameActivity
         }
 
 
-        // The reset() method just moves the text back to its centered position
+        // The reset() method just moves the text back to its centered position.
+        // Also resets the other attributes that may get modified by the animations
         void reset() {
             // Get the text bounds, when it is at its center position (one time)
-            if ( textBounds == null ) getTextBounds();
+            if ( textBounds == null ) 
+                textBounds = Mesh.Bounds.obtain().update(textNode.text);
 
             textNode.setPosition(center);
             textNode.setScale(FP.ONE);
             textNode.setAngle(0);
             textNode.setColor(Color.BLACK);
-
-            postUp(GameEvent.obtain(ResetEnded));
         }
 
-
-        // Compute the bounding box of the Text, for determining when it 
-        // gets touched.
-        void getTextBounds() {
-            // Now compute the mesh boundary, one time
-            textBounds = Mesh.Bounds.obtain().update(textNode.text);
-        }
 
         // Choose the next animation sequence and start it
         void startAnimation() {
@@ -159,7 +143,7 @@ public class AnimatedTextExample extends GameActivity
                 animation.addNode(par);
                 to.set(center.x,FP.intToFP(renderContext.height-30),0);
                 par.addNode(textNode.animatePosition(to,500));
-                par.addNode(textNode.animateScale(FP.ONE,FP.floatToFP(0.5f),550));
+                par.addNode(textNode.animateScale(FP.ONE,FP.floatToFP(0.5f),500));
                 animation.addNode(new GameSequence(500));
                 break;
             case 5:
@@ -187,14 +171,21 @@ public class AnimatedTextExample extends GameActivity
                 break;
             }
 
-            // Make the animation a child if this node, so this node
-            // gets the notification
+            // Make the animation a child of this node, so this node
+            // gets the notification.  Initially the animation is added as
+            // a child of the TextNode (because of how the
+            // TextNode.animate*() shortcut methods are defined), but TextNode
+            // is a RenderNode and RenderNodes don't propogate events, so the
+            // notification would never get here.
             addNode(animation);
 
             postUp(GameEvent.obtain(AnimationStarted));
         }
 
         
+        // When the animation sequences end, they are set to automatcially
+        // remove themselves from the tree.  But in addition to that, need
+        // to signal that the state node can transition to the next state
         void endAnimation() {
             animation = null;
             postUp(GameEvent.obtain(AnimationEnded));
