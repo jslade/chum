@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import chum.util.Log;
@@ -15,36 +16,38 @@ import chum.util.Log;
 
 public class ChumExamples extends ListActivity
 {
-    private HashMap<String,Class<?>> examples = new HashMap<String,Class<?>>();
+    private ArrayList<String> examples = new ArrayList<String>();
+    private HashMap<String,Class<?>> exampleClasses = new HashMap<String,Class<?>>();
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        examples.put("Fastest-possble FPS", FastestPossibleFPS.class);
-        examples.put("Background Color / Touch", BackgroundColorTouch.class);
-        examples.put("Many-many nodes test", ManyManyNodes.class);
-        examples.put("Force-close test", ForceCloseExample.class);
-        examples.put("Random color rects (2D)", RandomRectangles.class);
-        examples.put("Colored spinning pyramid (3D)", SpinningColorPyramid.class);
-        examples.put("Textured cube (3D)", TexturedCube.class);
-        examples.put("Animated Text (2D)", AnimatedTextExample.class);
+        addExample("Fastest-possble FPS", FastestPossibleFPS.class);
+        addExample("Background Color / Touch", BackgroundColorTouch.class);
+        addExample("Random color rects (2D)", RandomRectangles.class);
+        addExample("Animated Text (2D)", AnimatedTextExample.class);
+        addExample("Colored spinning pyramid (3D)", SpinningColorPyramid.class);
+        addExample("Textured cube (3D)", TexturedCube.class);
+        addExample("Many-many nodes test", ManyManyNodes.class);
+        addExample("Force-close test", ForceCloseExample.class);
 
-        String[] items = new String[0]; // Has to be non-null for toArray()
-        items = examples.keySet().toArray(items);
         setListAdapter(new ArrayAdapter<String>
-                       (this, android.R.layout.simple_list_item_1, items));
+                       (this, android.R.layout.simple_list_item_1, examples));
     }
 
-    protected void onListItemClick(ListView l, View v, int position, long id)
-    {
+    protected void addExample(String label, Class<?> klass) {
+        examples.add(label);
+        exampleClasses.put(label,klass);
+    }
+        
+    protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 	
-        String item = this.getListAdapter().getItem(position).toString();
-        Log.d("ChumExamples","Picked example: %s", item);
+        String label = examples.get(position);
+        Log.d("ChumExamples","Picked example: %s", label);
 
-        Class<?> klass = examples.get(item);
+        Class<?> klass = exampleClasses.get(label);
         if ( klass != null ) {
             Intent intent = new Intent(this, klass);
             startActivity( intent );
