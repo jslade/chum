@@ -124,7 +124,7 @@ public class RandomRectangles extends GameActivity
 
     protected Mesh createQuad() {
         Mesh quad = new Mesh(true, false, true, 4, 4,
-                        new VertexAttribute(VertexAttributes.Usage.Position));
+                             new VertexAttribute(VertexAttributes.Usage.Position));
         quad.setVertices(verts);
 
         short[] indices = { 0, 1, 2, 3 };
