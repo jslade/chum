@@ -117,7 +117,10 @@ public abstract class GameActivity extends Activity
         renderContext = new RenderContext(this,gl,config);
         renderContext.glSurface = this.glSurface;
 
+        this.onSetup(gameController);
         tree.doSetup(gameController);
+
+        this.onSurfaceCreated(this.renderContext);
         tree.doSurfaceCreated(this.renderContext);
 
 	gameController.lastFrameStart = 
@@ -132,7 +135,35 @@ public abstract class GameActivity extends Activity
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         renderContext.width = width;
         renderContext.height = height;
+        this.onSurfaceChanged(width, height);
         tree.doSurfaceChanged(width, height);
+    }
+
+
+    /**
+       Called to perform initial setup
+    */
+    protected void onSetup(GameController gameController) {
+
+    }
+
+
+    /**
+       Called when the GLSurfaceView has finished initialization.
+       This method is meant to be overridden in a subclass.
+    */
+    protected void onSurfaceCreated(RenderContext renderContext) {
+
+    }
+
+
+    /**
+       Called when the GLSurface view has changed size (or is created
+       for the first time).
+       This method is meant to be overridden in a subclass.
+    */
+    protected void onSurfaceChanged(int width, int height) {
+
     }
 
 
