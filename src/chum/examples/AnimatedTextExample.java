@@ -256,32 +256,30 @@ public class AnimatedTextExample extends GameActivity
 
                     return base;
                 }
-
-                @Override
-                public void onSurfaceCreated(RenderContext renderContext) {
-                    super.onSurfaceCreated(renderContext);
-
-                    Font font = new Font(renderContext,Typeface.DEFAULT_BOLD,30);
-                    font.spacing = FP.intToFP(5);
-                    textNode.setText(font.buildText("Touch me!"));
-                    
-                    // The text should be centered at its given location,
-                    // not placed at its lower-left corner
-                    Mesh.Transform xform = new Mesh.Transform();
-                    xform.center(textNode.text);
-                }
-                
-                @Override
-                public void onSurfaceChanged(int width, int height) {
-                    center.set(FP.intToFP(width)/2, FP.intToFP(height)/2, 0);
-
-                    // The whole thing gets kicked off by the posting
-                    // of this event:
-                    tree.postDown(GameEvent.obtain(ResetStarted));
-                }
             });
     }
 
-
+    @Override
+    protected void onSurfaceCreated(RenderContext renderContext) {
+        super.onSurfaceCreated(renderContext);
+            
+        Font font = new Font(renderContext,Typeface.DEFAULT_BOLD,30);
+        font.spacing = FP.intToFP(5);
+        textNode.setText(font.buildText("Touch me!"));
+        
+        // The text should be centered at its given location,
+        // not placed at its lower-left corner
+        Mesh.Transform xform = new Mesh.Transform();
+        xform.center(textNode.text);
+    }
+    
+    @Override
+    protected void onSurfaceChanged(int width, int height) {
+        center.set(FP.intToFP(width)/2, FP.intToFP(height)/2, 0);
+        
+        // The whole thing gets kicked off by the posting
+        // of this event:
+        tree.postDown(GameEvent.obtain(ResetStarted));
+    }
 }
 
