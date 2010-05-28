@@ -1,7 +1,5 @@
 package chum.gl;
 
-import chum.util.Log;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;

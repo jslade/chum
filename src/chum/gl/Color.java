@@ -1,7 +1,5 @@
 package chum.gl;
 
-import chum.util.Log;
-
 import chum.fp.FP;
 import java.nio.IntBuffer;
 import java.util.regex.*;

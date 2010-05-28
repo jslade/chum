@@ -1,7 +1,6 @@
 package chum.examples;
 
 import chum.engine.*;
-import chum.engine.common.*;
 import chum.fp.*;
 import chum.gl.*;
 import chum.gl.render.*;
@@ -9,11 +8,8 @@ import chum.input.TouchInputNode;
 import chum.util.Log;
 
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
-import javax.microedition.khronos.opengles.GL10;
-
 
 
 /**
@@ -113,7 +109,7 @@ public class AnimatedTextExample extends GameActivity
             Vec3 from = new Vec3();
             Vec3 to = new Vec3();
 
-            int which = gameController.random.nextInt(6);
+            int which = GameController.random.nextInt(6);
             Log.d("Picking animation %d", which);
 
             switch(which) {

@@ -2,11 +2,6 @@ package chum.engine;
 
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
-import chum.util.Log;
-
-import android.content.Context;
-
-import javax.microedition.khronos.opengles.GL10;
 
 
 /**

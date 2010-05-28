@@ -2,9 +2,7 @@ package chum.engine;
 
 import chum.gl.RenderContext;
 
-import android.content.Context;
 import android.os.Handler;
-import android.os.Message;
 import android.os.SystemClock;
 import android.view.View;
 

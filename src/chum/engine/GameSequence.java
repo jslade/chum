@@ -1,7 +1,5 @@
 package chum.engine;
 
-import chum.util.Log;
-
 import android.view.animation.Interpolator;
 
 

@@ -7,7 +7,6 @@ import chum.gl.Mesh;
 import chum.gl.MeshBuilder;
 import chum.gl.VertexAttribute;
 import chum.gl.VertexAttributes.Usage;
-import chum.util.Log;
 
 
 import javax.microedition.khronos.opengles.GL10;

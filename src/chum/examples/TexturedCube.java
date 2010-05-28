@@ -5,11 +5,8 @@ import chum.engine.common.*;
 import chum.fp.*;
 import chum.gl.*;
 import chum.gl.render.*;
-import chum.util.Log;
 
 import android.os.Bundle;
-import javax.microedition.khronos.opengles.GL10;
-
 
 
 /**

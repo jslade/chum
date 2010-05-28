@@ -1,7 +1,6 @@
 package chum.gl.render;
 
 import chum.gl.RenderNode;
-import chum.util.Log;
 
 import android.opengl.GLU;
 

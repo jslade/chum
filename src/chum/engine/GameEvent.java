@@ -1,7 +1,5 @@
 package chum.engine;
 
-import chum.util.Log;
-
 
 /**
    Describes an event in the game play.  
@@ -36,8 +34,6 @@ public final class GameEvent
     /** Create a new event.  This is not public, because the public use
         of the class is intended to be through obtain() */
     protected GameEvent() {
-        this.type = type;
-        this.object = null;
     }
 
 

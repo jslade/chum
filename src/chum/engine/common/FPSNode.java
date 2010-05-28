@@ -89,7 +89,7 @@ public class FPSNode extends GameNode {
 
 
     protected void updateText(int fps) {
-        char hundreds = (char)(fps / 100);
+        //char hundreds = (char)(fps / 100);
         fps %= 100;
         char tens = (char)(fps / 10);
         char ones = (char)(fps % 10);

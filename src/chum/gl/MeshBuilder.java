@@ -4,13 +4,9 @@ import chum.fp.FP;
 import chum.fp.Vec2;
 import chum.fp.Vec3;
 import chum.gl.Color;
-import chum.util.Log;
 
 import chum.gl.VertexAttributes.Usage;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;

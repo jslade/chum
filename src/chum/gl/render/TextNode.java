@@ -6,13 +6,8 @@ import chum.fp.Vec3;
 import chum.gl.Color;
 import chum.gl.Text;
 import chum.gl.RenderContext;
-import chum.gl.RenderNode;
-import chum.gl.Text;
-import chum.util.Log;
-
 
 import javax.microedition.khronos.opengles.GL10;
-import javax.microedition.khronos.opengles.GL11;
 
 
 /**

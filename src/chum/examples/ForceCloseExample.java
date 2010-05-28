@@ -1,12 +1,10 @@
 package chum.examples;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
 import chum.engine.GameActivity;
-import chum.util.Log;
 
 
 /**
@@ -32,6 +30,8 @@ public class ForceCloseExample extends GameActivity
 
 
     public void doForceClose() {
+    	// This causes an intentional "Force Close"
+    	// by generating a NullPointerException
         Button button = null;
         button.getId();
     }

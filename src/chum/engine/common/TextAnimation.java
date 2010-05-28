@@ -1,11 +1,8 @@
 package chum.engine.common;
 
 import chum.engine.GameSequence;
-import chum.fp.FP;
 import chum.fp.Vec3;
-import chum.gl.Color;
 import chum.gl.render.TextNode;
-import chum.util.Log;
 
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;

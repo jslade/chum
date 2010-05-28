@@ -2,10 +2,8 @@ package chum.util;
 
 import chum.cfg.Config;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 
 import java.util.Date;
 

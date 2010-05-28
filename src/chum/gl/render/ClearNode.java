@@ -2,7 +2,6 @@ package chum.gl.render;
 
 import chum.gl.Color;
 import chum.gl.RenderNode;
-import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 

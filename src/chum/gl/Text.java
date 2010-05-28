@@ -3,7 +3,6 @@ package chum.gl;
 import chum.fp.FP;
 import chum.gl.Font.Glyph;
 import chum.gl.VertexAttributes.Usage;
-import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 

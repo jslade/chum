@@ -1,11 +1,6 @@
 package chum.input;
 
 import chum.engine.GameNode;
-import chum.util.Log;
-
-import android.content.*;
-import android.hardware.*;
-import android.view.*;
 
 
 /**

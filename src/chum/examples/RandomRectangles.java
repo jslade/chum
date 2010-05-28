@@ -5,7 +5,6 @@ import chum.engine.common.*;
 import chum.fp.*;
 import chum.gl.*;
 import chum.gl.render.*;
-import chum.util.Log;
 
 import android.graphics.Typeface;
 import android.os.Bundle;

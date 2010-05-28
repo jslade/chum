@@ -6,7 +6,6 @@ import chum.gl.Color;
 import chum.gl.RenderNode;
 import chum.input.TouchInputNode;
 import chum.gl.render.ClearNode;
-import chum.util.Log;
 
 import android.os.Bundle;
 import android.view.MotionEvent;

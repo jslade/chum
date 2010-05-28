@@ -1,8 +1,5 @@
 package chum.fp;
 
-import java.nio.IntBuffer;
-
-
 /** 
     A 4-dimensional Fixed-point vector
     Mostly useful as a representation of a quarternion.

@@ -2,18 +2,15 @@ package chum.engine;
 
 import chum.cfg.Config;
 import chum.gl.RenderContext;
-import chum.util.Log;
 import chum.util.DefaultExceptionHandler;
 
 import android.app.Activity;
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.view.View;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -96,7 +93,6 @@ public abstract class GameActivity extends Activity
     /**
        Called each Frame
     */
-    @Override
     public void onDrawFrame(GL10 _gl) {
         gameController.update();
     }
@@ -105,7 +101,6 @@ public abstract class GameActivity extends Activity
     /**
        Called when the GLSurfaceView has finished initialization
     */
-    @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Looper.prepare();
         gameController.gameHandler = new Handler(new Handler.Callback(){
@@ -131,7 +126,6 @@ public abstract class GameActivity extends Activity
     /**
        Called when the surface size changed, e.g. due to tilting
     */
-    @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         renderContext.width = width;
         renderContext.height = height;

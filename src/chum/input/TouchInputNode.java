@@ -1,9 +1,6 @@
 package chum.input;
 
 import chum.engine.GameController;
-import chum.engine.GameNode;
-import chum.gl.RenderContext;
-import chum.util.Log;
 
 import android.view.MotionEvent;
 import android.view.View;
@@ -65,7 +62,7 @@ public class TouchInputNode extends InputNode
      */
     protected void throttle() {
         if ( touchDelay > 0 ) {
-            try { Thread.currentThread().sleep(touchDelay); }
+            try { Thread.sleep(touchDelay); }
             catch (java.lang.InterruptedException e) {}
         }
     }

@@ -1,7 +1,6 @@
 package chum.gl.render;
 
 import chum.gl.RenderContext;
-import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 

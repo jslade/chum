@@ -6,8 +6,6 @@ import chum.gl.RenderNode;
 import chum.gl.Texture;
 import chum.gl.VertexAttribute;
 import chum.gl.VertexAttributes.Usage;
-import chum.util.Log;
-
 
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;

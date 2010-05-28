@@ -1,7 +1,6 @@
 package chum.engine;
 
 import chum.gl.RenderContext;
-import chum.util.Log;
 
 
 /**

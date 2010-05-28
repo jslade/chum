@@ -3,7 +3,6 @@ package chum.examples;
 import chum.engine.*;
 import chum.engine.common.*;
 import chum.gl.RenderNode;
-import chum.util.Log;
 
 import android.os.Bundle;
 

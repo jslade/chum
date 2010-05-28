@@ -3,7 +3,6 @@ package chum.gl.render;
 import chum.fp.FP;
 import chum.fp.Vec3;
 import chum.gl.RenderNode;
-import chum.util.Log;
 
 import android.opengl.GLU;
 
