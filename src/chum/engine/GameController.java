@@ -57,9 +57,6 @@ public class GameController {
     /** Handler for sending messages to the main (UI) thread */
     public Handler uiHandler;
 
-    /** Handler for sending messages to the game / rendering thread */
-    public Handler gameHandler;
-
 
     /** Global randomizer instance available throughout the game */
     public static final Random random =
