@@ -1,7 +1,6 @@
 package chum.gl;
 
 import chum.gl.VertexAttributes.Usage;
-import chum.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 

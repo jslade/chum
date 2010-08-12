@@ -2,12 +2,11 @@ package chum.examples;
 
 import chum.engine.*;
 import chum.engine.common.*;
-import chum.fp.*;
+import chum.f.*;
 import chum.gl.*;
 import chum.gl.render.*;
 
 import android.os.Bundle;
-import javax.microedition.khronos.opengles.GL10;
 
 
 
@@ -131,19 +130,19 @@ public class SpinningColorPyramid extends GameActivity
     }
 
 
-    private static final int DX = FP.floatToFP(0.02f);
-    private static final int DY = FP.floatToFP(0.03f);
-    private static final int DZ = FP.floatToFP(0.04f);
-    private static final int D360 = FP.intToFP(360);
+    private static final float DX = 0.02f;
+    private static final float DY = 0.03f;
+    private static final float DZ = 0.04f;
+    private static final float D360 = 360f;
 
     protected void spin(long millis) {
-        rot_x.degrees += (int)(DX * millis);
+        rot_x.degrees += DX * millis;
         while ( rot_x.degrees > D360 ) rot_x.degrees -= D360;
 
-        rot_y.degrees += (int)(DY * millis);
+        rot_y.degrees += DY * millis;
         while ( rot_y.degrees > D360 ) rot_y.degrees -= D360;
 
-        rot_z.degrees += (int)(DZ * millis);
+        rot_z.degrees += DZ * millis;
         while ( rot_z.degrees > D360 ) rot_z.degrees -= D360;
     }
 

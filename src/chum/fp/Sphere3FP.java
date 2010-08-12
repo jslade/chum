@@ -8,39 +8,39 @@ package chum.fp;
     theta = inclination angle (deflection relative to y-axis)
     phi = angle of rotation around y-axis, with 
  */
-public class Sphere3 implements java.io.Serializable {
+public class Sphere3FP implements java.io.Serializable {
 
     public int r;
     public int theta; // angle of deflection from y-axis, radians
     public int phi; // angle of rotation around y-axis, radians
 
-    public static Sphere3 ORIGIN = new Sphere3();
+    public static Sphere3FP ORIGIN = new Sphere3FP();
 
-    public Sphere3() {
+    public Sphere3FP() {
         this.r = 0;
         this.theta = 0;
         this.phi = 0;
     }
 
     
-    public Sphere3(Sphere3 o) {
+    public Sphere3FP(Sphere3FP o) {
         set(o);
     }
 
 
-    public Sphere3(float r, float theta, float phi) {
+    public Sphere3FP(float r, float theta, float phi) {
         this.r = FP.floatToFP(r);
         this.theta = FP.floatToFP(theta);
         this.phi = FP.floatToFP(phi);
     }
 
 
-    public Sphere3(Vec3 vec) {
+    public Sphere3FP(Vec3FP vec) {
         set(vec);
     }
 
 
-    public final Sphere3 set(Sphere3 o) {
+    public final Sphere3FP set(Sphere3FP o) {
         this.r = o.r;
         this.theta = o.theta;
         this.phi = o.phi;
@@ -48,7 +48,7 @@ public class Sphere3 implements java.io.Serializable {
     }
 
 
-    public final Sphere3 set(int r,int theta, int phi) {
+    public final Sphere3FP set(int r,int theta, int phi) {
         this.r = r;
         this.theta = theta;
         this.phi = phi;
@@ -57,11 +57,11 @@ public class Sphere3 implements java.io.Serializable {
 
         
     /**
-       Convert a Vec3 (Cartesian coords) to spherical coords.
+       Convert a Vec3FP (Cartesian coords) to spherical coords.
        This assumes a right-handed coordinate system, and
        positive y-axis up (reference for the theta angle)
     */
-    public final Sphere3 set(Vec3 vec) {
+    public final Sphere3FP set(Vec3FP vec) {
         this.r = vec.length();
         if ( this.r == 0 ) {
             this.theta = 0;

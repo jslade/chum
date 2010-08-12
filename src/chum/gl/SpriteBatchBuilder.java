@@ -1,6 +1,7 @@
 package chum.gl;
 
-import chum.fp.*;
+import chum.f.Vec2;
+import chum.f.Vec3;
 import chum.gl.VertexAttributes.Usage;
 
 
@@ -39,8 +40,8 @@ public class SpriteBatchBuilder {
        and using the given x,y as the lower left corner.
 
        @param image the location info for the sprint on the SpriteSheet
-       @param x the left location of the sprite (FP)
-       @param y the bottom location of the sprite (FP)
+       @param x the left location of the sprite
+       @param y the bottom location of the sprite
     */
     public void add(SpriteSheet.ImageData image, int x, int y) {
         if ( this.spriteBatch.sheet == null )
@@ -49,13 +50,13 @@ public class SpriteBatchBuilder {
             throw new IllegalArgumentException("Can't add Sprites from multiple SpriteSheets"+
                                                " to the same SpriteBatch");
 
-        int width = FP.intToFP(image.right - image.left);
-        int height = FP.intToFP(image.bottom - image.top);
+        int width = image.right - image.left;
+        int height = image.bottom - image.top;
         short index = (short)meshBuilder.getNumVertices();
  
         // Lower left
-        pos.x = x;
-        pos.y = y;
+        pos.x = (float)x;
+        pos.y = (float)y;
         //pos.z = 0;
         tex.u = image.u1;
         tex.v = image.v1;
@@ -63,19 +64,19 @@ public class SpriteBatchBuilder {
         meshBuilder.addVertex(pos,tex);
 
         // Lower right
-        pos.x = x + width;
+        pos.x = (float)(x + width);
         tex.u = image.u2;
         short lr = index++;
         meshBuilder.addVertex(pos,tex);
 
         // Upper right
-        pos.y = y + height;
+        pos.y = (float)(y + height);
         tex.v = image.v2;
         short ur = index++;
         meshBuilder.addVertex(pos,tex);
 
         // Upper left
-        pos.x = x;
+        pos.x = (float)x;
         tex.u = image.u1;
         short ul = index++;
         meshBuilder.addVertex(pos,tex);

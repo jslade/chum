@@ -7,33 +7,33 @@ package chum.fp;
 
     Also used to represent planes for the viewport's frustum
  */
-public class Vec4 extends Vec3 {
+public class Vec4FP extends Vec3FP {
 
     public int w;
     
-    public Vec4() {
+    public Vec4FP() {
         super();
         this.w = 0;
     }
 
-    public Vec4(Vec4 v) {
+    public Vec4FP(Vec4FP v) {
         super();
         set(v);
     }
 
-    public Vec4(Vec3 v) {
+    public Vec4FP(Vec3FP v) {
         super(v);
         this.w = 0;
     }
 
-    public Vec4( int x, int y, int z, int w ) {
+    public Vec4FP( int x, int y, int z, int w ) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.w = w;
     }
 
-    public Vec4( float x, float y, float z, float w ) {
+    public Vec4FP( float x, float y, float z, float w ) {
         this.x = FP.floatToFP(x);
         this.y = FP.floatToFP(y);
         this.z = FP.floatToFP(z);
@@ -41,15 +41,15 @@ public class Vec4 extends Vec3 {
     }
 
     public boolean equals(Object other) {
-        if (other instanceof Vec4) {
-            Vec4 o = (Vec4)other;
+        if (other instanceof Vec4FP) {
+            Vec4FP o = (Vec4FP)other;
             return (x == o.x && y == o.y && z == o.z && w == o.w);
         }
         return false;
     }
 
 
-    public final void set (Vec4 o) {
+    public final void set (Vec4FP o) {
         x = o.x;
         y = o.y;
         z = o.z;
@@ -66,7 +66,7 @@ public class Vec4 extends Vec3 {
     }
 
 
-    public void scale (int scale, Vec4 dest) {
+    public void scale (int scale, Vec4FP dest) {
         long lscale = (long)scale;
 
         long t = (long)this.x * lscale;

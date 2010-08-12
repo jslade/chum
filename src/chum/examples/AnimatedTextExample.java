@@ -1,7 +1,7 @@
 package chum.examples;
 
 import chum.engine.*;
-import chum.fp.*;
+import chum.f.*;
 import chum.gl.*;
 import chum.gl.render.*;
 import chum.input.TouchInputNode;
@@ -98,8 +98,8 @@ public class AnimatedTextExample extends GameActivity
                 textBounds = Mesh.Bounds.obtain().update(textNode.text);
 
             textNode.setPosition(center);
-            textNode.setScale(FP.ONE);
-            textNode.setAngle(0);
+            textNode.setScale(1f);
+            textNode.setAngle(0f);
             textNode.setColor(Color.BLACK);
         }
 
@@ -115,21 +115,21 @@ public class AnimatedTextExample extends GameActivity
             switch(which) {
             case 0:
                 // Scale the text down to nothing
-                animation = textNode.animateScale(FP.ONE*2,0,1000);
+                animation = textNode.animateScale(2f,0,1000);
                 break;
             case 1:
                 // Scale the text up, and fade out at the same time
                 animation = new GameSequence.Parallel();
-                animation.addNode(textNode.animateScale(FP.ONE,FP.intToFP(5),1000));
-                animation.addNode(textNode.animateAlpha(FP.ONE,0,1000));
+                animation.addNode(textNode.animateScale(1f,5f,1000));
+                animation.addNode(textNode.animateAlpha(1f,0f,1000));
                 break;
             case 2:
                 // Rotate clockwise
-                animation = textNode.animateAngle(0,FP.intToFP(360),1000);
+                animation = textNode.animateAngle(0f,360f,1000);
                 break;
             case 3:
                 // Rotate counter-clockwise
-                animation = textNode.animateAngle(FP.intToFP(360),0,1000);
+                animation = textNode.animateAngle(360f,0f,1000);
                 break;
             case 4:
                 // Move the text to the top of the screen, and shrink it down
@@ -137,15 +137,15 @@ public class AnimatedTextExample extends GameActivity
                 animation = new GameSequence.Series();
                 GameSequence par = new GameSequence.Parallel();
                 animation.addNode(par);
-                to.set(center.x,FP.intToFP(renderContext.height-30),0);
+                to.set(center.x,(float)(renderContext.height-30),0);
                 par.addNode(textNode.animatePosition(to,500));
-                par.addNode(textNode.animateScale(FP.ONE,FP.floatToFP(0.5f),500));
+                par.addNode(textNode.animateScale(1f,0.5f,500));
                 animation.addNode(new GameSequence(500));
                 break;
             case 5:
                 // Shake side to side
                 animation = new GameSequence.Series();
-                int offset = FP.intToFP(30);
+                float offset = 30f;
                 to.set(center);
 
                 from.set(center);
@@ -206,9 +206,9 @@ public class AnimatedTextExample extends GameActivity
         boolean touchedText(float eventX, float eventY) {
             // Get the screen coords into 'world' coords
             // The 2D view is essentially the same as the screen,
-            // except that it uses FP values for everything
-            touch.x = FP.floatToFP(eventX) - textNode.position.x;
-            touch.y = FP.floatToFP(eventY) - textNode.position.y;
+        	// except relative to the textNode position
+            touch.x = eventX - textNode.position.x;
+            touch.y = eventY - textNode.position.y;
 
             return textBounds.contains(touch);
         }
@@ -260,7 +260,7 @@ public class AnimatedTextExample extends GameActivity
         super.onSurfaceCreated(renderContext);
             
         Font font = new Font(renderContext,Typeface.DEFAULT_BOLD,30);
-        font.spacing = FP.intToFP(5);
+        font.spacing = 5f;
         textNode.setText(font.buildText("Touch me!"));
         
         // The text should be centered at its given location,
@@ -271,7 +271,7 @@ public class AnimatedTextExample extends GameActivity
     
     @Override
     protected void onSurfaceChanged(int width, int height) {
-        center.set(FP.intToFP(width)/2, FP.intToFP(height)/2, 0);
+        center.set(width/2f, height/2f, 0f);
         
         // The whole thing gets kicked off by the posting
         // of this event:

@@ -1,7 +1,6 @@
 package chum.util.mesh;
 
-import chum.fp.FP;
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.Color;
 import chum.gl.Mesh;
 import chum.gl.MeshBuilder;
@@ -23,9 +22,9 @@ public class Axis extends Mesh {
         @param x The color for the x-axis
         @param y The color for the y-axis
         @param z The color for the z-axis
-        @param scale The scale of the axis (FP int)
+        @param scale The scale of the axis
      */
-    public Axis(Color x, Color y, Color z, int scale) {
+    public Axis(Color x, Color y, Color z, float scale) {
         super(true, true, false, 6, 6,
               new VertexAttribute(Usage.Position),
               new VertexAttribute(Usage.Color));
@@ -64,33 +63,18 @@ public class Axis extends Mesh {
 
 
     /** Create a default 3D axis with the given scale
-        @param scale The scale of the axis (FP int)
+        @param scale The scale of the axis
     */
-    public static Axis create3D(int scale) {
+    public static Axis create3D(float scale) {
         return new Axis(Color.RED, Color.GREEN, Color.BLUE, scale);
     }
         
 
-    /** Create a default 3D axis with the given scale
-        @param scale The scale of the axis (float)
-    */
-    public static Axis create3D(float scale) {
-        return new Axis(Color.RED, Color.GREEN, Color.BLUE, FP.floatToFP(scale));
-    }
-        
-
     /** Create a default 2D axis with the given scale
-        @param scale The scale of the axis (FP int)
-    */
-    public static Axis create2D(int scale) {
-        return new Axis(Color.RED, Color.GREEN, null, scale);
-    }
-        
-    /** Create a default 2D axis with the given scale
-        @param scale The scale of the axis (float)
+        @param scale The scale of the axis
     */
     public static Axis create2D(float scale) {
-        return new Axis(Color.RED, Color.GREEN, null, FP.floatToFP(scale));
+        return new Axis(Color.RED, Color.GREEN, null, scale);
     }
         
 }

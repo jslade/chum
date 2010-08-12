@@ -2,7 +2,7 @@ package chum.examples;
 
 import chum.engine.*;
 import chum.engine.common.*;
-import chum.fp.*;
+import chum.f.*;
 import chum.gl.*;
 import chum.gl.render.*;
 
@@ -33,7 +33,7 @@ public class RandomRectangles extends GameActivity
 {
     ColorNode colorNode;
     MeshNode quadNode;
-    int[] verts = {
+    float[] verts = {
         0, 0, 0,  // lower left
         0, 0, 0,  // lower right
         0, 0, 0,  // upper right
@@ -122,7 +122,7 @@ public class RandomRectangles extends GameActivity
 
 
     protected Mesh createQuad() {
-        Mesh quad = new Mesh(true, false, true, 4, 4,
+        Mesh quad = new Mesh(true, false, false, 4, 4,
                              new VertexAttribute(VertexAttributes.Usage.Position));
         quad.setVertices(verts);
 
@@ -135,10 +135,10 @@ public class RandomRectangles extends GameActivity
 
 
     protected void randomizeQuad() {
-        int x2 = GameController.random.nextInt(FP.intToFP(renderContext.width)) + 1;
-        int y2 = GameController.random.nextInt(FP.intToFP(renderContext.height)) + 1;
-        int x1 = GameController.random.nextInt(x2);
-        int y1 = GameController.random.nextInt(y2);
+        float x2 = GameController.random.nextFloat() * renderContext.width + 1;
+        float y2 = GameController.random.nextFloat() * renderContext.height + 1;
+        float x1 = GameController.random.nextFloat() * x2;
+        float y1 = GameController.random.nextFloat() * y2;
             
         verts[0]  = x1;
         verts[1]  = y1;
@@ -155,9 +155,9 @@ public class RandomRectangles extends GameActivity
 
 
     protected void randomizeColor() {
-        colorNode.color.red = GameController.random.nextInt(FP.ONE+1);
-        colorNode.color.green = GameController.random.nextInt(FP.ONE+1);
-        colorNode.color.blue = GameController.random.nextInt(FP.ONE+1);
+        colorNode.color.red = GameController.random.nextFloat();
+        colorNode.color.green = GameController.random.nextFloat();
+        colorNode.color.blue = GameController.random.nextFloat();
     }
 
 

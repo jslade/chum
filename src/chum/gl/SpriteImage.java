@@ -15,7 +15,7 @@ import javax.microedition.khronos.opengles.GL10;
    Sprites are generally drawn without lighting, and they're flat so no depth testing is
    needed.  As such, a {@link SpriteModeNode} is usually used to render all the sprites.
 */
-public class Sprite extends Mesh {
+public class SpriteImage extends Mesh {
 
     /** The SpriteImage */
     public SpriteSheet.ImageData image;
@@ -39,7 +39,7 @@ public class Sprite extends Mesh {
        This is protected because Sprites should be allocated via Sprite.obtain(),
        allowing them to be reused from a pool
     */
-    protected Sprite() {
+    protected SpriteImage() {
         super(true,true,
               true, // always fixed-point for now
               4, // 4 vertices (two triangles)
@@ -54,19 +54,19 @@ public class Sprite extends Mesh {
     }
 
 
-    private static Sprite first_avail;
-    private Sprite next_avail;
+    private static SpriteImage first_avail;
+    private SpriteImage next_avail;
     private static Object sync = new Object();
 
     
     /**
        Obtain a Sprite instance from a pool
     */
-    public static Sprite obtain() {
+    public static SpriteImage obtain() {
         synchronized(sync) {
             if ( first_avail == null )
-                first_avail = new Sprite();
-            Sprite sp = first_avail;
+                first_avail = new SpriteImage();
+            SpriteImage sp = first_avail;
             first_avail = sp.next_avail;
             return sp;
         }
@@ -140,7 +140,7 @@ public class Sprite extends Mesh {
     }
 
     private Object verts_sync = new Object();
-    private static int[] verts = new int[4 * (3+2)];
+    private static float[] verts = new float[4 * (3+2)];
     private static short[] indices = { 0, 1, 2, 3 };
 
 }

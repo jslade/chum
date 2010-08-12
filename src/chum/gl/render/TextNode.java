@@ -1,8 +1,7 @@
 package chum.gl.render;
 
 import chum.engine.common.TextAnimation;
-import chum.fp.FP;
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.Color;
 import chum.gl.Text;
 import chum.gl.RenderContext;
@@ -21,11 +20,11 @@ public class TextNode extends MeshNode {
     /** Optional translation before drawing */
     public Vec3 position;
     
-    /** Optional scaling before drawing (FP) */
-    public int scale = FP.ONE;
+    /** Optional scaling before drawing */
+    public float scale = 1f;
 
-    /** The rotation angle (FP degrees 0-360) -- always around z-axis */
-    public int angle = 0;
+    /** The rotation angle (degrees 0-360) -- always around z-axis */
+    public float angle = 0f;
 
     /** Optional color */
     public Color color;
@@ -98,18 +97,18 @@ public class TextNode extends MeshNode {
 
     /**
        Set the scale of the text
-       @param scale an FP scale value, when 1.0 means no scaling
+       @param scale with 1.0 meaning no scaling
     */
-    public void setScale(int scale) {
+    public void setScale(float scale) {
         this.scale = scale;
     }
 
 
     /**
        Set the angle of the text
-       @param angle an FP angle from 0-360
+       @param angle from 0-360
     */
-    public void setAngle(int angle) {
+    public void setAngle(float angle) {
         this.angle = angle;
     }
 
@@ -137,27 +136,27 @@ public class TextNode extends MeshNode {
 
         if ( position != null ) {
             if ( pushed == false ) gl.glPushMatrix();
-            gl.glTranslatex(position.x,
+            gl.glTranslatef(position.x,
                             position.y,
                             position.z);
             pushed = true;
         }
 
-        if ( angle != 0 ) {
+        if ( angle != 0f ) {
             if ( pushed == false ) gl.glPushMatrix();
-            gl.glRotatex(angle,0,0,FP.ONE);
+            gl.glRotatef(angle,0f,0f,1f);
             pushed = true;
         }
             
-        if ( scale != FP.ONE ) {
+        if ( scale != 1f ) {
             if ( pushed == false ) gl.glPushMatrix();
-            gl.glScalex(scale,scale,scale);
+            gl.glScalef(scale,scale,scale);
             pushed = true;
         }
 
             
         if ( color != null ) {
-            gl.glColor4x(color.red,color.green,color.blue,color.alpha);
+            gl.glColor4f(color.red,color.green,color.blue,color.alpha);
         }
         
         // Super renderPrefix() is sufficient to actually draw the text mesh
@@ -180,12 +179,12 @@ public class TextNode extends MeshNode {
 
     /**
        Scale the text smoothly
-       @param start the starting scale factor (FP)
-       @param end the ending scale factor (FP)
+       @param start the starting scale factor
+       @param end the ending scale factor
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Scale instance}
     */
-    public TextAnimation.Scale animateScale(int start, int end, long duration) {
+    public TextAnimation.Scale animateScale(float start, float end, long duration) {
         TextAnimation.Scale anim = new TextAnimation.Scale(this,duration);
         anim.setScale(start,end);
         anim.removeOnEnd = true;
@@ -194,20 +193,20 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Scale animateScale(int end,long duration) {
-        return this.animateScale(this.scale,end);
+    public TextAnimation.Scale animateScale(float end,long duration) {
+        return this.animateScale(this.scale,end,duration);
     }
 
         
 
     /**
        Rotate the text smoothly
-       @param start the starting angle (FP degrees)
-       @param end the ending angle (FP degrees)
+       @param start the starting angle (degrees)
+       @param end the ending angle (degrees)
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Angle instance}
     */
-    public TextAnimation.Angle animateAngle(int start, int end, long duration) {
+    public TextAnimation.Angle animateAngle(float start, float end, long duration) {
         TextAnimation.Angle anim = new TextAnimation.Angle(this,duration);
         anim.setAngle(start,end);
         anim.removeOnEnd = true;
@@ -216,8 +215,8 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Angle animateAngle(int end,long duration) {
-        return this.animateAngle(this.angle,end);
+    public TextAnimation.Angle animateAngle(float end,long duration) {
+        return this.animateAngle(this.angle,end,duration);
     }
 
 
@@ -274,7 +273,7 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Color instance}
     */
-    public TextAnimation.Color animateAlpha(int start, int end, long duration) {
+    public TextAnimation.Color animateAlpha(float start, float end, long duration) {
         if ( this.color == null ) this.color = new Color(Color.BLACK);
         TextAnimation.Color anim = new TextAnimation.Color(this,duration);
         Color startColor = new Color(this.color);
@@ -288,7 +287,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Color animateAlpha(int end,long duration) {
+    public TextAnimation.Color animateAlpha(float end,long duration) {
         if ( this.color == null ) this.color = new Color();
         return this.animateAlpha(this.color.alpha,end,duration);
     }

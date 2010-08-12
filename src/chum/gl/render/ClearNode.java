@@ -31,7 +31,7 @@ public class ClearNode extends RenderNode {
 
     public void renderPrefix(GL10 gl10) {
         if ( color != null )
-            gl10.glClearColorx(color.red,color.green,color.blue,color.alpha);
+            gl10.glClearColor(color.red,color.green,color.blue,color.alpha);
         gl10.glClear(clearBits);
     }
        

@@ -3,27 +3,27 @@ package chum.fp;
 /** 
  * A 4x4 Fixed-point matrix
  * <p>
- * Adapted from Android ApiDemos 'kube' sample (M4.java),
+ * Adapted from Android ApiDemos 'kube' sample (M4FP.java),
  * And from JCollada (Mat4.java)
  */
-public class M4 {
+public class M4FP {
     public int[] m = new int[16];
-    public static M4 xform = new M4();
+    public static M4FP xform = new M4FP();
 	
-    public M4() {
+    public M4FP() {
     }
 	
-    public M4(M4 other) {
+    public M4FP(M4FP other) {
         copy(other);
     }
 
-    public final M4 copy(M4 other) {
+    public final M4FP copy(M4FP other) {
         for (int i = 0; i < 16; ++i)
                 m[i] = other.m[i];
         return this;
     }
 
-    public final void multiply(Vec3 src, Vec3 dest) {
+    public final void multiply(Vec3FP src, Vec3FP dest) {
         // x = src.x * m[0][0] + src.y * m[0][1] + src.z * m[0][2] + m[0][3]
         // y = src.x * m[1][0] + src.y * m[1][1] + src.z * m[1][2] + m[1][3]
         // z = src.x * m[2][0] + src.y * m[2][1] + src.z * m[2][2] + m[2][3]
@@ -47,7 +47,7 @@ public class M4 {
     private static long[] m1 = new long[16];
     private static long[] m2 = new long[16];
 
-    public final void multiply(M4 other, M4 dest) {
+    public final void multiply(M4FP other, M4FP dest) {
         m1[0] = (long)(m[0]);
         m1[1] = (long)(m[1]);
         m1[2] = (long)(m[2]);
@@ -102,7 +102,7 @@ public class M4 {
     }
 	
 
-    public final M4 setIdentity() {
+    public final M4FP setIdentity() {
         for (int i = 1; i < 16; ++i)
             m[i] = 0;
         m[0] = m[5] = m[10] = m[15] = FP.ONE;
@@ -110,34 +110,34 @@ public class M4 {
     }
 
 
-    public final M4 clear() {
+    public final M4FP clear() {
         for (int i = 0; i < 16; ++i)
             m[i] = 0;
         return this;
     }
 
 
-    public final void transpose(M4 dest) {
-        //dest.m[0] = m[0];
+    public final void transpose(M4FP dest) {
+        dest.m[0] = m[0];
         dest.m[1 ] = m[4];
         dest.m[2 ] = m[8];
         dest.m[3 ] = m[12];
         dest.m[4 ] = m[1];
-        //dest.m[5 ] = m[5];
+        dest.m[5 ] = m[5];
         dest.m[6 ] = m[6];
         dest.m[7 ] = m[7];
         dest.m[8 ] = m[2];
         dest.m[9 ] = m[6];
-        //dest.m[10] = m[10];
+        dest.m[10] = m[10];
         dest.m[11] = m[14];
         dest.m[12] = m[3];
         dest.m[13] = m[7];
         dest.m[14] = m[11];
-        //dest.m[15] = m[15];
+        dest.m[15] = m[15];
     }
 
     
-    public final M4 scale(int x, int y, int z) {
+    public final M4FP scale(int x, int y, int z) {
         clear();
         m[0] = x;
         m[5] = y;
@@ -147,7 +147,7 @@ public class M4 {
     }
 
     
-    public final M4 scale(int scale) {
+    public final M4FP scale(int scale) {
         clear();
         m[0] = scale;
         m[5] = scale;
@@ -157,7 +157,7 @@ public class M4 {
     }
 
     
-    public final M4 translate(Vec3 v) {
+    public final M4FP translate(Vec3FP v) {
         setIdentity();
         m[3] = v.x;
         m[7] = v.y;
@@ -166,10 +166,10 @@ public class M4 {
     }
 
     
-    public final M4 rotate(Vec3 v, int theta) {
+    public final M4FP rotate(Vec3FP v, int theta) {
         theta >>= 1; // * .5
         int s = FP.sin(theta);
-        Vec4 q = new Vec4((int)(((long)v.x * (long)s) >> 16),
+        Vec4FP q = new Vec4FP((int)(((long)v.x * (long)s) >> 16),
                           (int)(((long)v.y * (long)s) >> 16),
                           (int)(((long)v.z * (long)s) >> 16),
                           FP.cos(theta));
@@ -181,7 +181,7 @@ public class M4 {
        Rotate by a Quarternion
        (see Mat4::MakeHRot() from SVL)
     */
-    public final M4 rotate(Vec4 q) {
+    public final M4FP rotate(Vec4FP q) {
         //setIdentity();
 
         long i1  = (long)q.x;

@@ -1,6 +1,5 @@
 package chum.gl;
 
-import chum.fp.FP;
 import chum.gl.Font.Glyph;
 import chum.gl.VertexAttributes.Usage;
 
@@ -33,11 +32,11 @@ public class Text extends Mesh {
     /** The font being displayed */
     public Font font;
 
-    /** The spacing between characters (FP) */
-    public int spacing;
+    /** The spacing between characters */
+    public float spacing;
 
     /** The raw vertex data, made accessible for updates */
-    public int[] dynVertices;
+    public float[] dynVertices;
 
     /** The raw index data, made accessible for updates */
     public short[] dynIndices;
@@ -47,7 +46,7 @@ public class Text extends Mesh {
        Construct the mesh to hold the given number of glyphs
     */
     public Text(int count) {
-        this(count,FP.ONE);
+        this(count,1f);
     }
 
 
@@ -55,9 +54,9 @@ public class Text extends Mesh {
        Construct the mesh to hold the given number of glyphs,
        and the given spacing
     */
-    public Text(int count, int spacing) {
+    public Text(int count, float spacing) {
         super(true,true,
-              true, // always fixed-point for now
+              false, // always floating-point for now
               4 * count, // 4 vertices per glyph (two triangles)
               6 * count, // 6 indices per glyph (two triangles)
 
@@ -71,7 +70,7 @@ public class Text extends Mesh {
         this.maxGlyphs = count;
         this.spacing = spacing;
 
-        dynVertices = new int[maxVertices * 5]; // 3 + 2 per vertex
+        dynVertices = new float[maxVertices * 5]; // 3 + 2 per vertex
         dynIndices = new short[maxIndices];
 
         this.font = null;
@@ -125,21 +124,21 @@ public class Text extends Mesh {
         if ( count > maxGlyphs )
             throw new IllegalArgumentException("count exceeds maxGlyphs");
 
-        int x1 = 0;
+        float x1 = 0;
         int v = 0;
         int i = 0;
         short vert = 0;
 
         for (int g=0; g < count; ++g ) {
             Glyph glyph = glyphs[offset + g];
-            int y1 = FP.intToFP(-glyph.baseline);
-            int x2 = x1 + FP.intToFP(glyph.width);
-            int y2 = y1 + FP.intToFP(glyph.height);
+            float y1 = (float)-glyph.baseline;
+            float x2 = x1 + glyph.width;
+            float y2 = y1 + glyph.height;
 
-            int u1 = glyph.texU;
-            int v1 = glyph.texV;
-            int u2 = u1 + glyph.texWidth;
-            int v2 = v1 - glyph.texHeight;
+            float u1 = glyph.texU;
+            float v1 = glyph.texV;
+            float u2 = u1 + glyph.texWidth;
+            float v2 = v1 - glyph.texHeight;
 
             // lower left
             dynVertices[v++] = x1;
@@ -174,13 +173,10 @@ public class Text extends Mesh {
             short ul = vert++;
 
 //             Log.d("Text glyph[%d] '%c' (%.3f,%.3f) (%.3f,%.3f) [%d,%d,%d,%d]",
-//                   g, glyph.ch,
-//                   FP.toFloat(x1), FP.toFloat(y1),
-//                   FP.toFloat(x2), FP.toFloat(y2),
+//                   g, glyph.ch, x1, y1, x2, y2,
 //                   ll,lr,ur,ul);
 //             Log.d("    u,v = (%.3f,%.3f) (%.3f,%.3f)",
-//                   FP.toFloat(u1), FP.toFloat(v1),
-//                   FP.toFloat(u2), FP.toFloat(v2));
+//                   u1, v1, u2, v2);
 
             x1 = x2 + spacing;
 

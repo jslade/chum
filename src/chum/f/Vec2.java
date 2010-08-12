@@ -1,17 +1,17 @@
-package chum.fp;
+package chum.f;
 
-import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
 
 
 /** 
-    A 2-dimensional Fixed-point vector
+    A 2-dimensional floating-point vector
     Uses (u,v) because it's primarily intended to be used
     for texcoords.
  */
 public class Vec2 {
 
-    public int u;
-    public int v;
+    public float u;
+    public float v;
     
     public Vec2() {
         this.u = 0;
@@ -22,14 +22,9 @@ public class Vec2 {
         set(v);
     }
 
-    public Vec2( int u, int v ) {
+    public Vec2( float u, float v ) {
         this.u = u;
         this.v = v;
-    }
-
-    public Vec2( float u, float v ) {
-        this.u = FP.floatToFP(u);
-        this.v = FP.floatToFP(v);
     }
 
     public boolean equals(Object other) {
@@ -47,13 +42,13 @@ public class Vec2 {
     }
 
 
-    public final void put ( IntBuffer buffer ) {
+    public final void put ( FloatBuffer buffer ) {
         buffer.put(u);
         buffer.put(v);
     }
 
 
-    public final void put ( int[] vertBuffer, int offset ) {
+    public final void put ( float[] vertBuffer, int offset ) {
         vertBuffer[offset++] = u;
         vertBuffer[offset++] = v;
     }
@@ -61,9 +56,7 @@ public class Vec2 {
 
     @Override
     public String toString() {
-        return String.format("(%.3f,%.3f)",
-                             FP.toFloat(u),
-                             FP.toFloat(v));
+        return String.format("(%.3f,%.3f)", u, v);
     }
 
 }

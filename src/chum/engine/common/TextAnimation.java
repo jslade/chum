@@ -1,7 +1,7 @@
 package chum.engine.common;
 
 import chum.engine.GameSequence;
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.render.TextNode;
 
 import android.view.animation.Interpolator;
@@ -37,11 +37,11 @@ public class TextAnimation extends GameSequence.Interpolated {
     */
     public static class Scale extends TextAnimation {
 
-        /** The start scale (FP) */
-        public int startScale;
+        /** The start scale */
+        public float startScale;
     
-        /** The end scale (FP) */
-        public int endScale;
+        /** The end scale */
+        public float endScale;
 
 
         public Scale(TextNode node,long duration) {
@@ -55,7 +55,7 @@ public class TextAnimation extends GameSequence.Interpolated {
 
 
         /** Set the start and end scale */
-        public Scale setScale(int start, int end) {
+        public Scale setScale(float start, float end) {
             startScale = start;
             endScale = end;
             return this;
@@ -65,7 +65,7 @@ public class TextAnimation extends GameSequence.Interpolated {
         @Override
         protected void updateProgress() {
             super.updateProgress();
-            textNode.scale = startScale + (int)((endScale - startScale) * progress);
+            textNode.scale = startScale + (float)((endScale - startScale) * progress);
         }
     }
         
@@ -75,11 +75,11 @@ public class TextAnimation extends GameSequence.Interpolated {
     */
     public static class Angle extends TextAnimation {
 
-        /** The start angle (FP degrees) */
-        public int startAngle;
+        /** The start angle (degrees) */
+        public float startAngle;
 
-        /** The end angle (FP degrees) */
-        public int endAngle;
+        /** The end angle (degrees) */
+        public float endAngle;
 
 
         public Angle(TextNode node,long duration) {
@@ -92,7 +92,7 @@ public class TextAnimation extends GameSequence.Interpolated {
 
 
         /** Set the start and end angle */
-        public Angle setAngle(int start, int end) {
+        public Angle setAngle(float start, float end) {
             startAngle = start;
             endAngle = end;
             return this;
@@ -102,7 +102,7 @@ public class TextAnimation extends GameSequence.Interpolated {
         @Override
         protected void updateProgress() {
             super.updateProgress();
-            textNode.angle = startAngle + (int)((endAngle - startAngle) * progress);
+            textNode.angle = startAngle + (float)((endAngle - startAngle) * progress);
         }
     }
 
@@ -141,9 +141,9 @@ public class TextAnimation extends GameSequence.Interpolated {
             super.updateProgress();
 
             Vec3 pos = textNode.position;
-            pos.x = startPosition.x + (int)((endPosition.x - startPosition.x) * progress);
-            pos.y = startPosition.y + (int)((endPosition.y - startPosition.y) * progress);
-            pos.z = startPosition.z + (int)((endPosition.z - startPosition.z) * progress);
+            pos.x = startPosition.x + (float)((endPosition.x - startPosition.x) * progress);
+            pos.y = startPosition.y + (float)((endPosition.y - startPosition.y) * progress);
+            pos.z = startPosition.z + (float)((endPosition.z - startPosition.z) * progress);
         }
     }
 
@@ -184,10 +184,10 @@ public class TextAnimation extends GameSequence.Interpolated {
             chum.gl.Color col = textNode.color;
             if ( col == null ) return;
 
-            col.red = startColor.red + (int)((endColor.red - startColor.red) * progress);
-            col.green = startColor.green + (int)((endColor.green - startColor.green) * progress);
-            col.blue = startColor.blue + (int)((endColor.blue - startColor.blue) * progress);
-            col.alpha = startColor.alpha + (int)((endColor.alpha - startColor.alpha) * progress);
+            col.red = startColor.red + (float)((endColor.red - startColor.red) * progress);
+            col.green = startColor.green + (float)((endColor.green - startColor.green) * progress);
+            col.blue = startColor.blue + (float)((endColor.blue - startColor.blue) * progress);
+            col.alpha = startColor.alpha + (float)((endColor.alpha - startColor.alpha) * progress);
         }
     }
 

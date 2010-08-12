@@ -1,6 +1,6 @@
 package chum.gl.render;
 
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.RenderNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -37,7 +37,7 @@ public class TranslateNode extends RenderNode {
 
     public void renderPrefix(GL10 gl) {
         if ( push ) gl.glPushMatrix();
-        gl.glTranslatex(position.x,
+        gl.glTranslatef(position.x,
                         position.y,
                         position.z);
     }

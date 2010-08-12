@@ -1,6 +1,5 @@
 package chum.gl.render;
 
-import chum.fp.FP;
 import chum.gl.RenderNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -11,14 +10,14 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class ScaleNode extends RenderNode {
 
-    /** The scale factor, expressed in FP */
-    public int scale;
+    /** The scale factor */
+    public float scale;
 
     /** Whether to save/restore the matrix */
     public boolean push;
 
 
-    public ScaleNode(int scale) {
+    public ScaleNode(float scale) {
         super();
         this.scale = scale;
     }
@@ -26,15 +25,15 @@ public class ScaleNode extends RenderNode {
 
     public ScaleNode() {
         super();
-        scale = FP.ONE;
+        scale = 1f;
     }
 
 
     public void renderPrefix(GL10 gl) {
         if ( push ) gl.glPushMatrix();
 
-        if ( scale != FP.ONE )
-            gl.glScalex(scale,scale,scale);
+        if ( scale != 1f)
+            gl.glScalef(scale,scale,scale);
     }
 
     public void renderPostfix(GL10 gl) {

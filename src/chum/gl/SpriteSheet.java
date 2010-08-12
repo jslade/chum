@@ -1,8 +1,5 @@
 package chum.gl;
 
-import chum.fp.FP;
-
-
 import android.graphics.Bitmap;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -81,7 +78,7 @@ public class SpriteSheet extends Texture {
     /**
        Create a Sprite using the specified image data
     */
-    public Sprite createSprite(int index, int x, int y) {
+    public SpriteImage createSpriteImage(int index, int x, int y) {
         if ( index >= data.length )
             throw new IllegalArgumentException("index out of range");
 
@@ -89,7 +86,7 @@ public class SpriteSheet extends Texture {
         if ( image == null )
             throw new IllegalArgumentException("image data not defined at index "+index);
 
-        Sprite sprite = Sprite.obtain();
+        SpriteImage sprite = SpriteImage.obtain();
         sprite.update(image,x,y);
 
         return sprite;
@@ -115,17 +112,17 @@ public class SpriteSheet extends Texture {
         /** bottom edge location, in pixels */
         public int bottom;
 
-        /** left edge location, in FP texels */
-        public int u1;
+        /** left edge location, in texels */
+        public float u1;
        
-        /** top edge location, in FP texels */
-        public int v1;
+        /** top edge location, in texels */
+        public float v1;
        
-        /** right edge location, in FP texels */
-        public int u2;
+        /** right edge location, in texels */
+        public float u2;
        
-        /** bottom edge location, in FP texels */
-        public int v2;
+        /** bottom edge location, in texels */
+        public float v2;
 
 
         public ImageData(SpriteSheet sheet,
@@ -147,13 +144,13 @@ public class SpriteSheet extends Texture {
                 return;
             }
 
-            int w = FP.intToFP(width);
-            int h = FP.intToFP(height);
+            float w = (float)width;
+            float h = (float)height;
 
-            u1 = FP.div(FP.intToFP(left),w);
-            v1 = FP.div(FP.intToFP(top),h);
-            u2 = FP.div(FP.intToFP(right),w);
-            v2 = FP.div(FP.intToFP(bottom),h);
+            u1 = left/w;
+            v1 = top/h;
+            u2 = right/w;
+            v2 = bottom/h;
         }
         
                          

@@ -1,7 +1,6 @@
 package chum.examples;
 
 import chum.engine.*;
-import chum.fp.FP;
 import chum.gl.Color;
 import chum.gl.RenderNode;
 import chum.input.TouchInputNode;
@@ -39,9 +38,9 @@ public class BackgroundColorTouch extends GameActivity
                                 float px = event.getX() / v.getWidth();
                                 float py = event.getY() / v.getHeight();
 
-                                bg.red = (int)(FP.ONE * px);
-                                bg.green = (int)(FP.ONE * py);
-                                bg.blue = (int)(FP.ONE * (px + py)/2.0);
+                                bg.red = px;
+                                bg.green = py;
+                                bg.blue = (px + py)/2f;
                             }
                         };
                 }

@@ -22,7 +22,7 @@ public class ColorNode extends RenderNode {
 
 
     public void renderPrefix(GL10 gl) {
-        gl.glColor4x(color.red,color.green,color.blue,color.alpha);
+        gl.glColor4f(color.red,color.green,color.blue,color.alpha);
     }
 
 }

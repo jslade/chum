@@ -2,63 +2,46 @@ package chum.gl;
 
 import chum.fp.FP;
 import java.nio.IntBuffer;
+import java.nio.FloatBuffer;
 import java.util.regex.*;
 
 
 /**
  * Representation of a color
  * <p>
- * Each of the color components are represented using fixed-point
- * values, in the range [0,1].  Fixed-point representation is used
- * because these colors are primarily intended to be paired with
- * vertexes for glDrawElements()
- *
- * Adapted from Android ApiDemos 'kube' sample (Color.java).p
+ * Each of the color components are represented using floating-point
+ * values, in the range [0,1].
  */
 public class Color {
 
-    public static final Color BLACK = new Color(0,0,0);
-    public static final Color WHITE = new Color(0x10000,0x10000,0x10000);
-    public static final Color RED = new Color(0x10000,0,0);
-    public static final Color GREEN = new Color(0,0x10000,0);
-    public static final Color BLUE = new Color(0,0,0x10000);
+    public static final Color BLACK = new Color(0f,0f,0f);
+    public static final Color WHITE = new Color(1f,1f,1f);
+    public static final Color RED = new Color(1f,0f,0f);
+    public static final Color GREEN = new Color(0f,1f,0f);
+    public static final Color BLUE = new Color(0f,0f,1f);
 
-    public int red = 0;
-    public int green = 0;
-    public int blue = 0;
-    public int alpha = 0x10000;
+    public float red = 0f;
+    public float green = 0f;
+    public float blue = 0f;
+    public float alpha = 1f;
 	
     public Color() {
     }
 
-    public Color(int red, int green, int blue, int alpha) {
+    public Color(float red, float green, float blue, float alpha) {
         this.red = red;
         this.green = green;
         this.blue = blue;
         this.alpha = alpha;
     }
 
-    public Color(int red, int green, int blue) {
+    public Color(float red, float green, float blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.alpha = 0x10000;
+        this.alpha = 1f;
     }
 	
-    public Color(float red, float green, float blue) {
-        this.red = FP.floatToFP(red);
-        this.green = FP.floatToFP(green);
-        this.blue = FP.floatToFP(blue);
-        this.alpha = 0x10000;
-    }
-
-    public Color(float red, float green, float blue, float alpha) {
-        this.red = FP.floatToFP(red);
-        this.green = FP.floatToFP(green);
-        this.blue = FP.floatToFP(blue);
-        this.alpha = FP.floatToFP(alpha);
-    }
-
     public Color(Color cp) {
         set(cp);
     }
@@ -78,16 +61,16 @@ public class Color {
         Pattern pat1 = Pattern.compile("#(....)(....)(....)");
         Matcher m = pat1.matcher(str);
         if ( m.matches() ) {
-            this.red = FP.floatToFP(Integer.parseInt(m.group(1),16)/65535f);
-            this.green = FP.floatToFP(Integer.parseInt(m.group(2),16)/65535f);
-            this.blue = FP.floatToFP(Integer.parseInt(m.group(3),16)/65535f);
+            this.red = Integer.parseInt(m.group(1),16)/65535f;
+            this.green = Integer.parseInt(m.group(2),16)/65535f;
+            this.blue = Integer.parseInt(m.group(3),16)/65535f;
         } else {
             Pattern pat2 = Pattern.compile("#(..)(..)(..)");
             m = pat2.matcher(str);
             if ( m.matches() ) {
-                this.red = FP.floatToFP(Integer.parseInt(m.group(1),16)/255f);
-                this.green = FP.floatToFP(Integer.parseInt(m.group(2),16)/255f);
-                this.blue = FP.floatToFP(Integer.parseInt(m.group(3),16)/255f);
+                this.red = Integer.parseInt(m.group(1),16)/255f;
+                this.green = Integer.parseInt(m.group(2),16)/255f;
+                this.blue = Integer.parseInt(m.group(3),16)/255f;
             }
         }
     }
@@ -107,9 +90,9 @@ public class Color {
        Store this color into a color buffer, to be used with
        glColorPointer().
        <p>
-       e.g. gl.glColorPointer(4, GL10.GL_FIXED, 0, colorBuffer);
+       e.g. gl.glColorPointer(4, GL10.GL_FLOAT, 0, colorBuffer);
     */
-    public final void put(IntBuffer colorBuffer) {
+    public final void put(FloatBuffer colorBuffer) {
         colorBuffer.put(red);
         colorBuffer.put(green);
         colorBuffer.put(blue);
@@ -117,12 +100,26 @@ public class Color {
     }
 
     
+    /**
+    Store this color into a color buffer, to be used with
+    glColorPointer().
+    <p>
+    e.g. gl.glColorPointer(4, GL10.GL_FIXED, 0, colorBuffer);
+ */
+ public final void put(IntBuffer colorBuffer) {
+     colorBuffer.put(FP.floatToFP(red));
+     colorBuffer.put(FP.floatToFP(green));
+     colorBuffer.put(FP.floatToFP(blue));
+     colorBuffer.put(FP.floatToFP(alpha));
+ }
+
+ 
     @Override
     public String toString() {
-        return "[" + (int)(255 * FP.toFloat(red)) +
-            "," + (int)(255 * FP.toFloat(green)) +
-            "," + (int)(255 * FP.toFloat(blue)) +
-            "," + (int)(255 * FP.toFloat(alpha)) +
+        return "[" + (int)(255f * red) +
+            "," + (int)(255f * green) +
+            "," + (int)(255f * blue) +
+            "," + (int)(255f * alpha) +
             "]";
     }
 }

@@ -1,8 +1,8 @@
 package chum.gl;
 
+import chum.f.Vec2;
+import chum.f.Vec3;
 import chum.fp.FP;
-import chum.fp.Vec2;
-import chum.fp.Vec3;
 import chum.gl.Color;
 
 import chum.gl.VertexAttributes.Usage;
@@ -310,38 +310,38 @@ public class MeshBuilder {
 
     protected void put(Vec3 v) {
         if ( useFixedPoint ) {
-            fixedVerts.put(v.x);
-            fixedVerts.put(v.y);
-            fixedVerts.put(v.z);
+            fixedVerts.put(FP.floatToFP(v.x));
+            fixedVerts.put(FP.floatToFP(v.y));
+            fixedVerts.put(FP.floatToFP(v.z));
         } else {
-            floatVerts.put(FP.toFloat(v.x));
-            floatVerts.put(FP.toFloat(v.y));
-            floatVerts.put(FP.toFloat(v.z));
+            floatVerts.put(v.x);
+            floatVerts.put(v.y);
+            floatVerts.put(v.z);
         }
     }
 
 
     protected void put(Vec2 v) {
         if ( useFixedPoint ) {
-            fixedVerts.put(v.u);
-            fixedVerts.put(v.v);
+            fixedVerts.put(FP.floatToFP(v.u));
+            fixedVerts.put(FP.floatToFP(v.v));
         } else {
-            floatVerts.put(FP.toFloat(v.u));
-            floatVerts.put(FP.toFloat(v.v));
+            floatVerts.put(v.u);
+            floatVerts.put(v.v);
         }
     }
 
     protected void put(Color c) {
         if ( useFixedPoint ) {
-            fixedVerts.put(c.red);
-            fixedVerts.put(c.green);
-            fixedVerts.put(c.blue);
-            fixedVerts.put(c.alpha);
+            fixedVerts.put(FP.floatToFP(c.red));
+            fixedVerts.put(FP.floatToFP(c.green));
+            fixedVerts.put(FP.floatToFP(c.blue));
+            fixedVerts.put(FP.floatToFP(c.alpha));
         } else {
-            floatVerts.put(FP.toFloat(c.red));
-            floatVerts.put(FP.toFloat(c.green));
-            floatVerts.put(FP.toFloat(c.blue));
-            floatVerts.put(FP.toFloat(c.alpha));
+            floatVerts.put(c.red);
+            floatVerts.put(c.green);
+            floatVerts.put(c.blue);
+            floatVerts.put(c.alpha);
         }
     }
 

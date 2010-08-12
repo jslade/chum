@@ -6,18 +6,18 @@ import android.util.Log;
 
 /**
  */
-public class Vec3Test extends TestCase {
+public class Vec3FPTest extends TestCase {
 
     protected void setUp() {
-        Vec3 zero = new Vec3();
+        Vec3FP zero = new Vec3FP();
     }
 
 
     public void test_add() {
-        Vec3 v1 = new Vec3(1f,2f,3f);
-        Vec3 v2 = new Vec3(-1f,-2f,-3f);
-        Vec3 v3 = new Vec3(1f,1f,1f);
-        Vec3 t = new Vec3();
+        Vec3FP v1 = new Vec3FP(1f,2f,3f);
+        Vec3FP v2 = new Vec3FP(-1f,-2f,-3f);
+        Vec3FP v3 = new Vec3FP(1f,1f,1f);
+        Vec3FP t = new Vec3FP();
 
         assertEquals("[1.000,2.000,3.000]",v1.toString());
         
@@ -30,13 +30,13 @@ public class Vec3Test extends TestCase {
 
 
     public void test_length() {
-        Vec3 v0 = new Vec3(0f,0f,0f);
-        Vec3 v1 = new Vec3(1f,0f,0f);
-        Vec3 v2 = new Vec3(0f,1f,0f);
-        Vec3 v3 = new Vec3(0f,0f,1f);
-        Vec3 v4 = new Vec3(1f,1f,1f);
+        Vec3FP v0 = new Vec3FP(0f,0f,0f);
+        Vec3FP v1 = new Vec3FP(1f,0f,0f);
+        Vec3FP v2 = new Vec3FP(0f,1f,0f);
+        Vec3FP v3 = new Vec3FP(0f,0f,1f);
+        Vec3FP v4 = new Vec3FP(1f,1f,1f);
 
-        Log.d("Vec3Test","v0="+v0);
+        Log.d("Vec3FPTest","v0="+v0);
         assertEquals(FP.floatToFP(0.0f),v0.length());
         assertEquals(FP.floatToFP(1.0f),v1.length());
         assertEquals(FP.floatToFP(1.0f),v2.length());
@@ -46,11 +46,11 @@ public class Vec3Test extends TestCase {
 
 
     public void test_dot() {
-        Vec3 v0 = new Vec3(0f,0f,0f);
-        Vec3 v1 = new Vec3(1f,0f,0f);
-        Vec3 v2 = new Vec3(0f,1f,0f);
-        Vec3 v3 = new Vec3(0f,0f,1f);
-        Vec3 v4 = new Vec3(1f,1f,1f);
+        Vec3FP v0 = new Vec3FP(0f,0f,0f);
+        Vec3FP v1 = new Vec3FP(1f,0f,0f);
+        Vec3FP v2 = new Vec3FP(0f,1f,0f);
+        Vec3FP v3 = new Vec3FP(0f,0f,1f);
+        Vec3FP v4 = new Vec3FP(1f,1f,1f);
 
         assertEquals(FP.intToFP(0),v0.dot(v0));
         assertEquals(FP.intToFP(1),v1.dot(v1));
@@ -68,8 +68,8 @@ public class Vec3Test extends TestCase {
 
 
     public void test_scale_1() {
-        Vec3 x1 = new Vec3(1f,2f,-3f);
-        Vec3 x2 = new Vec3();
+        Vec3FP x1 = new Vec3FP(1f,2f,-3f);
+        Vec3FP x2 = new Vec3FP();
         int t = FP.floatToFP(1f);
 
         x1.scale(t,x2);
@@ -81,8 +81,8 @@ public class Vec3Test extends TestCase {
         
 
     public void test_scale_up() {
-        Vec3 x1 = new Vec3(1f,2f,-3f);
-        Vec3 x2 = new Vec3();
+        Vec3FP x1 = new Vec3FP(1f,2f,-3f);
+        Vec3FP x2 = new Vec3FP();
         int t = FP.floatToFP(10f);
 
         x1.scale(t,x2);
@@ -94,8 +94,8 @@ public class Vec3Test extends TestCase {
         
 
     public void test_scale_dn() {
-        Vec3 x1 = new Vec3(1f,2f,-3f);
-        Vec3 x2 = new Vec3();
+        Vec3FP x1 = new Vec3FP(1f,2f,-3f);
+        Vec3FP x2 = new Vec3FP();
         int t = FP.floatToFP(.001f);
 
         x1.scale(t,x2);
@@ -107,12 +107,12 @@ public class Vec3Test extends TestCase {
         
 
     public void test_scale_velo() {
-        Vec3 velo = new Vec3(0f,4.68f,15f);
-        Vec3 velo_t = new Vec3();
+        Vec3FP velo = new Vec3FP(0f,4.68f,15f);
+        Vec3FP velo_t = new Vec3FP();
         int t = FP.floatToFP(0.032f);
 
         velo.scale(t,velo_t);
-        Log.d("Vec3Test","velo="+velo+" velo_t="+velo_t+" t="+t);
+        Log.d("Vec3FPTest","velo="+velo+" velo_t="+velo_t+" t="+t);
         
         assertEquals(0f,FP.toFloat(velo_t.x));
         assertEquals(0.1497f,FP.toFloat(velo_t.y),0.0001);

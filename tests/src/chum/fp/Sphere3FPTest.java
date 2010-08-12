@@ -6,27 +6,27 @@ import android.util.Log;
 
 /**
  */
-public class Sphere3Test extends TestCase {
+public class Sphere3FPTest extends TestCase {
 
     protected void setUp() {
     }
 
 
     public void test_constructor() {
-        Sphere3 s = new Sphere3();
+        Sphere3FP s = new Sphere3FP();
         assertEquals(0,s.r);
         assertEquals(0,s.theta);
         assertEquals(0,s.phi);
 
-        s = new Sphere3(1f,2f,3f);
+        s = new Sphere3FP(1f,2f,3f);
         assertEquals(FP.floatToFP(1f),s.r);
         assertEquals(FP.floatToFP(2f),s.theta);
         assertEquals(FP.floatToFP(3f),s.phi);
     }
 
     public void test_cart2sphere() {
-        Vec3 v = new Vec3(0f,0f,0f);
-        Sphere3 s = new Sphere3(v);
+        Vec3FP v = new Vec3FP(0f,0f,0f);
+        Sphere3FP s = new Sphere3FP(v);
         assertEquals(0,s.r);
         assertEquals(0,s.theta);
         assertEquals(0,s.phi);
@@ -83,9 +83,9 @@ public class Sphere3Test extends TestCase {
 
 
     public void test_sphere2cart() {
-        Vec3 v1 = new Vec3(0f,0f,0f);
-        Vec3 v2 = new Vec3();
-        Sphere3 s = new Sphere3(v1);
+        Vec3FP v1 = new Vec3FP(0f,0f,0f);
+        Vec3FP v2 = new Vec3FP();
+        Sphere3FP s = new Sphere3FP(v1);
         v2.set(s);
         assertEquals(v1.x,v2.x);
         assertEquals(v1.y,v2.y);
@@ -111,8 +111,8 @@ public class Sphere3Test extends TestCase {
 
 
     public void test_spinAround() {
-        Vec3 v = new Vec3(0f,0f,50f);
-        Sphere3 sph = new Sphere3(v);
+        Vec3FP v = new Vec3FP(0f,0f,50f);
+        Sphere3FPFP sph = new Sphere3FPFP(v);
 
         assertEquals(0f,FP.toFloat(FP.rad2deg(sph.phi)));
 

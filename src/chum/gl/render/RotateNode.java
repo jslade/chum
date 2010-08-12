@@ -1,6 +1,6 @@
 package chum.gl.render;
 
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.RenderNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -14,14 +14,14 @@ public class RotateNode extends RenderNode {
     /** The axis of the rotation */
     public Vec3 rotation;
 
-    /** The angle, expressed in FP degrees */
-    public int degrees;
+    /** The angle, expressed in degrees */
+    public float degrees;
 
     /** Whether to save/restore the matrix */
     public boolean push;
 
 
-    public RotateNode(int deg, Vec3 x) {
+    public RotateNode(float deg, Vec3 x) {
         super();
         rotation = new Vec3(x);
         degrees = deg;
@@ -39,7 +39,7 @@ public class RotateNode extends RenderNode {
         if ( push ) gl.glPushMatrix();
         
         if ( degrees != 0 )
-            gl.glRotatex(degrees,
+            gl.glRotatef(degrees,
                          rotation.x,
                          rotation.y,
                          rotation.z);

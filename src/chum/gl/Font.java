@@ -1,7 +1,5 @@
 package chum.gl;
 
-import chum.fp.FP;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -28,10 +26,10 @@ public class Font {
     /** The Painter used to create the glyphs */
     public Painter painter;
 
-    /** The spacing to use between characters (FP) */
-    public int spacing = FP.ONE;
+    /** The spacing to use between characters */
+    public float spacing = 1f;
 
-    /** The Texture the manages the bitmap */
+    /** The Texture that manages the bitmap */
     public Texture texture;
 
     /** The character metrics for common characters */
@@ -158,9 +156,9 @@ public class Font {
 
 
 
-    /** Get the width of a string, as a FP value */
+    /** Get the width of a string, in pixels */
     public int getStringWidth(String str) {
-        int width = 0;
+    	int width = 0;
         for (int i=0, len=str.length(); i<len; ++i) {
             char ch = str.charAt(i);
             Glyph glyph = getGlyph(ch);
@@ -170,9 +168,9 @@ public class Font {
     }
 
 
-    /** Get the height of a string, as a FP value */
+    /** Get the height of a string, in pixels */
     public int getStringHeight(String str) {
-        int height = 0;
+    	int height = 0;
         for (int i=0, len=str.length(); i<len; ++i) {
             char ch = str.charAt(i);
             Glyph glyph = getGlyph(ch);
@@ -186,7 +184,7 @@ public class Font {
        Construct a Text mesh to display the given string
     */
     public Text buildText(String str) {
-        int len = str.length();
+    	int len = str.length();
         Glyph[] glyphs = getGlyphs(len);
         getGlyphs(str,glyphs);
         return buildText(glyphs,0,len);
@@ -323,17 +321,17 @@ public class Font {
         /** height of the glyph in the bitmap, in pixels */
         public int height;
 
-        /** u Location of the glyph in the texture, in FP */
-        public int texU;
+        /** u Location of the glyph in the texture, in texels */
+        public float texU;
 
-        /** v Location of the glyph in the texture, in FP */
-        public int texV;
+        /** v Location of the glyph in the texture, in texels */
+        public float texV;
 
-        /** width of the glyph in the texture, in FP */
-        public int texWidth;
+        /** width of the glyph in the texture, in texels */
+        public float texWidth;
 
-        /** height of the glyph in the texture, in FP */
-        public int texHeight;
+        /** height of the glyph in the texture, in texels */
+        public float texHeight;
 
 
         protected Glyph() {
@@ -373,7 +371,7 @@ public class Font {
 
 
         public Glyph set(char ch, int x, int y, int b, int w, int h,
-                        int u, int v, int uw, int vh) {
+        				 float u, float v, float uw, float vh) {
             this.ch = ch;
             this.x = x;
             this.y = y;
@@ -393,10 +391,7 @@ public class Font {
         public String toString() {
             return String.format("['%c'|%d,%d %dx%d %d|%.3f,%.3f %.3fx%.3f]",
                                  ch, x, y, width, height, baseline,
-                                 FP.toFloat(texU),
-                                 FP.toFloat(texV),
-                                 FP.toFloat(texWidth),
-                                 FP.toFloat(texHeight));
+                                 texU, texV, texWidth, texHeight);
         }
     }
 
@@ -538,10 +533,10 @@ public class Font {
         */
         public Glyph defineCharacter(char ch, int x, int y, int baseline,
                                      int width, int height) {
-            int u = FP.floatToFP(x / (float)bitmap.getWidth());
-            int v = FP.floatToFP(y / (float)bitmap.getHeight());
-            int uw = FP.floatToFP(width / (float)bitmap.getWidth());
-            int vh = FP.floatToFP(height / (float)bitmap.getHeight());
+        	float u = x / (float)bitmap.getWidth();
+            float v = y / (float)bitmap.getHeight();
+            float uw = width / (float)bitmap.getWidth();
+            float vh = height / (float)bitmap.getHeight();
 
             Glyph glyph = Glyph.obtain();
             glyph.set(ch,

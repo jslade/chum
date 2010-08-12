@@ -11,49 +11,49 @@ import java.nio.IntBuffer;
  * Optimizations also based on
  * http://www.devx.com/Java/Article/21850/0/page/2
  */
-public class Vec3 implements java.io.Serializable {
+public class Vec3FP implements java.io.Serializable {
 
     public int x;
     public int y;
     public int z;
     
-    public static Vec3 ORIGIN = new Vec3();
-    public static Vec3 X_AXIS = new Vec3(1f,0f,0f);
-    public static Vec3 Y_AXIS = new Vec3(0f,1f,0f);
-    public static Vec3 Z_AXIS = new Vec3(0f,0f,1f);
+    public static Vec3FP ORIGIN = new Vec3FP();
+    public static Vec3FP X_AXIS = new Vec3FP(1f,0f,0f);
+    public static Vec3FP Y_AXIS = new Vec3FP(0f,1f,0f);
+    public static Vec3FP Z_AXIS = new Vec3FP(0f,0f,1f);
 
-    public Vec3() {
+    public Vec3FP() {
         this.x = 0;
         this.y = 0;
         this.z = 0;
     }
 
-    public Vec3(Vec3 v) {
+    public Vec3FP(Vec3FP v) {
         set(v);
     }
 
-    public Vec3( int x, int y, int z ) {
+    public Vec3FP( int x, int y, int z ) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public Vec3( float x, float y, float z ) {
+    public Vec3FP( float x, float y, float z ) {
         this.x = FP.floatToFP(x);
         this.y = FP.floatToFP(y);
         this.z = FP.floatToFP(z);
     }
 
     public boolean equals(Object other) {
-        if (other instanceof Vec3) {
-            Vec3 v = (Vec3)other;
+        if (other instanceof Vec3FP) {
+            Vec3FP v = (Vec3FP)other;
             return (x == v.x && y == v.y && z == v.z);
         }
         return false;
     }
 
 
-    public final Vec3 set (Vec3 o) {
+    public final Vec3FP set (Vec3FP o) {
         x = o.x;
         y = o.y;
         z = o.z;
@@ -61,21 +61,21 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final void add (Vec3 o, Vec3 dest) {
+    public final void add (Vec3FP o, Vec3FP dest) {
         dest.x = x + o.x;
         dest.y = y + o.y;
         dest.z = z + o.z;
     }
 
 
-    public final void delta (Vec3 o, Vec3 dest) {
+    public final void delta (Vec3FP o, Vec3FP dest) {
         dest.x = x - o.x;
         dest.y = y - o.y;
         dest.z = z - o.z;
     }
 
 
-    public void scale (int scale, Vec3 dest) {
+    public void scale (int scale, Vec3FP dest) {
         long lscale = (long)scale;
         long t = (long)this.x * lscale;
         dest.x = (int)(t >> 16);
@@ -88,7 +88,7 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final int dot (Vec3 o) {
+    public final int dot (Vec3FP o) {
         //    = (x * o.x) + (y * o.y) + (z * o.z)
         // or = FP.mul(x,o.x) + FP.mul(y,o.y) + FP.mul(z,o.z);
         final int x2 = (int)((((long)x) * ((long)o.x)) >> 16);
@@ -98,7 +98,7 @@ public class Vec3 implements java.io.Serializable {
     }
 
     
-    public final void cross (Vec3 o, Vec3 dest) {
+    public final void cross (Vec3FP o, Vec3FP dest) {
         // x = t.y * o.z - o.y * t.z
         // y = t.z * o.x - o.z * t.x
         // z = t.x * o.y - o.x * t.y
@@ -145,21 +145,21 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final void maximum(Vec3 o, Vec3 dest) {
+    public final void maximum(Vec3FP o, Vec3FP dest) {
         dest.x = (x > o.x) ? x : o.x;
         dest.y = (y > o.y) ? y : o.y;
         dest.z = (z > o.z) ? z : o.z;
     }
 
 
-    public final void minimum(Vec3 o, Vec3 dest) {
+    public final void minimum(Vec3FP o, Vec3FP dest) {
         dest.x = (x < o.x) ? x : o.x;
         dest.y = (y < o.y) ? y : o.y;
         dest.z = (z < o.z) ? z : o.z;
     }
 
 
-    public final Vec3 set(int x, int y, int z) {
+    public final Vec3FP set(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -167,7 +167,7 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final Vec3 set(float x, float y, float z) {
+    public final Vec3FP set(float x, float y, float z) {
         this.x = FP.floatToFP(x);
         this.y = FP.floatToFP(y);
         this.z = FP.floatToFP(z);
@@ -175,7 +175,7 @@ public class Vec3 implements java.io.Serializable {
     }
 
 
-    public final Vec3 set(Sphere3 sph) {
+    public final Vec3FP set(Sphere3FP sph) {
         int theta = sph.theta;
         while ( theta < 0 ) theta += FP.PI_TIMES_2;
         while ( theta > FP.PI_TIMES_2 ) theta -= FP.PI_TIMES_2;

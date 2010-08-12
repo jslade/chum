@@ -1,7 +1,6 @@
 package chum.gl.render;
 
-import chum.fp.FP;
-import chum.fp.Vec3;
+import chum.f.Vec3;
 import chum.gl.RenderNode;
 
 import android.opengl.GLU;
@@ -44,10 +43,10 @@ public class CameraNode extends RenderNode {
        Create a CamerNode at the specified position, looking at the specified
        reference point, with the default orientation (y-axis is up)
     */
-    public CameraNode(Vec3 eye, Vec3 ref) {
+    public CameraNode(Vec3 vec3, Vec3 origin) {
         super();
-        eyePos.set(eye);
-        refPos.set(ref);
+        eyePos.set(vec3);
+        refPos.set(origin);
     }
 
 
@@ -123,11 +122,6 @@ public class CameraNode extends RenderNode {
     }
  
 
-    private float eye_x, eye_y, eye_z;
-    private float ref_x, ref_y, ref_z;
-    private float up_x, up_y, up_z;
-
-
     /**
        Set the camera.
     */
@@ -137,22 +131,12 @@ public class CameraNode extends RenderNode {
         gl10.glMatrixMode(GL10.GL_MODELVIEW);
         gl10.glLoadIdentity();
 
-        eye_x = FP.toFloat(eyePos.x);
-        eye_y = FP.toFloat(eyePos.y);
-        eye_z = FP.toFloat(eyePos.z);
-        ref_x = FP.toFloat(refPos.x);
-        ref_y = FP.toFloat(refPos.y);
-        ref_z = FP.toFloat(refPos.z);
-        up_x = FP.toFloat(up.x);
-        up_y = FP.toFloat(up.y);
-        up_z = FP.toFloat(up.z);
-
         // todo: can this be done w/out GLU.gluLookAt() -- avoiding
         // the conversion to float?
         GLU.gluLookAt( gl10,
-                       eye_x, eye_y, eye_z,
-                       ref_x, ref_y, ref_z,
-                       up_x, up_y, up_z);
+                       eyePos.x, eyePos.y, eyePos.z,
+                       refPos.x, refPos.y, refPos.z,
+                       up.x, up.y, up.z);
     }
 
 }

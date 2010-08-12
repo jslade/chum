@@ -13,9 +13,9 @@ public class M4Test extends TestCase {
 
 
     public void test_translate1() {
-        Vec3 v = new Vec3(0f,0f,0f);
+        Vec3FP v = new Vec3FP(0f,0f,0f);
         M4 m = new M4();
-        m.translate(new Vec3(1f,-1f,2f));
+        m.translate(new Vec3FP(1f,-1f,2f));
         m.multiply(v,v);
         
         assertEquals(1f,FP.toFloat(v.x),0.01);
@@ -25,10 +25,10 @@ public class M4Test extends TestCase {
         
 
     public void test_translate2() {
-        Vec3 v = new Vec3(0f,0f,0f);
+        Vec3FP v = new Vec3FP(0f,0f,0f);
         M4 m1 = new M4(), m2 = new M4();
-        m1.translate(new Vec3(1f,-1f,2f));
-        m2.translate(new Vec3(-1f,1f,-2f));
+        m1.translate(new Vec3FP(1f,-1f,2f));
+        m2.translate(new Vec3FP(-1f,1f,-2f));
         m1.multiply(m2,m2);
         m2.multiply(v,v);
         
@@ -40,9 +40,9 @@ public class M4Test extends TestCase {
 
     public void test_rotate_around_y() {
         // Rotate a point ccw around the y axis
-        Vec3 v = new Vec3(1f,0f,0f);
+        Vec3FP v = new Vec3FP(1f,0f,0f);
         M4 m = new M4();
-        m.rotate(new Vec3(0f,1f,0f), FP.PI_OVER_2);
+        m.rotate(new Vec3FP(0f,1f,0f), FP.PI_OVER_2);
         //Log.d("Test","test_rotate: m=\n"+m);
         m.multiply(v,v);
         
@@ -54,9 +54,9 @@ public class M4Test extends TestCase {
 
     public void test_rotate_around_x() {
         // Rotate a point cw around the x axis
-        Vec3 v = new Vec3(0f,0f,1f);
+        Vec3FP v = new Vec3FP(0f,0f,1f);
         M4 m = new M4();
-        m.rotate(new Vec3(1f,0f,0f), -FP.PI_OVER_2);
+        m.rotate(new Vec3FP(1f,0f,0f), -FP.PI_OVER_2);
         Log.d("Test","test_rotate: v="+v+" m=\n"+m);
         m.multiply(v,v);
         Log.d("Test","test_rotate: v'="+v);
