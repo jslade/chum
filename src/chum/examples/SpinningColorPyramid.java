@@ -25,6 +25,12 @@ public class SpinningColorPyramid extends GameActivity
 
 
     @Override
+    public void setViewOptions() {
+    	this.hideTitlebar = false;
+    }
+    
+    
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         origTitle = getTitle();

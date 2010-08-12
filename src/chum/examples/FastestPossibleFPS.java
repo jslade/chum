@@ -26,6 +26,13 @@ public class FastestPossibleFPS extends GameActivity
     private CharSequence origTitle;
 
     @Override
+    public void setViewOptions() {
+    	this.hideTitlebar = false;
+    	this.fullscreen = false;
+    }
+    
+    
+    @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);

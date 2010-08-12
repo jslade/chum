@@ -8,9 +8,10 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.view.Window;
+import android.view.WindowManager;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -32,9 +33,16 @@ public abstract class GameActivity extends Activity
     /** The RenderContext */
     public RenderContext renderContext;
 
-    /** GameTree that implements game logic and rendering **/
+    /** GameTree that implements game logic and rendering */
     protected GameTree tree;
 
+    /** View option: whether to hide the titlebar (default true) */
+    protected boolean hideTitlebar = true;
+    
+    /** View option: whether to show fullscreen without status bar (default true) */
+    protected boolean fullscreen = true;
+
+    
 
     /**
        Called on creation of the Activity
@@ -51,6 +59,8 @@ public abstract class GameActivity extends Activity
             });
         gameController.paused = false;
 
+        setViewOptions();
+        applyViewOptions();
         glSurface = createGLSurface();
         glSurface.setRenderer(this);
         this.setContentView(glSurface);
@@ -64,6 +74,23 @@ public abstract class GameActivity extends Activity
     }
 
 
+    /**
+       Set options for the view prior to setting the view content.
+       Default is to set fullscreen, non-windowed.  Subclasses will generally override this method.
+     */
+    protected void setViewOptions() {
+    }
+    
+    
+    /**
+       After view options are set, make them active
+     */
+    protected void applyViewOptions() {
+    	if ( this.hideTitlebar ) requestWindowFeature(Window.FEATURE_NO_TITLE);
+        if ( this.fullscreen ) getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+    
+    
     /**
        Create the GLSurfaceView
     */
@@ -102,13 +129,6 @@ public abstract class GameActivity extends Activity
        Called when the GLSurfaceView has finished initialization
     */
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        Looper.prepare();
-        gameController.gameHandler = new Handler(new Handler.Callback(){
-                public boolean handleMessage(Message msg) {
-                    return handleGame(msg);
-                }
-            });
-
         renderContext = new RenderContext(this,gl,config);
         renderContext.glSurface = this.glSurface;
 
@@ -118,7 +138,7 @@ public abstract class GameActivity extends Activity
         this.onSurfaceCreated(this.renderContext);
         tree.doSurfaceCreated(this.renderContext);
 
-	gameController.lastFrameStart = 
+        gameController.lastFrameStart = 
             gameController.fpsStart = SystemClock.uptimeMillis();
     }
 
