@@ -27,6 +27,7 @@ public class ChumExamples extends ListActivity
         addExample("Background Color / Touch", BackgroundColorTouch.class);
         addExample("Random color rects (2D)", RandomRectangles.class);
         addExample("Animated Text (2D)", AnimatedTextExample.class);
+        addExample("SkaterDroid (2D)", SkaterDroidExample.class);
         addExample("Colored spinning pyramid (3D)", SpinningColorPyramid.class);
         addExample("Textured cube (3D)", TexturedCube.class);
         addExample("Many-many nodes test", ManyManyNodes.class);

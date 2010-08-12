@@ -3,7 +3,7 @@
       package="chum.examples"
       android:versionCode="1"
       android:versionName="0.0.1">
-    <application android:label="@string/app_name">
+    <application android:label="@string/app_name" android:debuggable="true">
         <activity android:name=".ChumExamples"
                   android:label="@string/app_name">
             <intent-filter>
@@ -36,7 +36,14 @@
         <activity android:name=".AnimatedTextExample"
             android:label="Text animated in various ways (2D)" />
 
+        <activity android:name=".SkaterDroidExample"
+            android:label="SkaterDroid (2D)"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden" />
+
+
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
     </application>
+
 </manifest> 
