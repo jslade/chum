@@ -1,6 +1,7 @@
 package chum.gl;
 
 
+import chum.engine.GameController;
 import chum.engine.GameEvent;
 import chum.engine.GameNode;
 
@@ -24,6 +25,7 @@ public class RenderNode extends GameNode {
     /**
        Called once when the rendering surface/context is created
     */
+    @Override
     public void onSurfaceCreated(RenderContext renderContext) {
         super.onSurfaceCreated(renderContext);
 
@@ -32,10 +34,21 @@ public class RenderNode extends GameNode {
         this.renderContext = renderContext;
     }
 
+    
+    /**
+       Called when the node gets added into a parent.  Make sure we have a
+       RenderContext if not already...
+     */
+    @Override
+	public void onSetup(GameController gc) {
+    	super.onSetup(gc);
+    	this.renderContext = gc.renderContext;
+    }
 
     /**
        Called when the game surface is resized.
     */
+    @Override
     public void onSurfaceChanged(int width, int height) {
         super.onSurfaceChanged(width,height);
     }
