@@ -1,15 +1,14 @@
-bin
-gen
+*/bin
+*/gen
 
-local.properties
+*/local.properties
+*/.classpath
+*/.project
+*/.settings
 
-tests/bin
-tests/gen
-tests/local.properties
+chum-tests/instrumented
+chum-tests/local.properties
+chum-tests/coverage.em
 
-tests/coverage.em
-tests/instrumented
-
-.classpath
 
 
