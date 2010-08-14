@@ -1,5 +1,6 @@
 package chum.gl.render;
 
+import chum.engine.GameController;
 import chum.gl.RenderNode;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -29,6 +30,12 @@ public class ScaleNode extends RenderNode {
     }
 
 
+    public void onSetup(GameController gc) {
+    	super.onSetup(gc);
+    	if ( num_children > 0 ) push = true;
+    }
+    
+    
     public void renderPrefix(GL10 gl) {
         if ( push ) gl.glPushMatrix();
 

@@ -1,5 +1,6 @@
 package chum.gl.render;
 
+import chum.engine.GameController;
 import chum.f.Vec3;
 import chum.gl.RenderNode;
 
@@ -35,6 +36,12 @@ public class TranslateNode extends RenderNode {
     }
 
 
+    public void onSetup(GameController gc) {
+    	super.onSetup(gc);
+    	if ( num_children > 0 ) push = true;
+    }
+    
+    
     public void renderPrefix(GL10 gl) {
         if ( push ) gl.glPushMatrix();
         gl.glTranslatef(position.x,
