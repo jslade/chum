@@ -16,6 +16,8 @@ import java.util.Random;
 */
 public class GameController {
 
+	/** The GameActivity */
+	public GameActivity activity;
 
     /** The GameTree representing the game logic, controllers, renderers */
     public GameTree tree;

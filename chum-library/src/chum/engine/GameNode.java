@@ -304,7 +304,9 @@ public class GameNode {
 
        This happens after the game tree is created, so all of the
        nodes should exist.  This gives the nodes a chance to do final
-       setup, so as finding specific other nodes in the tree
+       setup, so as finding specific other nodes in the tree.
+       
+       If a subclass overrides this method, be sure to call super.onSetup()
     */
     public void onSetup(GameController gameController) {
         this.gameController = gameController;
@@ -316,6 +318,8 @@ public class GameNode {
 
        This happens after the game tree is setup, and immediately before
        the first frame is rendered.
+
+       If a subclass overrides this method, be sure to call super.onSetup()
     */
     public void onSurfaceCreated(RenderContext renderContext) {
         if ( gameController != null )
@@ -327,6 +331,8 @@ public class GameNode {
        Called when the game surface is resized.  This is called at least
        once, immediately before rendering the first frame.  It may be
        called additional times, if the app is setup to auto-rotate, etc
+
+       If a subclass overrides this method, be sure to call super.onSetup()
     */
     public void onSurfaceChanged(int width, int height) {
     }

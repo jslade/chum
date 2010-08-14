@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -52,6 +53,7 @@ public abstract class GameActivity extends Activity
         //setupExceptionHandler();
 
         gameController = new GameController();
+        gameController.activity = this;
         gameController.uiHandler = new Handler(new Handler.Callback(){
                 public boolean handleMessage(Message msg) {
                     return handleUI(msg);
@@ -63,7 +65,7 @@ public abstract class GameActivity extends Activity
         applyViewOptions();
         glSurface = createGLSurface();
         glSurface.setRenderer(this);
-        this.setContentView(glSurface);
+        this.setContentView(createContentView(glSurface));
 
         // By default, the glSurface is the view that recieves
         // the input events -- its the view the event listeners
@@ -74,6 +76,16 @@ public abstract class GameActivity extends Activity
     }
 
 
+    /**
+       Create the view hierarchy for the activity.
+       The hierarchy should include the given GLSurfaceView, but may contain others as well.
+       Default is to just use the GLSurface view itself.
+     */
+    protected View createContentView(GLSurfaceView glSurface) {
+    	return glSurface;
+    }
+
+    
     /**
        Set options for the view prior to setting the view content.
        Default is to set fullscreen, non-windowed.  Subclasses will generally override this method.
