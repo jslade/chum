@@ -14,8 +14,7 @@ This is another of the many game frameworks / engines being created for Android.
 
 The basic structure is that the whole game / activity is set up as a tree of GameNodes.  The tree is divided into two parts: the logic subtree, and the rendering subtree.  Communication between nodes is inteded to be done primarily by GameEvents, which propogate up and down the branches of the tree.
 
-All rendering is done with OpenGL, and the focus is on using 16:16 fixed-point (FP) representation whenever possible, for higher performance even on the lower-end devices.
-
+All rendering is done with OpenGL.  Chum provides many shortcuts for common things, but makes direct OpenGL access simple as well.  Both floating-point and fixed-point constructs are supported
 
 <h2 id="current">Current State</h2>
 
@@ -23,7 +22,7 @@ I'm just getting started, and really haven't proved out how well the approach wi
 
 * GameActivity which sets up the main activity, and manages the GLSurfaceView for rendering
 * GameTree and various GameNode subclasses for implementing both the logic and the rendering
-* 2D (orthographic) and 3D (perspective) projections are supported, and can be moved (3D world + 2D overlay)
+* 2D (orthographic) and 3D (perspective) projections are supported, and can be mixed (3D world + 2D overlay)
 * The GameEvent system is in place for coordinating what's going on.
 * Several examples are included to show the basics
 
