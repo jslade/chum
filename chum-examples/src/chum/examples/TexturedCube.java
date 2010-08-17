@@ -85,7 +85,7 @@ public class TexturedCube extends GameActivity
                     cube = createCube();
                     cubeNode = new MeshNode(cube);
 
-                    tex = new Texture();
+                    tex = new Texture(null);
                     tex.setResource(R.drawable.textured_cube);
                     cubeNode.texture = tex;
 

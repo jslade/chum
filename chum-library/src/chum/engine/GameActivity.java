@@ -67,7 +67,7 @@ public abstract class GameActivity extends Activity
         glSurface.setRenderer(this);
         this.setContentView(createContentView(glSurface));
 
-        // By default, the glSurface is the view that recieves
+        // By default, the glSurface is the view that receives
         // the input events -- its the view the event listeners
         // should attach to:
         gameController.inputView = glSurface;

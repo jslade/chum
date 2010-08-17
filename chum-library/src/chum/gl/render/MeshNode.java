@@ -91,6 +91,7 @@ public class MeshNode extends RenderNode {
 
 
     /** When the surface is created, ensure that the mesh is setup to render */
+    @Override
     public void onSurfaceCreated(RenderContext renderContext) {
         super.onSurfaceCreated(renderContext);
 
@@ -102,6 +103,22 @@ public class MeshNode extends RenderNode {
 
         if ( texture != null )
             texture.onSurfaceCreated(renderContext);
+    }
+
+       
+    /** Inform the mesh and texture when the surface is resized */
+    @Override
+    public void onSurfaceChanged(int width, int height) {
+        super.onSurfaceChanged(width,height);
+
+        if ( mesh != null ) {
+            mesh.onSurfaceChanged(width,height);
+            if ( texture == null )
+                texture = mesh.getTexture();
+        }
+
+        if ( texture != null )
+            texture.onSurfaceChanged(width,height);
     }
 
        

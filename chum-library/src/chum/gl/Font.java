@@ -67,7 +67,7 @@ public class Font {
     /** Initialize */
     protected void init(RenderContext renderContext) {
         this.renderContext = renderContext;
-        texture = new Texture();
+        texture = new Texture(renderContext);
         commonGlyphs = new Glyph[commonChars.length()];
         moreGlyphs = new HashMap<Character,Glyph>();
     }

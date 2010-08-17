@@ -143,6 +143,14 @@ public class Mesh {
     }
 
 
+    /**
+       Prepare for rendering.
+    */
+    public void onSurfaceChanged(int width, int height) {
+        checkManagedAndDirty();
+    }
+
+
     public void checkManagedAndDirty() {
         if( managed ) {
             if( renderContext.isGL11 &&

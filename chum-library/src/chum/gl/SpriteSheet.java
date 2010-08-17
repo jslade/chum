@@ -30,8 +30,8 @@ public class SpriteSheet extends Texture {
     /**
        Create a new SpriteSheet
     */
-    public SpriteSheet() {
-        this(1);
+    public SpriteSheet(RenderContext renderContext) {
+        this(renderContext,1);
     }
 
 
@@ -40,8 +40,8 @@ public class SpriteSheet extends Texture {
        @param count the number of sprites / ImageData to be defined
        on the sheet
     */
-    public SpriteSheet(int count) {
-        super(1);
+    public SpriteSheet(RenderContext renderContext, int count) {
+        super(renderContext,1);
         this.data = new ImageData[count];
     }
 

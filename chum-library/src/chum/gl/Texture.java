@@ -19,11 +19,13 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Texture {
 
+    /** The RenderContext */
+    public RenderContext renderContext;
+    
     private int[] tex_ids;
     private int[] res_ids;
     private Bitmap[] load_bitmap;
     private int tex_dim;
-
 
     /** The minimization filter */
     public int minFilter = GL10.GL_LINEAR;
@@ -34,30 +36,28 @@ public class Texture {
     /** The texture environment */
     public int texEnv = GL10.GL_MODULATE;
 
-    /** The RenderContext */
-    public RenderContext renderContext;
-    
     
     /**
        Create a Texture for managing a single standard 2D texture image
     */
-    public Texture() {
-        this(1,GL10.GL_TEXTURE_2D);
+    public Texture(RenderContext renderContext) {
+        this(renderContext,1,GL10.GL_TEXTURE_2D);
     }
 
 
     /**
        Create a Texture for managing a number of standard 2D texture images.
     */
-    public Texture(int num_tex) {
-        this(num_tex,GL10.GL_TEXTURE_2D);
+    public Texture(RenderContext renderContext,int num_tex) {
+        this(renderContext,num_tex,GL10.GL_TEXTURE_2D);
     }
 
         
     /**
        Create a Texture for managing a number of texture images
     */
-    public Texture(int num_tex,int tex_dim) {
+    public Texture(RenderContext renderContext,int num_tex,int tex_dim) {
+    	this.renderContext = renderContext;
         this.tex_dim = tex_dim;
 
         tex_ids = new int[num_tex];
@@ -95,16 +95,14 @@ public class Texture {
     */
     public void onSurfaceCreated(RenderContext renderContext) {
     	this.renderContext = renderContext;
-    	
-    	// Don't do it here, since it's done in onSurfaceChanged()
-    	//forceReload(renderContext);
+    	forceReload();
     }
         
 
     /**
     */
     public void onSurfaceChanged(int width, int height) {
-        forceReload();
+        
     }
 
 
@@ -118,7 +116,7 @@ public class Texture {
             if ( load_bitmap[num] != null )
                 load(renderContext.gl10, num, load_bitmap[num]);
             else if ( res_ids[num] > 0 )
-                load(renderContext.gl10, num, res_ids[num],renderContext.appContext);
+                load(renderContext.gl10, num, res_ids[num]);
         }
     }
         
@@ -147,8 +145,8 @@ public class Texture {
     /**
        Load the texture from a specific Resource
     */
-    public void load(GL10 gl, int res_id, Context context) {
-        load(gl, 0, res_id, context);
+    public void load(GL10 gl, int res_id) {
+        load(gl, 0, res_id);
     }
 
 
@@ -159,8 +157,8 @@ public class Texture {
        texture object on the GPU, then the bitmap is recycled, as
        it is no longer needed.
     */
-    public void load(GL10 gl, int num, int res_id, Context context) {
-        Resources res = context.getResources();
+    public void load(GL10 gl, int num, int res_id) {
+        Resources res = renderContext.appContext.getResources();
         Bitmap bmp = BitmapFactory.decodeResource(res,res_id);
         load(gl, num, bmp);
         bmp.recycle();
