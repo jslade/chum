@@ -38,6 +38,10 @@ public class RenderContext {
     /** Whether VBOs are supported */
     public boolean canUseVBO = false;
 
+    
+    /** Whether non-power-of-two texture bitmaps are supported */
+    public boolean allowNPOT = false;
+    
 
     /** GLSurfaceView **/
     public GLSurfaceView glSurface;
@@ -68,7 +72,7 @@ public class RenderContext {
             
             // Assume VBO's can be used if this is OpenGL ES 1.1
             // This will later be refined by device-dependent settings.
-            // todo: need a mechanism to override by device, and
+            // TODO: need a mechanism to override by device, and
             // user settings (?)
             this.canUseVBO = true;
         }

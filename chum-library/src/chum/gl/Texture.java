@@ -34,6 +34,10 @@ public class Texture {
     /** The texture environment */
     public int texEnv = GL10.GL_MODULATE;
 
+    /** The RenderContext */
+    public RenderContext renderContext;
+    
+    
     /**
        Create a Texture for managing a single standard 2D texture image
     */
@@ -90,6 +94,23 @@ public class Texture {
        This will typically be called from a TextureNode or MeshNode.
     */
     public void onSurfaceCreated(RenderContext renderContext) {
+    	this.renderContext = renderContext;
+    	
+    	// Don't do it here, since it's done in onSurfaceChanged()
+    	//forceReload(renderContext);
+    }
+        
+
+    /**
+    */
+    public void onSurfaceChanged(int width, int height) {
+        forceReload();
+    }
+
+
+    /**
+     */
+    public void forceReload() {
         tex_ids[0] = 0; // force redefined...
         define(renderContext.gl10);
 
@@ -109,6 +130,8 @@ public class Texture {
         if ( !isDefined() ) {
             IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
             gl.glGenTextures(tex_ids.length,tex_ids_buf);
+            //chum.util.Log.d("Texture %s: define res=%d tex=%d",
+            //this, res_ids[0], tex_ids[0]);
         }
     }
 
@@ -160,15 +183,44 @@ public class Texture {
         load_bitmap[num] = bmp;
         if ( !isDefined() ) return;
 
+        Bitmap pot_bmp = ensurePOT(bmp);
+
         gl.glBindTexture(tex_dim, tex_ids[num]);
 
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
 
-        GLUtils.texImage2D(tex_dim, 0, bmp, 0);
+        GLUtils.texImage2D(tex_dim, 0, pot_bmp, 0);
+        
+        if (pot_bmp != bmp)
+        	pot_bmp.recycle();
     }
 
+    
+    /**
+       Ensure the bitmap to be used for the texture mapping has
+       power-of-two dimensions, if required for this render context.
+       If it is not, generates a scaled version.
+     */
+    protected Bitmap ensurePOT(Bitmap bmp) {
+    	double width_ln2 = Math.log((double)bmp.getWidth())/Math.log(2.0);
+    	double height_ln2 = Math.log((double)bmp.getHeight())/Math.log(2.0);
+    	
+    	if ( renderContext.allowNPOT ||
+    		 (width_ln2 - Math.floor(width_ln2) == 0 &&
+    		  height_ln2 - Math.floor(height_ln2) == 0) ) {
+    		return bmp; // usable as is
+    	}
 
+    	// width or height isn't a power of two
+    	int scaledWidth = (int) Math.pow(2,Math.ceil(width_ln2));
+    	int scaledHeight = (int) Math.pow(2,Math.ceil(height_ln2));
+    	chum.util.Log.w("Creating POT scaled bitmap (%dx%d) from non-POT bitmap (%dx%d)",
+    					scaledWidth, scaledHeight, bmp.getWidth(), bmp.getHeight()); 
+    	return Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false);
+    }
+ 
+    
     /**
        Bind the texture, preparing it to be applied to following rendering
     */
