@@ -1,5 +1,6 @@
 package chum.gl.render;
 
+import chum.engine.GameController;
 import chum.gl.Mesh;
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
@@ -90,6 +91,20 @@ public class MeshNode extends RenderNode {
     }
 
 
+    @Override
+    public void onSetup(GameController gc) {
+        super.onSetup(gc);
+        if ( mesh != null ) {
+            mesh.renderContext = gc.renderContext;
+            if ( texture == null )
+                texture = mesh.getTexture();
+        }
+        
+        if ( texture != null )
+            texture.renderContext = gc.renderContext;
+    }
+
+    
     /** When the surface is created, ensure that the mesh is setup to render */
     @Override
     public void onSurfaceCreated(RenderContext renderContext) {
@@ -131,6 +146,7 @@ public class MeshNode extends RenderNode {
        This method is intended for use with OpenGL ES 1.x and will
        throw an IllegalStateException when OpenGL ES 2.0 is used.
     */
+    @Override
     public void renderPrefix(GL10 gl10) {
         if ( mesh == null ) {
             //throw new IllegalStateException("can't render without a Mesh");
@@ -369,6 +385,7 @@ public class MeshNode extends RenderNode {
        If a translation or a scaling were a applied, restores the previous
        ModelView matrix
     */
+    @Override
     public void renderPostfix(GL10 gl) {
         if ( blend )
             gl.glDisable(GL10.GL_BLEND);

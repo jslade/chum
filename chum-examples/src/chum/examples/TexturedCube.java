@@ -1,10 +1,23 @@
 package chum.examples;
 
-import chum.engine.*;
-import chum.engine.common.*;
-import chum.f.*;
-import chum.gl.*;
-import chum.gl.render.*;
+import chum.engine.GameActivity;
+import chum.engine.GameNode;
+import chum.engine.GameTree;
+import chum.engine.common.FPSNode;
+import chum.f.Vec2;
+import chum.f.Vec3;
+import chum.gl.Color;
+import chum.gl.Mesh;
+import chum.gl.MeshBuilder;
+import chum.gl.RenderNode;
+import chum.gl.Texture;
+import chum.gl.VertexAttribute;
+import chum.gl.VertexAttributes;
+import chum.gl.render.CameraNode;
+import chum.gl.render.ClearNode;
+import chum.gl.render.MeshNode;
+import chum.gl.render.RotateNode;
+import chum.gl.render.Standard3DNode;
 
 import android.os.Bundle;
 
@@ -44,10 +57,12 @@ public class TexturedCube extends GameActivity
                 // The logic tree consists of two nodes:
                 // - one to spin the pyramid
                 // - one to periodically display the FPS
+                @Override
                 protected GameNode createLogicTree() {
                     GameNode node = new GameNode();
 
                     node.addNode(new GameNode(){
+                            @Override
                             public boolean update(long millis) {
                                 spin(millis);
                                 return true;
@@ -55,6 +70,7 @@ public class TexturedCube extends GameActivity
                         });
 
                     node.addNode(new FPSNode(){
+                            @Override
                             public void showFPS() {
                                 super.showFPS();
                                 showFPSInTitle();
@@ -75,6 +91,7 @@ public class TexturedCube extends GameActivity
                        - Rotate node for z-axis
                          - MeshNode to draw the pyramid
                 */
+                @Override
                 protected RenderNode createRenderTree() {
                     Standard3DNode base = new chum.gl.render.Standard3DNode();
                                 
@@ -86,7 +103,7 @@ public class TexturedCube extends GameActivity
                     cubeNode = new MeshNode(cube);
 
                     tex = new Texture(null);
-                    tex.setResource(R.drawable.textured_cube);
+                    tex.setProvider(new Texture.ResourceProvider(R.drawable.textured_cube));
                     cubeNode.texture = tex;
 
                     rot_x = new RotateNode(0,Vec3.X_AXIS);

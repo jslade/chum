@@ -9,7 +9,6 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
-
 import java.util.HashMap;
 
 
@@ -118,6 +117,7 @@ public class Font {
     */
  public void loadFromTypeface(Typeface typeface, int size,String chars) {
      painter = new Painter(typeface,size);
+     texture.setProvider(new Texture.StaticProvider(painter.bitmap));
      paintCharacters(chars);
  }
 
@@ -128,6 +128,8 @@ public class Font {
     */
     public void loadFromBitmap(Bitmap bitmap) {
         painter = new Painter(bitmap);
+        texture.setProvider(new Texture.StaticProvider(painter.bitmap));
+        texture.load(renderContext.gl10);
     }
 
 
@@ -147,7 +149,7 @@ public class Font {
 
         // After characters are added to the texture, it needs to be
         // pushed to the GPU.
-        texture.load(renderContext.gl10, painter.bitmap);
+        texture.load(renderContext.gl10);
     }
 
 
@@ -350,6 +352,7 @@ public class Font {
             instance_count++;
         }
 
+        @Override
         protected void finalize() {
             instance_count--;
         }
@@ -529,7 +532,7 @@ public class Font {
             // Paint the character.  The coord given to drawText() is where
             // the baseline of the character goes.
             int baseline = (int)Math.ceil(paint.descent());
-            canvas.drawText(chars, 0, 1, (float)(nextX-charBounds.left), (float)(nextY-baseline),
+            canvas.drawText(chars, 0, 1, (nextX-charBounds.left), (nextY-baseline),
                             paint);
 
             // Fill in the Glyph

@@ -1,12 +1,15 @@
 package chum.gl;
 
-import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.IntBuffer;
+
 import javax.microedition.khronos.opengles.GL10;
 
 
@@ -22,10 +25,11 @@ public class Texture {
     /** The RenderContext */
     public RenderContext renderContext;
     
-    private int[] tex_ids;
-    private int[] res_ids;
-    private Bitmap[] load_bitmap;
-    private int tex_dim;
+    /** The ImageProvider to (re)load the image as needed */
+    public ImageProvider[] provider;
+    
+    private final int[] tex_ids;
+    private final int tex_dim;
 
     /** The minimization filter */
     public int minFilter = GL10.GL_LINEAR;
@@ -61,30 +65,24 @@ public class Texture {
         this.tex_dim = tex_dim;
 
         tex_ids = new int[num_tex];
-        res_ids = new int[num_tex];
-        load_bitmap = new Bitmap[num_tex];
+        provider = new ImageProvider[num_tex];
     }
 
 
     /**
-       Set the Resource id to be used for the Texture.  When this is done beforehand,
-       the init() method will automatically load the texture and prepare it to
-       be bound.
+       Set the ImageProvider to be used for the texture image. 
     */
-    public void setResource(int res_id) {
-        setResource(0,res_id);
+    public void setProvider(ImageProvider provider) {
+        setProvider(0,provider);
     }
 
 
     /**
-       Set the Resource id to be used for the Texture.  When this is done beforehand,
-       the init() method will automatically load the texture and prepare it to
-       be bound.
+       Set the ImageProvider to be used for the texture image
     */
-    public void setResource(int num,int res_id) {
-        res_ids[num] = res_id;
+    public void setProvider(int num, ImageProvider ip) {
+        this.provider[num] = ip;
     }
-
 
 
     /**
@@ -102,22 +100,16 @@ public class Texture {
     /**
     */
     public void onSurfaceChanged(int width, int height) {
-        
+        load(renderContext.gl10);
     }
 
 
     /**
      */
     public void forceReload() {
-        tex_ids[0] = 0; // force redefined...
+        for(int i=0; i<tex_ids.length; ++i)
+            tex_ids[i] = 0; // force redefined...
         define(renderContext.gl10);
-
-        for(int num=0; num<res_ids.length; ++num) {
-            if ( load_bitmap[num] != null )
-                load(renderContext.gl10, num, load_bitmap[num]);
-            else if ( res_ids[num] > 0 )
-                load(renderContext.gl10, num, res_ids[num]);
-        }
     }
         
 
@@ -142,58 +134,44 @@ public class Texture {
     }
 
 
-    /**
-       Load the texture from a specific Resource
-    */
-    public void load(GL10 gl, int res_id) {
-        load(gl, 0, res_id);
+    public void load(GL10 gl) {
+        for(int i=0,n=tex_ids.length; i<n; ++i)
+            load(gl,i);
     }
-
-
-    /**
-       Load the texture from a specific resource.
-
-       The resource is loaded as a Bitmap, then loaded into the
-       texture object on the GPU, then the bitmap is recycled, as
-       it is no longer needed.
-    */
-    public void load(GL10 gl, int num, int res_id) {
-        Resources res = renderContext.appContext.getResources();
-        Bitmap bmp = BitmapFactory.decodeResource(res,res_id);
-        load(gl, num, bmp);
-        bmp.recycle();
-        this.load_bitmap[num] = null;
-    }
-
     
-    /**
-       Load the texture from the given Bitmap
-    */
-    public void load(GL10 gl, Bitmap bmp) {
-        load(gl, 0, bmp);
-    }
-
-
+    
     /**
        Load the texture image data and filters onto the GPU
     */
-    protected void load(GL10 gl, int num, Bitmap bmp) {
-        load_bitmap[num] = bmp;
-        if ( !isDefined() ) return;
-
-        Bitmap pot_bmp = ensurePOT(bmp);
+    public void load(GL10 gl, int num) {
+        define(gl);
+        Bitmap bitmap = getBitmap(num);
+        if ( bitmap == null ) return;
+        
+        Bitmap pot_bitmap = ensurePOT(bitmap);
 
         gl.glBindTexture(tex_dim, tex_ids[num]);
 
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
         gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
 
-        GLUtils.texImage2D(tex_dim, 0, pot_bmp, 0);
+        GLUtils.texImage2D(tex_dim, 0, pot_bitmap, 0);
         
-        if (pot_bmp != bmp)
-        	pot_bmp.recycle();
+        if (pot_bitmap != bitmap) pot_bitmap.recycle();
+        recycleBitmap(bitmap, num);
     }
 
+    
+    protected Bitmap getBitmap(int num) {
+        if ( provider[num] == null ) return null;
+        return provider[num].getBitmap(renderContext);
+    }
+    
+    
+    protected void recycleBitmap(Bitmap bitmap, int num) {
+        provider[num].recycleBitmap(bitmap);
+    }
+    
     
     /**
        Ensure the bitmap to be used for the texture mapping has
@@ -201,8 +179,8 @@ public class Texture {
        If it is not, generates a scaled version.
      */
     protected Bitmap ensurePOT(Bitmap bmp) {
-    	double width_ln2 = Math.log((double)bmp.getWidth())/Math.log(2.0);
-    	double height_ln2 = Math.log((double)bmp.getHeight())/Math.log(2.0);
+    	double width_ln2 = Math.log(bmp.getWidth())/Math.log(2.0);
+    	double height_ln2 = Math.log(bmp.getHeight())/Math.log(2.0);
     	
     	if ( renderContext.allowNPOT ||
     		 (width_ln2 - Math.floor(width_ln2) == 0 &&
@@ -249,5 +227,86 @@ public class Texture {
     public void unbind(GL10 gl, int num) {
         gl.glBindTexture(tex_dim, 0);
     }
+    
+    
+    
+    public static interface ImageProvider {
+        public Bitmap getBitmap(RenderContext renderContext);
+        public void recycleBitmap(Bitmap bitmap);
+    }
 
+
+    public static class StaticProvider implements ImageProvider {
+        public Bitmap bitmap;
+        public StaticProvider(Bitmap bmp) { this.bitmap = bmp; }
+        public Bitmap getBitmap(RenderContext renderContext) { return bitmap; }
+        public void recycleBitmap(Bitmap b) {}
+    }
+    
+    
+    public static class ResourceProvider implements ImageProvider {
+        public int res_id;
+        public Bitmap bitmap;
+        
+        public ResourceProvider(int id) {
+            this.res_id = id;
+        }
+
+        public Bitmap getBitmap(RenderContext renderContext) {
+            if ( bitmap == null ) {
+                Resources res = renderContext.appContext.getResources();
+                bitmap = BitmapFactory.decodeResource(res,res_id);
+            }
+            return bitmap;
+        }
+        
+        public void recycleBitmap(Bitmap b) {
+            if ( bitmap != null ) {
+                bitmap.recycle();
+                bitmap = null;
+            }
+        }
+    }
+    
+    public static class AssetProvider implements ImageProvider {
+        public String asset;
+        public Bitmap bitmap;
+        
+        public AssetProvider(String asset) {
+            this.asset = asset;
+        }
+
+        public Bitmap getBitmap(RenderContext renderContext) {
+            if ( bitmap == null ) {
+                InputStream is;
+                try {
+                    chum.util.Log.d("AssetProvider: loading %s", asset);
+                    is = renderContext.appContext.getAssets()
+                        .open(asset,AssetManager.ACCESS_STREAMING);
+                }
+                catch (IOException e) {
+                    chum.util.Log.w("AssetProvider: can't load %s: %s", asset, e);
+                    return null;
+                }
+
+                try {
+                    bitmap = BitmapFactory.decodeStream(is);
+                    chum.util.Log.d("AssetProvider: loaded %s", asset);
+                }
+                finally {
+                    try { is.close(); }
+                    catch (IOException e) {}
+                }
+            }
+            return bitmap;
+        }
+        
+        public void recycleBitmap(Bitmap b) {
+            if ( bitmap != null ) {
+                bitmap.recycle();
+                bitmap = null;
+            }
+        }
+    }
+    
 }   
