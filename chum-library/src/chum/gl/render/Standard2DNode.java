@@ -7,10 +7,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 /**
    A RenderNode appropriate for use as the base of the render tree that sets up a standard
-   3D environment.
-
-   * Enables depth test
-   * Enables face culling, using CCW direction as the front
+   2D environment.
 */
 public class Standard2DNode extends OrthographicProjection {
 
