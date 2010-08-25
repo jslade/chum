@@ -1,7 +1,5 @@
 package chum.gl;
 
-import chum.util.Log;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -489,7 +487,7 @@ public class Font {
 
         protected void clearCanvas() {
             canvas.drawColor(0x00000000, PorterDuff.Mode.CLEAR);
-            canvas.drawColor(0xffff0000);
+            canvas.drawColor(0xffffff00);
         }
 
 
@@ -506,12 +504,12 @@ public class Font {
             paint.getTextBounds(chars,0,1,charBounds);
             int width = charBounds.right - charBounds.left;
             int height = (int)Math.ceil(paint.descent() - paint.ascent());
-            Log.d("paint '%c' x=%d y=%d bounds=[%d,%d %d,%d] w=%d h=%d asc=%.1f des=%.1f",
-                   ch, nextX, nextY,
-                   charBounds.left, charBounds.bottom,
-                   charBounds.right, charBounds.top,
-                   width, height,
-                   paint.ascent(), paint.descent());
+            //Log.d("paint '%c' x=%d y=%d bounds=[%d,%d %d,%d] w=%d h=%d asc=%.1f des=%.1f",
+            //       ch, nextX, nextY,
+            //       charBounds.left, charBounds.bottom,
+            //       charBounds.right, charBounds.top,
+            //       width, height,
+            //       paint.ascent(), paint.descent());
 
             // Keep track of max width seen, which will be reserved for space
             if ( width == 0 ) width = maxw /2; // for space
