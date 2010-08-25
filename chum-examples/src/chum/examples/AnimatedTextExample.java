@@ -1,9 +1,20 @@
 package chum.examples;
 
-import chum.engine.*;
-import chum.f.*;
-import chum.gl.*;
-import chum.gl.render.*;
+import chum.engine.GameActivity;
+import chum.engine.GameController;
+import chum.engine.GameEvent;
+import chum.engine.GameNode;
+import chum.engine.GameSequence;
+import chum.engine.GameTree;
+import chum.f.Vec3;
+import chum.gl.Color;
+import chum.gl.Font;
+import chum.gl.Mesh;
+import chum.gl.RenderContext;
+import chum.gl.RenderNode;
+import chum.gl.render.ClearNode;
+import chum.gl.render.Standard2DNode;
+import chum.gl.render.TextNode;
 import chum.input.TouchInputNode;
 import chum.util.Log;
 
@@ -137,7 +148,7 @@ public class AnimatedTextExample extends GameActivity
                 animation = new GameSequence.Series();
                 GameSequence par = new GameSequence.Parallel();
                 animation.addNode(par);
-                to.set(center.x,(float)(renderContext.height-30),0);
+                to.set(center.x,(renderContext.height-30),0);
                 par.addNode(textNode.animatePosition(to,500));
                 par.addNode(textNode.animateScale(1f,0.5f,500));
                 animation.addNode(new GameSequence(500));
