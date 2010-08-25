@@ -3,8 +3,8 @@ package chum.gl.render;
 import chum.engine.common.TextAnimation;
 import chum.f.Vec3;
 import chum.gl.Color;
-import chum.gl.Text;
 import chum.gl.RenderContext;
+import chum.gl.Text;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -115,6 +115,7 @@ public class TextNode extends MeshNode {
 
 
     /** When the surface is created, ensure that the mesh is setup to render */
+    @Override
     public void onSurfaceCreated(RenderContext renderContext) {
         if ( this.texture == null ) {
             if ( text.font != null )
@@ -131,6 +132,7 @@ public class TextNode extends MeshNode {
     /**
        Prepares the render state for drawing the text
     */
+    @Override
     public void renderPrefix(GL10 gl) {
         pushed = false;
 
@@ -169,6 +171,7 @@ public class TextNode extends MeshNode {
        If a translation or a scaling were a applied, restores the previous
        ModelView matrix
     */
+    @Override
     public void renderPostfix(GL10 gl) {
         if ( pushed ) gl.glPopMatrix();
         super.renderPostfix(gl);
@@ -274,7 +277,7 @@ public class TextNode extends MeshNode {
        @return the new {@link TextAnimation.Color instance}
     */
     public TextAnimation.Color animateAlpha(float start, float end, long duration) {
-        if ( this.color == null ) this.color = new Color(Color.BLACK);
+        if ( this.color == null ) this.color = new Color(Color.BLACK); // TODO: allocate Color from pool
         TextAnimation.Color anim = new TextAnimation.Color(this,duration);
         Color startColor = new Color(this.color);
         Color endColor = new Color(this.color);
