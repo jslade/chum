@@ -3,13 +3,12 @@ package chum.gl;
 import chum.f.Vec2;
 import chum.f.Vec3;
 import chum.fp.FP;
-import chum.gl.Color;
-
 import chum.gl.VertexAttributes.Usage;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+
 import javax.microedition.khronos.opengles.GL10;
 
 
@@ -73,6 +72,15 @@ public class MeshBuilder {
         if ( deltaInd > 0 ) extendIndices(deltaInd);
     }
 
+
+    public void addVertex(Vec3 pos) {
+        if ( !checkAttributes(Usage.Position) )
+            throw new IllegalArgumentException("Vertex data doesn't match attributes");
+
+        extendVerts(1);
+        put(pos);
+        count++;
+    }
 
     public void addVertex(Vec3 pos, Vec3 norm, Color col) {
         if ( !checkAttributes(Usage.Position,
