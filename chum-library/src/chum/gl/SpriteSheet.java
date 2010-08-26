@@ -2,7 +2,19 @@ package chum.gl;
 
 import chum.gl.render.Sprite;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import android.graphics.Bitmap;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 
 /**
@@ -44,7 +56,7 @@ public class SpriteSheet extends Texture {
         this.data = new ImageData[count];
     }
 
-
+    
     /**
      * Create a new SpriteSheet sized for a specific number of sprites
      * 
@@ -148,4 +160,85 @@ public class SpriteSheet extends Texture {
 
     }
 
+    
+    /**
+       Helper to load sprite sheet data from file(s).
+    
+       @author jeremy
+     */
+    public static class Loader {
+        
+        RenderContext renderContext;
+        
+        public Loader(RenderContext renderContext) {
+            this.renderContext = renderContext;
+        }
+        
+        
+        /**
+           Create a SpriteSheet using the specified atlas image, and the image location
+           data read from the specified xml file.
+           
+           The XML file has this format:
+        
+             <sheet>
+               <sprite name="circle" x="0" y="0" width="128" height="128" />
+               ...
+             </sheet>
+         */
+        public SpriteSheet loadFromAssets(String imgPath, String xmlPath) {
+            Texture.AssetProvider provider = new Texture.AssetProvider(imgPath);
+            
+            Document xml = openXMLAsset(xmlPath);
+            NodeList spriteList = xml.getElementsByTagName("sprite");
+
+            SpriteSheet sheet = new SpriteSheet(renderContext,spriteList.getLength(),provider);
+            
+            for(int i=0; i < spriteList.getLength(); ++i) {
+                Element elem = (Element)spriteList.item(i);
+                int x = Integer.parseInt(elem.getAttribute("x"));
+                int y = Integer.parseInt(elem.getAttribute("y"));
+                int w = Integer.parseInt(elem.getAttribute("width"));
+                int h = Integer.parseInt(elem.getAttribute("height"));
+                sheet.define(i,x,y,x+w,y+h);
+            }
+            
+            return sheet;
+        }
+        
+        
+        
+        protected Document openXMLAsset(String xmlPath) {
+            // TODO: better error handling here -- raise meaningful errors instead of return null
+            
+            // Open the stream
+            // -------------------------------------------------------------
+            InputStream stream;
+            try { stream = renderContext.appContext.getAssets().open(xmlPath); }
+            catch (IOException e) {
+                chum.util.Log.e("Error loading "+xmlPath+": "+e);
+                return null;
+            } 
+
+            Document document = null;
+            try {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                document = builder.parse(stream);
+            } catch(ParserConfigurationException e) {
+                chum.util.Log.e("Error loading "+xmlPath+": "+e);
+                return null;
+            } catch(SAXException e) {
+                chum.util.Log.e("Error loading "+xmlPath+": "+e);
+                return null;
+            } catch(IOException e) {
+                chum.util.Log.e("Error loading "+xmlPath+": "+e);
+                return null;
+            }
+
+            return document;
+        }
+    }
+    
+    
 }
