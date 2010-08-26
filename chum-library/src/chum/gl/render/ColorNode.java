@@ -20,7 +20,7 @@ public class ColorNode extends RenderNode {
     
     
     public ColorNode(Color color) {
-        this(color,Color.WHITE);
+        this(color,null);
     }
     
     
@@ -40,7 +40,8 @@ public class ColorNode extends RenderNode {
 
     @Override
     public void renderPostfix(GL10 gl) {
-        if ( postColor != null )
+        if ( postColor != null &&
+             postColor != color )
             gl.glColor4f(postColor.red,postColor.green,postColor.blue,postColor.alpha);
     }
 
