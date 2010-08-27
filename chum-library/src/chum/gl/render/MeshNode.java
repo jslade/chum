@@ -281,30 +281,25 @@ public class MeshNode extends RenderNode {
         
         for( int i = 0; i < numAttributes; i++ ) {
             VertexAttribute attribute = mesh.attributes.get( i );
-            if( attribute.usage == Usage.Position ) {
+            switch(attribute.usage) {
+            case  Usage.Position:
                 gl.glEnableClientState( GL11.GL_VERTEX_ARRAY );
                 mesh.vertices.position( attribute.offset );
                 gl.glVertexPointer( attribute.numComponents, type,
                                     mesh.attributes.vertexSize, mesh.vertices );
-                continue;
-            }
-            
-            if( attribute.usage == Usage.Color ) {
+                break;
+            case  Usage.Color:
                 gl.glEnableClientState( GL11.GL_COLOR_ARRAY );
                 mesh.vertices.position( attribute.offset );
                 gl.glColorPointer( attribute.numComponents, type,
                                    mesh.attributes.vertexSize, mesh.vertices );
-                continue;
-            }
-            
-            if( attribute.usage == Usage.Normal ) {
+                break;
+            case Usage.Normal:
                 gl.glEnableClientState( GL11.GL_NORMAL_ARRAY );
                 mesh.vertices.position( attribute.offset );
                 gl.glNormalPointer( type, mesh.attributes.vertexSize, mesh.vertices );
-                continue;
-            }
-            
-            if( attribute.usage == Usage.Texture ) {
+                break;
+            case Usage.Texture:
                 gl.glEnable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
@@ -312,7 +307,7 @@ public class MeshNode extends RenderNode {
                 gl.glTexCoordPointer( attribute.numComponents, type,
                                       mesh.attributes.vertexSize, mesh.vertices );
                 textureUnit++;
-                continue;
+                break;
             }
         }
         
@@ -325,19 +320,22 @@ public class MeshNode extends RenderNode {
         
         for( int i = 0; i < numAttributes; i++ ) {
             VertexAttribute attribute = mesh.attributes.get( i );
-            if( attribute.usage == Usage.Color )
+            switch(attribute.usage) {
+            case Usage.Color:
                 gl.glDisableClientState( GL11.GL_COLOR_ARRAY );
-            if( attribute.usage == Usage.Normal )
+                break;
+            case Usage.Normal:
                 gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
-            if( attribute.usage == Usage.Texture ) {
+                break;
+            case Usage.Texture:
                 gl.glDisable(GL10.GL_TEXTURE_2D);
                 gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
                 gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
                 textureUnit--;
+                break;
             }		
         }
         
-        mesh.vertices.position(0);
     }
     
 //     public void render( ShaderProgram shader, int primitiveType ) {
