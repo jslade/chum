@@ -197,18 +197,18 @@ public class MeshBuilder {
         if ( useFixedPoint ) {
             int[] verts = new int[count * (attributes.vertexSize / 4)]; // 4=sizeof(int)
             fixedVerts.clear();
-            fixedVerts.get(verts);
+            fixedVerts.get(verts,0,verts.length);
             mesh.setVertices(verts);
         } else {
             float[] verts = new float[count * (attributes.vertexSize / 4)]; // 4=sizeof(int)
             floatVerts.clear();
-            floatVerts.get(verts);
+            floatVerts.get(verts,0,verts.length);
             mesh.setVertices(verts);
         }
 
         short[] i_array = new short[indices.position()];
         indices.clear();
-        indices.get(i_array);
+        indices.get(i_array,0,i_array.length);
         mesh.setIndices(i_array);
 
         mesh.type = type;
@@ -256,7 +256,7 @@ public class MeshBuilder {
             else
                 capacity = capacity * 2;
         }
-        //Log.d("increased vert capacity to %d", capacity);
+        //chum.util.Log.d("increased vert capacity to %d", capacity);
 
         // Allocate / Re-allocate the buffers for new capacity
         if ( useFixedPoint ) {
@@ -265,8 +265,7 @@ public class MeshBuilder {
             else {
                 IntBuffer moreVerts = IntBuffer.allocate(capacity * attributes.vertexSize);
                 fixedVerts.clear();
-                for( int c = count; c > 0; -- c )
-                    moreVerts.put(fixedVerts.get());
+                moreVerts.put(fixedVerts.array());
                 fixedVerts = moreVerts;
             }
             //Log.d("extendVerts: vert capacity=%d, buf position=%d, capacity=%d",
@@ -275,12 +274,13 @@ public class MeshBuilder {
             if ( floatVerts == null )
                 floatVerts = FloatBuffer.allocate(capacity);
             else {
-                FloatBuffer moreVerts = FloatBuffer.allocate(capacity);
+                FloatBuffer moreVerts = FloatBuffer.allocate(capacity * attributes.vertexSize);
                 floatVerts.clear();
-                for( int c = count; c > 0; -- c )
-                    moreVerts.put(floatVerts.get());
+                moreVerts.put(floatVerts.array());
                 floatVerts = moreVerts;
             }
+            //chum.util.Log.d("extendVerts: vert capacity=%d, buf position=%d, capacity=%d",
+            //                capacity, floatVerts.position(), floatVerts.capacity());
         }
     }
 
