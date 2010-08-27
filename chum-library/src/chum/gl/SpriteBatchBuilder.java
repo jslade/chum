@@ -43,8 +43,9 @@ public class SpriteBatchBuilder {
      *            the left location of the sprite
      * @param y
      *            the bottom location of the sprite
+     * TODO: add anchor parameter
      */
-    public void add(SpriteSheet.ImageData image, int x, int y) {
+    public void add(SpriteSheet.ImageData image, float x, float y) {
         if (this.spriteBatch.sheet == null)
             this.spriteBatch.sheet = image.sheet;
         else if (image.sheet != this.spriteBatch.sheet)

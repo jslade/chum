@@ -131,7 +131,10 @@ public class SpriteSheet extends Texture {
         /** bottom edge location, in texels */
         public float v2;
 
+        /** (optional) name for the sprite image */
+        public String name;
 
+        
         public ImageData(SpriteSheet sheet, int left, int top, int right, int bottom,
                 int sheetWidth, int sheetHeight) {
             this.sheet = sheet;
@@ -200,7 +203,8 @@ public class SpriteSheet extends Texture {
                 int y = Integer.parseInt(elem.getAttribute("y"));
                 int w = Integer.parseInt(elem.getAttribute("width"));
                 int h = Integer.parseInt(elem.getAttribute("height"));
-                sheet.define(i,x,y,x+w,y+h);
+                ImageData image = sheet.define(i,x,y,x+w,y+h);
+                image.name = elem.getAttribute("name");
             }
             
             return sheet;

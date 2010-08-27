@@ -63,7 +63,7 @@ public class SpriteBatch extends Mesh {
     public void adjustOrigin(int offset, int count, Vec3 delta) {
         Mesh.Vertex vertex = new Mesh.Vertex(this.attributes);
 
-        chum.util.Log.d("adjustOrigin: offset=%d count=%d delta=%s", offset, count, delta);
+        //chum.util.Log.d("adjustOrigin: offset=%d count=%d delta=%s", offset, count, delta);
         for (int i = offset, i1 = offset + count; i < i1; ++i) {
             int v0 = i * 4;
             for (int v = v0, v1 = v0 + 4; v < v1; ++v) {
