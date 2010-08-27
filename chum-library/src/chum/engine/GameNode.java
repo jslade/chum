@@ -72,6 +72,15 @@ public class GameNode {
        @return The node
      */
     public GameNode addNode(GameNode n) {
+        return insertNode(n,num_children);
+    }
+    
+    
+    /**
+       Add a node this this node's list of child nodes, at a specific position
+     
+     */
+    public GameNode insertNode(GameNode n,int position) {
         if ( n == null )
             throw new IllegalArgumentException("node can't be null");
 
@@ -79,6 +88,9 @@ public class GameNode {
             n.parent.removeNode(n);
 
         synchronized(this) {
+            if ( position < 0 ) position = 0;
+            if ( position > num_children ) position = num_children;
+            
             if ( children == null ) children = new GameNode[2];
             if ( num_children == children.length ) {
                 GameNode[] new_children = new GameNode[children.length*2];
@@ -86,16 +98,45 @@ public class GameNode {
                     new_children[i] = children[i];
                 children = new_children;
             }
-            
-            children[num_children++] = n;
+        
+            for ( int i=num_children; i > position; --i ) children[i] = children[i-1];
+            children[position] = n;
+            num_children++;
+
             _added(n);
         }
 
         return this;
     }
 
+    
+    /**
+       Insert a node into the tree by making it a child of this node, and reparenting all of this
+       node's children to the new node
+     */
+    public GameNode spliceIn(GameNode insertNode) {
+        while ( num_children > 0 ) {
+            insertNode.addNode(children[0]);
+        }
+        this.addNode(insertNode);
+        return this;
+    }
 
+    
+    /**
+       Remove a node from the tree after moving all of its children to the parent
+     */
+    public GameNode spliceOut() {
+        GameNode oldParent = parent;
+        remove();
+        while ( num_children > 0 ) {
+            oldParent.addNode(children[0]);
+        }
+        
+        return this;
+    }
 
+    
     // Track nodes that get removed during iteration (update())
     protected GameNode removedNode;
 
@@ -232,7 +273,7 @@ public class GameNode {
     }
 
 
-    protected GameNode findNode(String name, GameNode skipNode) {
+    public GameNode findNode(String name, GameNode skipNode) {
         if ( this == skipNode ) return null;
         if ( name.equals(this.name) ) return this;
 
