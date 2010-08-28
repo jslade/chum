@@ -64,6 +64,7 @@ public class Mesh {
 
     /** the rendering context object */
     public RenderContext renderContext;
+    // TODO: want renderContext to be a member of Mesh, or managed strictly by MeshNode for consistency?
 
     /** managed? */
     public final boolean managed;
@@ -198,32 +199,16 @@ public class Mesh {
         if (!renderContext.canUseVBO)
             return;
 
-        int[] handle = new int[1];
-        gl.glGenBuffers(1, handle, 0);
+        int needed = 1;
+        if (maxIndices > 0) needed++;
+        
+        int[] handle = new int[needed];
+        gl.glGenBuffers(needed, handle, 0);
         vertexBufferObjectHandle = handle[0];
 
-        if (maxIndices > 0) {
-            gl.glGenBuffers(1, handle, 0);
-            indexBufferObjectHandle = handle[0];
-        }
+        if ( maxIndices > 0) indexBufferObjectHandle = handle[1];
     }
 
-
-    // /** Allocate a VBO and IBO for the mesh
-    // todo: why does it need a tmp buffer to allocate? */
-    // private void createGPUBuffers( GL20 gl ) {
-    // ByteBuffer tmp = ByteBuffer.allocateDirect( 4 );
-    // tmp.order( ByteOrder.nativeOrder() );
-    // IntBuffer handle = tmp.asIntBuffer();
-
-    // gl.glGenBuffers( 1, handle );
-    // vertexBufferObjectHandle = handle.get(0);
-
-    // if( maxIndices > 0 ) {
-    // gl.glGenBuffers( 1, handle );
-    // indexBufferObjectHandle = handle.get(0);
-    // }
-    // }
 
     /** Fill the VBO / IBO for the mesh */
     private void fillGPUBuffers() {
