@@ -40,8 +40,8 @@ public class SpriteSheet extends Texture {
     /**
      * Create a new SpriteSheet
      */
-    public SpriteSheet(RenderContext renderContext) {
-        this(renderContext, 1);
+    public SpriteSheet() {
+        this(1);
     }
 
 
@@ -51,28 +51,15 @@ public class SpriteSheet extends Texture {
      * @param count
      *            the number of sprites / ImageData to be defined on the sheet
      */
-    public SpriteSheet(RenderContext renderContext, int count) {
-        super(renderContext, 1);
+    public SpriteSheet(int count) {
+        super(1);
         this.data = new ImageData[count];
     }
 
     
-    /**
-     * Create a new SpriteSheet sized for a specific number of sprites
-     * 
-     * @param count
-     *            the number of sprites / ImageData to be defined on the sheet
-     */
-    public SpriteSheet(RenderContext renderContext, int count, ImageProvider provider) {
-        this(renderContext, count);
-        setProvider(provider);
-        load(renderContext.gl10);
-    }
-
-
     @Override
-    public Bitmap getBitmap(int num) {
-        Bitmap bmp = super.getBitmap(num);
+    public Bitmap getBitmap(RenderContext renderContext, int num) {
+        Bitmap bmp = super.getBitmap(renderContext, num);
         this.width = bmp.getWidth();
         this.height = bmp.getHeight();
         return bmp;
@@ -195,7 +182,9 @@ public class SpriteSheet extends Texture {
             Document xml = openXMLAsset(xmlPath);
             NodeList spriteList = xml.getElementsByTagName("sprite");
 
-            SpriteSheet sheet = new SpriteSheet(renderContext,spriteList.getLength(),provider);
+            SpriteSheet sheet = new SpriteSheet(spriteList.getLength());
+            sheet.setProvider(provider);
+            sheet.getBitmap(renderContext,0); // sets width/height
             
             for(int i=0; i < spriteList.getLength(); ++i) {
                 Element elem = (Element)spriteList.item(i);
@@ -206,7 +195,7 @@ public class SpriteSheet extends Texture {
                 ImageData image = sheet.define(i,x,y,x+w,y+h);
                 image.name = elem.getAttribute("name");
             }
-            
+
             return sheet;
         }
         

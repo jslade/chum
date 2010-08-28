@@ -102,9 +102,9 @@ public class TexturedCube extends GameActivity
                     cube = createCube();
                     cubeNode = new MeshNode(cube);
 
-                    tex = new Texture(null);
+                    tex = new Texture();
                     tex.setProvider(new Texture.ResourceProvider(R.drawable.textured_cube));
-                    cubeNode.texture = tex;
+                    cubeNode.setTexture(tex);
 
                     rot_x = new RotateNode(0,Vec3.X_AXIS);
                     rot_y = new RotateNode(0,Vec3.Y_AXIS);

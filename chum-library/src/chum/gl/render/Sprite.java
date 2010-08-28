@@ -149,18 +149,6 @@ public class Sprite extends MeshNode {
     }
 
 
-    /** When the surface is created, ensure that the mesh is setup to render */
-    @Override
-    public void onSurfaceCreated(RenderContext renderContext) {
-        if (this.texture == null) {
-            if (this.texture == null)
-                throw new IllegalStateException("Text for TextNode has no Texture");
-        }
-
-        super.onSurfaceCreated(renderContext);
-    }
-
-
     /**
      * Prepares the render state for drawing the text
      */
@@ -219,8 +207,10 @@ public class Sprite extends MeshNode {
      * only one image (the full bitmap size)
      */
     public static Sprite fromBitmap(Bitmap bitmap, RenderContext renderContext) {
-        SpriteSheet sheet = new SpriteSheet(renderContext, 1, 
-                                            new Texture.StaticProvider(bitmap));
+        SpriteSheet sheet = new SpriteSheet(1);
+        sheet.setProvider(new Texture.StaticProvider(bitmap));
+        sheet.width = bitmap.getWidth();
+        sheet.height = bitmap.getHeight();
         sheet.define(0, 0, 0, sheet.width, sheet.height);
 
         SpriteBatch batch = new SpriteBatch(sheet, 1);
@@ -229,7 +219,7 @@ public class Sprite extends MeshNode {
         builder.build();
 
         Sprite sprite = new Sprite(batch);
-        sprite.texture = sheet; // this shouldn't be necessary?
+        sprite.setTexture(sheet); // this shouldn't be necessary?
         return sprite;
     }
 

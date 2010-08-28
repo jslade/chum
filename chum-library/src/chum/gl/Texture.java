@@ -22,9 +22,6 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Texture {
 
-    /** The RenderContext */
-    public RenderContext renderContext;
-    
     /** The ImageProvider to (re)load the image as needed */
     public ImageProvider[] provider;
     
@@ -44,26 +41,24 @@ public class Texture {
     /**
        Create a Texture for managing a single standard 2D texture image
     */
-    public Texture(RenderContext renderContext) {
-        this(renderContext,1,GL10.GL_TEXTURE_2D);
+    public Texture() {
+        this(1,GL10.GL_TEXTURE_2D);
     }
 
 
     /**
        Create a Texture for managing a number of standard 2D texture images.
     */
-    public Texture(RenderContext renderContext,int num_tex) {
-        this(renderContext,num_tex,GL10.GL_TEXTURE_2D);
+    public Texture(int num_tex) {
+        this(num_tex,GL10.GL_TEXTURE_2D);
     }
 
         
     /**
        Create a Texture for managing a number of texture images
     */
-    public Texture(RenderContext renderContext,int num_tex,int tex_dim) {
-    	this.renderContext = renderContext;
+    public Texture(int num_tex,int tex_dim) {
         this.tex_dim = tex_dim;
-
         tex_ids = new int[num_tex];
         provider = new ImageProvider[num_tex];
     }
@@ -86,30 +81,37 @@ public class Texture {
 
 
     /**
+
+     */
+    public void onSetup(RenderContext renderContext) {
+        if ( renderContext != null ) load(renderContext);
+    }
+    
+    
+    /**
        Initialize the texture prior to using it for rendering.  This allocates
        a texture handle for the texture on the GPU.
 
        This will typically be called from a TextureNode or MeshNode.
-    */
+     */
     public void onSurfaceCreated(RenderContext renderContext) {
-    	this.renderContext = renderContext;
-    	forceReload();
+        forceReload(renderContext);
     }
-        
+  
 
     /**
-    */
-    public void onSurfaceChanged(int width, int height) {
-        load(renderContext.gl10);
-    }
+     */
+    public void onSurfaceChanged(RenderContext renderContext, int width, int height) {
+        load(renderContext);
+    }   
 
 
     /**
      */
-    public void forceReload() {
+    public void forceReload(RenderContext renderContext) {
         for(int i=0; i<tex_ids.length; ++i)
             tex_ids[i] = 0; // force redefined...
-        define(renderContext.gl10);
+        load(renderContext);
     }
         
 
@@ -134,35 +136,35 @@ public class Texture {
     }
 
 
-    public void load(GL10 gl) {
+    public void load(RenderContext renderContext) {
         for(int i=0,n=tex_ids.length; i<n; ++i)
-            load(gl,i);
+            load(renderContext,i);
     }
     
     
     /**
        Load the texture image data and filters onto the GPU
     */
-    public void load(GL10 gl, int num) {
-        define(gl);
-        Bitmap bitmap = getBitmap(num);
+    public void load(RenderContext renderContext, int num) {
+        define(renderContext.gl10);
+
+        Bitmap bitmap = getBitmap(renderContext,num);
         if ( bitmap == null ) return;
         
-        Bitmap pot_bitmap = ensurePOT(bitmap);
+        GL10 gl10 = renderContext.gl10;
+        gl10.glBindTexture(tex_dim, tex_ids[num]);
 
-        gl.glBindTexture(tex_dim, tex_ids[num]);
+        gl10.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
+        gl10.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
 
-        gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
-        gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
-
+        Bitmap pot_bitmap = ensurePOT(renderContext,bitmap);
         GLUtils.texImage2D(tex_dim, 0, pot_bitmap, 0);
-        
         if (pot_bitmap != bitmap) pot_bitmap.recycle();
         recycleBitmap(bitmap, num);
     }
 
     
-    protected Bitmap getBitmap(int num) {
+    protected Bitmap getBitmap(RenderContext renderContext,int num) {
         if ( provider[num] == null ) return null;
         return provider[num].getBitmap(renderContext);
     }
@@ -178,7 +180,7 @@ public class Texture {
        power-of-two dimensions, if required for this render context.
        If it is not, generates a scaled version.
      */
-    protected Bitmap ensurePOT(Bitmap bmp) {
+    protected Bitmap ensurePOT(RenderContext renderContext, Bitmap bmp) {
     	double width_ln2 = Math.log(bmp.getWidth())/Math.log(2.0);
     	double height_ln2 = Math.log(bmp.getHeight())/Math.log(2.0);
     	
@@ -209,7 +211,10 @@ public class Texture {
        Bind the texture, preparing it to be applied to following rendering
     */
     public void bind(GL10 gl, int num) {
-        gl.glBindTexture(tex_dim, tex_ids[num]);
+        int id = tex_ids[num];
+        if ( id == 0 )
+            chum.util.Log.w("bind() on texture which has not been loaded into GPU");
+        gl.glBindTexture(tex_dim, id);
     }
 
 
@@ -229,6 +234,25 @@ public class Texture {
     }
     
     
+    
+
+    /**
+       Texture.Node implements the methods to prepare the texture
+       for drawing (loading the image, loading into GPU) 
+     */
+    public static class Node extends RenderNode {
+        
+        public Texture texture;
+        
+    }
+    
+    
+    
+    /**
+     * ImageProvider loads the image data for a texture on demand
+     * @author jeremy
+     *
+     */
     
     public static interface ImageProvider {
         public Bitmap getBitmap(RenderContext renderContext);

@@ -57,9 +57,8 @@ public class MeshNode extends RenderNode {
 
     public MeshNode(Mesh mesh,int type,Texture tex) {
         super();
-        this.mesh = mesh;
-        this.type = type;
-        this.texture = tex;
+        setMesh(mesh,type);
+        setTexture(tex);
     }
 
 
@@ -82,26 +81,36 @@ public class MeshNode extends RenderNode {
         this.type = type;
 
         if ( mesh == null )
-            texture = null;
+            setTexture(null);
         else {
             Texture tex = mesh.getTexture();
-            if ( tex != null ) texture = tex;
+            if ( tex != null ) setTexture(tex);
             else ;// keep the texture already set
         }
     }
 
+    
+    /**
+       Set the texture to be mapped to the mesh
+     */
+    public void setTexture(Texture tex) {
+        texture = tex;
+        if ( texture != null )
+            if ( renderContext != null ) texture.load(renderContext);
+    }
 
+    
     @Override
     public void onSetup(GameController gc) {
         super.onSetup(gc);
         if ( mesh != null ) {
             mesh.renderContext = gc.renderContext;
-            if ( texture == null )
-                texture = mesh.getTexture();
+            if ( texture == null ) setTexture(mesh.getTexture());
         }
         
-        if ( texture != null )
-            texture.renderContext = gc.renderContext;
+        if ( texture != null ) {
+            texture.onSetup(gc.renderContext);
+        }
     }
 
     
@@ -112,12 +121,12 @@ public class MeshNode extends RenderNode {
 
         if ( mesh != null ) {
             mesh.onSurfaceCreated(renderContext);
-            if ( texture == null )
-                texture = mesh.getTexture();
+            if ( texture == null ) setTexture(mesh.getTexture());
         }
-
-        if ( texture != null )
+        
+        if ( texture != null ) {
             texture.onSurfaceCreated(renderContext);
+        }
     }
 
        
@@ -128,12 +137,12 @@ public class MeshNode extends RenderNode {
 
         if ( mesh != null ) {
             mesh.onSurfaceChanged(width,height);
-            if ( texture == null )
-                texture = mesh.getTexture();
+            if ( texture == null ) setTexture(mesh.getTexture());
         }
 
-        if ( texture != null )
-            texture.onSurfaceChanged(width,height);
+        if ( texture != null ) {
+            texture.onSurfaceChanged(renderContext,width,height);
+        }
     }
 
        

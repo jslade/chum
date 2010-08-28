@@ -117,14 +117,7 @@ public class TextNode extends MeshNode {
     /** When the surface is created, ensure that the mesh is setup to render */
     @Override
     public void onSurfaceCreated(RenderContext renderContext) {
-        if ( this.texture == null ) {
-            if ( text.font != null )
-                this.texture = text.font.texture;
-
-            if ( this.texture == null )
-                throw new IllegalStateException("Text for TextNode has no Texture");
-        }
-
+        if ( text.font != null ) setTexture(text.font.texture);
         super.onSurfaceCreated(renderContext);
     }
 

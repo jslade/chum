@@ -21,6 +21,7 @@ public class Font {
 
     /** The rendering context */
     public RenderContext renderContext;
+    // TODO: instead of RenderContext as a member, have a Font.Node that gets added to the render tree to manage loading, etc
 
     /** The Painter used to create the glyphs */
     public Painter painter;
@@ -64,7 +65,7 @@ public class Font {
     /** Initialize */
     protected void init(RenderContext renderContext) {
         this.renderContext = renderContext;
-        texture = new Texture(renderContext);
+        texture = new Texture();
         commonGlyphs = new Glyph[commonChars.length()];
         moreGlyphs = new HashMap<Character,Glyph>();
     }
@@ -127,7 +128,7 @@ public class Font {
     public void loadFromBitmap(Bitmap bitmap) {
         painter = new Painter(bitmap);
         texture.setProvider(new Texture.StaticProvider(painter.bitmap));
-        texture.load(renderContext.gl10);
+        texture.load(renderContext);
     }
 
 
@@ -147,7 +148,7 @@ public class Font {
 
         // After characters are added to the texture, it needs to be
         // pushed to the GPU.
-        texture.load(renderContext.gl10);
+        texture.load(renderContext);
     }
 
 
