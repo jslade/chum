@@ -48,6 +48,7 @@ public abstract class GameActivity extends Activity
     /**
        Called on creation of the Activity
      */
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setupExceptionHandler();
@@ -163,6 +164,9 @@ public abstract class GameActivity extends Activity
         renderContext.height = height;
         this.onSurfaceChanged(width, height);
         tree.doSurfaceChanged(width, height);
+        
+        // At this point, everything is setup for the game to begin
+        tree.postDown(GameEvent.obtain(GameEvent.GAME_INIT));
     }
 
 
@@ -237,14 +241,30 @@ public abstract class GameActivity extends Activity
 
 
     /**
-       Handle a message sent to the game thread
-    */
-    public boolean handleGame(Message msg) {
+       Handle a game event that bubbles to the top (not handled in the tree
+       
+     */
+    public boolean onGameEvent(GameEvent event) {
         return false;
     }
+    
+    
+    /**
+       Post a game event
+     */
+    public void post(GameEvent event) {
+        tree.postDown(event);
+    }
+    
+    
+    /**
+       Post a game event after a delay
+     */
+    public void postDelayed(GameEvent event,long delay) {
+        tree.postDownDelayed(event,delay);
+    }
 
-
-
+    
     /**
        Setup the default exception handler.
 
