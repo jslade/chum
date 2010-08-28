@@ -52,8 +52,10 @@ public class TraceNode extends HookNode {
     protected void setTracer() {
         if ( this.trace10 == null ) {
             RenderNode renderNode = (RenderNode)realNode;
-            if ( renderNode.renderContext.isGL11 ) this.trace10 = new TraceGL11();
-            else this.trace10 = new TraceGL10();
+            if ( renderNode.renderContext != null ) {
+                if ( renderNode.renderContext.isGL11 ) this.trace10 = new TraceGL11();
+                else this.trace10 = new TraceGL10();
+            }   
         }
     }
     
