@@ -83,6 +83,8 @@ public class MeshNode extends RenderNode {
         if ( mesh == null )
             setTexture(null);
         else {
+            if ( renderContext != null ) mesh.onSurfaceCreated(renderContext);
+            
             Texture tex = mesh.getTexture();
             if ( tex != null ) setTexture(tex);
             else ;// keep the texture already set

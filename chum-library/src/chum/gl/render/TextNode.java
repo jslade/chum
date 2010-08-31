@@ -117,8 +117,8 @@ public class TextNode extends MeshNode {
     /** When the surface is created, ensure that the mesh is setup to render */
     @Override
     public void onSurfaceCreated(RenderContext renderContext) {
-        if ( text.font != null ) setTexture(text.font.texture);
         super.onSurfaceCreated(renderContext);
+        if ( text != null && text.font != null ) setTexture(text.font.texture);
     }
 
 
