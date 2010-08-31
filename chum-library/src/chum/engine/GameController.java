@@ -13,6 +13,8 @@ import java.util.Random;
    GameController is used to track shared info needed by all of the GameNodes.
 
    It is typically created by a GameActivity, but GameActivity is not explicitly required.
+   
+   TODO: can't currently use GameController without GameActivity -- need to get cleaner separation
 */
 public class GameController {
 
@@ -30,7 +32,7 @@ public class GameController {
 
 
     /** with and height of the viewport
-        todo: can these be removed?  makes more sense to have in RenderContext?
+        TODO: can these be removed?  makes more sense to have in RenderContext?
      **/
     public int width, height;
     
@@ -77,15 +79,14 @@ public class GameController {
        Called each frame
     */
     public void update() {
-	long currentFrameStart = SystemClock.uptimeMillis();
-	long frameDelta = currentFrameStart - lastFrameStart;
+        long currentFrameStart = SystemClock.uptimeMillis();
+        long frameDelta = currentFrameStart - lastFrameStart;
         totalElapsed += frameDelta;
         
-	tree.update(frameDelta);
+        tree.update(frameDelta);
 
-	lastFrameStart = currentFrameStart;
+        lastFrameStart = currentFrameStart;
         frameCounter++;
-
     }
 
 
@@ -106,5 +107,11 @@ public class GameController {
         return fps;
     }
 
+    
+    public void resetFrame() {
+        lastFrameStart = SystemClock.uptimeMillis();
+        fpsStart = lastFrameStart;
+        frameCounter = 0;
+    }
 }
 

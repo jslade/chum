@@ -9,7 +9,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -151,8 +150,7 @@ public abstract class GameActivity extends Activity
         this.onSurfaceCreated(this.renderContext);
         tree.doSurfaceCreated(this.renderContext);
 
-        gameController.lastFrameStart = 
-            gameController.fpsStart = SystemClock.uptimeMillis();
+        gameController.resetFrame();
     }
 
 
@@ -216,10 +214,11 @@ public abstract class GameActivity extends Activity
     */
     @Override
     protected void onResume() {
-	super.onResume();
-	glSurface.onResume();
+        super.onResume();
+        glSurface.onResume();
         if ( tree != null ) tree.onResume();
         gameController.paused = false;
+        gameController.resetFrame();
     }
 
     
