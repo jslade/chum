@@ -158,7 +158,6 @@ public class GameNode {
                         for ( int j=i+1; j<num_children; ++i, ++j )
                             children[i] = children[j];
                         num_children--;
-                        removedNode = n;
                         break;
                     }
                 }
@@ -396,9 +395,7 @@ public class GameNode {
         synchronized(this) {
             for(int i=0; i<num_children; ++i) {
                 GameNode child = children[i];
-                removedNode = null;
                 if ( child.update(millis) ) updated = true;
-                if ( removedNode == child ) i--;
             }
         }
 
