@@ -747,6 +747,8 @@ public class Mesh {
                 }
             }
         }
+        
+        dirty = true;
     }
 
 
@@ -817,6 +819,8 @@ public class Mesh {
                 }
             }
         }
+
+        dirty = true;
     }
 
 
