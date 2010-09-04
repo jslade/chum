@@ -142,7 +142,7 @@ public abstract class GameActivity extends Activity
        Called when the rendering thread is ready to draw the next frame.
     */
     public void onDrawFrame(GL10 _gl) {
-        gameController.onDrawFrame();
+        gameController.update();
     }
 
 

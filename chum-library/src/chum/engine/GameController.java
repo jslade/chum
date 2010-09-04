@@ -75,13 +75,6 @@ public class GameController {
     public long targetInterval = 16;
     
     
-    public long targetInterval2 = targetInterval * 2;
-    public long targetInterval3 = targetInterval * 3;    
-    
-    
-    /** The GameThread for running all the logic and rendering */
-    public GameThread gameThread;
-    
     /** Handler for sending messages to the main (UI) thread */
     public Handler uiHandler;
 
@@ -99,7 +92,6 @@ public class GameController {
     */
     public GameController(GameActivity activity) {
         this.activity = activity;
-        gameThread = new GameThread(this);
         events = new EventQueue();
         renderLock = new RenderLock();
         pauseLock = new PauseLock();
@@ -129,7 +121,6 @@ public class GameController {
      * Called once to start the GameThread initially, after the GameTree is created.
      */
     public void start() {
-        gameThread.start();
     }
     
 
@@ -159,31 +150,14 @@ public class GameController {
     
     /**
      * Called each frame, from the GLSurfaceView rendering thread.
-     * 
-     * The update is split between this thread and the GameThread.  First the GameThread is
-     * woken up to do the logic updates and the main part of rendering (generating all the
-     * OpenGL commands to fill the command buffer).
-     * 
-     * When that finishes, this thread proceeds -- by returning.  That causes the OpenGL
-     * command buffer to get flushed, to finish all the rendering and swap in the
-     * new display buffer.
-     * 
-     * In the mean time, the GameThread can actually continue on with the next frame -
-     * it blocks before it starts the rendering part of the tree, however, waiting for
-     * the next signal from this thread.
-     * 
-     * This scheme is designed to give the maximum amount of time to the GameThread to
-     * do its updates, letting as much of the blocking part of the OpenGL rendering
-     * as possible happen in another thread.
      */
-    public void onDrawFrame() {
+    public void update() {
         lastFrameStart = currentFrameStart;
         currentFrameStart = SystemClock.uptimeMillis();
         frameDelta = currentFrameStart - lastFrameStart;
         totalElapsed += frameDelta;
         frameCounter++;
         
-
         // If frames are finishing fast, sleep to save power, leave time
         // for other threads, etc
         if ( frameDelta < targetInterval ) {
@@ -191,31 +165,27 @@ public class GameController {
                 try { renderLock.wait(targetInterval - frameDelta); }
                 catch(InterruptedException e) {}
             }
+            frameDelta = targetInterval;
         }
-            
-        // Wait for GameThread to signal update has finished
-        if( !renderLock.updated ) {
-            synchronized(renderLock) {
-                try { renderLock.wait(targetInterval); }
+
+        // Process pending input
+
+        // Process queued events
+        int dispatched = events.dispatchAll();
+        
+        // Process the logic half of the GameTree
+        if (tree.logic.update(frameDelta) ||
+            dispatched > 0 ) {
+            // Do the rendering part of the tree 
+            tree.rendering.update(frameDelta);
+        }
+
+        // Check for pause in the game
+        while (paused) {
+            synchronized(pauseLock) {
+                try { pauseLock.wait(); }
                 catch(InterruptedException e) {}
             }
-        }
-        
-        // Do the rendering part of the tree 
-        renderLock.rendering = true;
-        tree.rendering.update(frameDelta);
-        renderLock.rendering = false;
-        synchronized(renderLock) {
-            renderLock.updated = false;
-            renderLock.notifyAll();
-        }
-    }
-    
-    
-    public void updated() {
-        synchronized(renderLock) {
-            renderLock.updated = true;
-            renderLock.notifyAll();
         }
     }
     
@@ -245,7 +215,7 @@ public class GameController {
         fpsStart = lastFrameStart;
     }
     
-    
+
     public static class EventQueue {
         public volatile GameEvent first;
         public volatile GameEvent last;
@@ -262,22 +232,39 @@ public class GameController {
             }
         }
         
-        public GameEvent get() {
-            synchronized(this) {
-                if ( first == null ) return null;
-                GameEvent event = first;
-                first = event.nextQueued;
-                if ( last == event ) last = first;
-                return event;
+        public void dispatchEvent(GameEvent event) {
+            if ( event.up ) {
+                event.origin.dispatchEventUp(event);
+            } else {
+                event.origin.dispatchEventDown(event);
             }
+        }
+        
+
+        public int dispatchAll() {
+            GameEvent dispatching;
+            
+            synchronized(this) {
+                dispatching = first;
+                first = last = null;
+            }   
+
+            int count = 0;
+            while ( dispatching != null ) {
+                dispatchEvent(dispatching);
+                GameEvent dispatched = dispatching;
+                dispatching = dispatching.nextQueued;
+                dispatched.recycle();
+                count++;
+            }
+            
+            return count;
         }
     }
     
 
     
     public static class RenderLock {
-        public volatile boolean updated = false;
-        public volatile boolean rendering = false;
     }
     
     public static class PauseLock {
