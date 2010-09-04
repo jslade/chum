@@ -44,6 +44,9 @@
 
         <activity android:name="chum.util.CrashReportMailerActivity" />
 
-    </application>
+    <activity android:name=".BouncingSprites" android:label="Bouncing Sprites (2D)"><intent-filter><category android:name="android.intent.category.LAUNCHER"></category>
+</intent-filter>
+</activity>
+</application>
 
 </manifest> 

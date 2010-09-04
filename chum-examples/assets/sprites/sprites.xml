@@ -1,0 +1,9 @@
+<sheet>
+	<sprite name="fuzzy_circle_2" x="0" y="0" width="64" height="64" />
+	<sprite name="hard_circle_2" x="64" y="0" width="64" height="64" />
+	<sprite name="blob_1" x="128" y="0" width="64" height="64" />
+	<sprite name="blob_2" x="192" y="0" width="64" height="64" />
+	<sprite name="fuzzy_circle_1" x="0" y="64" width="64" height="64" />
+	<sprite name="hard_circle_1" x="64" y="64" width="64" height="64" />
+	<sprite name="blob_3" x="128" y="64" width="64" height="64" />
+</sheet>
