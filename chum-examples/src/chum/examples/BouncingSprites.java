@@ -64,6 +64,8 @@ public class BouncingSprites extends GameActivity
 
         sound = new SoundManager(this);
         sound.loadSound(R.raw.bonk,R.raw.bonk);
+        
+        number = 0;
     }
 
 
@@ -133,7 +135,7 @@ public class BouncingSprites extends GameActivity
         loadSprites();
 
         Font font = new Font(renderContext,Typeface.DEFAULT_BOLD,30);
-        text.setText(font.buildText("###"));
+        text.setText(font.buildText("#####"));
 
         addSprite(Color.RED,renderContext.width/2f,renderContext.height/2f);
     }
@@ -142,9 +144,6 @@ public class BouncingSprites extends GameActivity
     @Override
     public boolean onGameEvent(GameEvent event) {
         switch(event.type) {
-        case GameEvent.GAME_INIT:
-            return true;
-            
         case TOUCH:
             MotionEvent ev = (MotionEvent)event.object;
             if ( ev.getAction() == MotionEvent.ACTION_DOWN ) {

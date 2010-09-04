@@ -14,7 +14,7 @@ public class TouchInputNode extends InputNode
     implements View.OnTouchListener {
 
     /** The delay to force in the UI thread between events. */
-    public int touchDelay = 20; // 20ms
+    public int touchDelay = 8;
 
 
 
@@ -43,7 +43,13 @@ public class TouchInputNode extends InputNode
     */
     public boolean onTouch(View v, MotionEvent event) {
         handle(v,event);
-        throttle();
+
+        switch(event.getAction()) {
+        case MotionEvent.ACTION_MOVE:
+            throttle();
+            break;
+        }
+
         return true;
     }
 
