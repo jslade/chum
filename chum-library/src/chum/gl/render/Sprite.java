@@ -95,8 +95,8 @@ public class Sprite extends MeshNode {
         this.batchOffset = offset;
         this.batchCount = count;
 
-        // 4 vertices per sprite, 6 indices:
-        this.offset = offset * 6;
+        // 4 vertices per sprite, 6 indices, 2 bytes per index
+        this.offset = offset * 12;
         this.count = count * 6;
 
         // add in a relative translation to account for the sprite's
