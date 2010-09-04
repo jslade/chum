@@ -122,8 +122,13 @@ public class Texture {
         if ( !isDefined() ) {
             IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
             gl.glGenTextures(tex_ids.length,tex_ids_buf);
-            //chum.util.Log.d("Texture %s: define res=%d tex=%d",
-            //this, res_ids[0], tex_ids[0]);
+            //chum.util.Log.d("Texture %s: define tex=%d", this, tex_ids[0]);
+            for(int i=0; i<tex_ids.length;++i){
+                if (tex_ids[i] == 0) {
+                    chum.util.Log.e("Failed to generate tex id for %s [%d]:",this,i);
+                    chum.util.Log.e("glError: %d",gl.glGetError());
+                }
+            }
         }
     }
 
