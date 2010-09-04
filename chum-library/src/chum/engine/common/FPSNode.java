@@ -11,7 +11,7 @@ import chum.util.Log;
 
 /**
    FPSNode is a common helper node that logs the current FPS, either to the logger,
-   to a TextNode, or both
+   to a TextNode, or both.
 */
 public class FPSNode extends GameNode {
 
@@ -45,8 +45,11 @@ public class FPSNode extends GameNode {
         
         
     /** Whether to log to the logger */
-    public boolean toLogger = true;
+    public boolean toLogger = false;
 
+    /** Separate thread for printing log messages */
+    public LoggerThread loggerThread;
+    
     /** Callback to be executed on each update */
     public Callback callback;
 
@@ -61,6 +64,7 @@ public class FPSNode extends GameNode {
 
     public FPSNode() {
         super();
+        
     }
         
     public FPSNode(Callback callback) {
@@ -78,6 +82,11 @@ public class FPSNode extends GameNode {
         
         reset();
         postUpDelayed(GameEvent.obtain(0,this),interval); // kick off the cycle
+        
+        if ( toLogger && loggerThread == null ) {
+            loggerThread = new LoggerThread();
+            loggerThread.start();
+        }
     }
 
     
@@ -130,11 +139,19 @@ public class FPSNode extends GameNode {
         }
 
 
-        if ( toLogger )
-            Log.d("FPS = %d #frames=%d #long=%d/%d/%d longest=%d shortest=%d",
-                  fps, count,
-                  longFrames, longFrames2, longFrames3,
-                  longestFrame, shortestFrame);
+        if ( toLogger ) {
+            synchronized(loggerThread) {
+                loggerThread.fps = fps;
+                loggerThread.count = count;
+                loggerThread.longFrames = longFrames;
+                loggerThread.longFrames2 = longFrames2;
+                loggerThread.longFrames3 = longFrames3;
+                loggerThread.longestFrame = longestFrame;
+                loggerThread.shortestFrame = shortestFrame;
+                loggerThread.notify();
+            }
+        }
+
         reset();
         
         // Show it again in the future
@@ -166,6 +183,32 @@ public class FPSNode extends GameNode {
 
     public interface Callback {
         public void run(FPSNode node, int fps);
+    }
+    
+    
+    public class LoggerThread extends Thread {
+        
+        public boolean running = true;
+
+        @Override
+        public void run() {
+            while(running) {
+                synchronized(this) {
+                    try { this.wait(); }
+                    catch(InterruptedException e) {}
+                    
+                    Log.d("FPS = %d #frames=%d #long=%d/%d/%d longest=%d shortest=%d",
+                          fps, count,
+                          longFrames, longFrames2, longFrames3,
+                          longestFrame, shortestFrame);
+                }
+            }
+        }
+
+        int fps;
+        int count;
+        int longFrames, longFrames2, longFrames3;
+        long longestFrame, shortestFrame;
     }
 
 }
