@@ -219,7 +219,7 @@ public class Sprite extends MeshNode {
         builder.build();
 
         Sprite sprite = new Sprite(batch);
-        sprite.setTexture(sheet); // this shouldn't be necessary?
+        sprite.onSurfaceCreated(renderContext);
         return sprite;
     }
 
