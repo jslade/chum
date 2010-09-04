@@ -1,10 +1,11 @@
 package chum.examples;
 
-import chum.engine.*;
+import chum.engine.GameActivity;
+import chum.engine.GameNode;
 import chum.gl.Color;
 import chum.gl.RenderNode;
-import chum.input.TouchInputNode;
 import chum.gl.render.ClearNode;
+import chum.input.TouchInputNode;
 
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -19,7 +20,7 @@ import android.view.View;
 */
 public class BackgroundColorTouch extends GameActivity
 {
-    private Color bg = new Color("#ffffff");
+    private final Color bg = new Color("#ffffff");
 
 
     @Override
@@ -29,27 +30,22 @@ public class BackgroundColorTouch extends GameActivity
     }
 
 
-    @Override
-    protected GameTree createGameTree() {
-        return (new GameTree() {
-                protected GameNode createLogicTree() {
-                    return new TouchInputNode(){
-                            protected void handle(View v, MotionEvent event) {
-                                float px = event.getX() / v.getWidth();
-                                float py = event.getY() / v.getHeight();
+    protected GameNode createLogicTree() {
+        return new TouchInputNode(){
+            @Override
+            protected void handle(View v, MotionEvent event) {
+                float px = event.getX() / v.getWidth();
+                float py = event.getY() / v.getHeight();
 
-                                bg.red = px;
-                                bg.green = py;
-                                bg.blue = (px + py)/2f;
-                            }
-                        };
-                }
-
-                protected RenderNode createRenderTree() {
-                    return new ClearNode(bg);
-                }
-            });
+                bg.red = px;
+                bg.green = py;
+                bg.blue = (px + py)/2f;
+            }
+        };
     }
 
+    protected RenderNode createRenderTree(GameNode logic) {
+        return new ClearNode(bg);
+    }
 
 }

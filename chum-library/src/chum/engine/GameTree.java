@@ -15,7 +15,7 @@ import chum.gl.RenderNode;
    The Controller is intended to be the logic side, and the Model is likely
    split between the two for practical reasons.
  */
-public abstract class GameTree extends GameNode {
+public class GameTree extends GameNode {
 
     /** The root GameNode for logic */
     public GameNode logic;
@@ -30,30 +30,31 @@ public abstract class GameTree extends GameNode {
     */
     public GameTree() {
         super();
-
-        logic = createLogicTree();
-        if ( logic != null ) 
-            addNode(logic);
-
-        rendering = createRenderTree();
-        if ( rendering != null )
-            addNode(rendering);
     }
     
 
-    /**
-       Create the game logic, represented by a GameNode.
-    */
-    protected abstract GameNode createLogicTree();
-
-
-    /**
-       Create the game rendering tree, represented by RenderNode
-    */
-    protected abstract RenderNode createRenderTree();
-
-
-
+    public void setLogicTree(GameNode newLogic) {
+        if ( logic != null )
+            removeNode(logic);
+        
+        logic = newLogic;
+        
+        if ( newLogic != null )
+            addNode(newLogic);
+    }
+    
+    
+    public void setRenderTree(RenderNode newRendering) {
+        if ( rendering != null )
+            removeNode(rendering);
+        
+        rendering = newRendering;
+        
+        if ( newRendering != null )
+            addNode(newRendering);
+    }
+    
+    
     /**
        Called when the game tree is initially created
     */
@@ -109,6 +110,9 @@ public abstract class GameTree extends GameNode {
 
        Standard behavior is to use the entire size of the view surface as the
        viewport.
+       
+       TODO: move this to a ViewportNode class that does this in onSurfaceChanged(),
+       and have it be a standard part of the hierarchy (base class for Standard[2|3]DNode) 
     */
     public void setViewport(int width, int height) {
         gameController.renderContext.gl10.glViewport(0,0,width,height);
@@ -149,23 +153,14 @@ public abstract class GameTree extends GameNode {
        back down another.
     */
     @Override
-    protected void dispatchEventUp(GameEvent event) {
+    public void dispatchEventUp(GameEvent event) {
         dispatchEventDown(event);
     }
 
     @Override
-    protected void dispatchEventDown(GameEvent event) {
+    public void dispatchEventDown(GameEvent event) {
         if ( !gameController.activity.onGameEvent(event) )
             super.dispatchEventDown(event);
     }
 
-
-
-    public static class Dummy extends GameTree {
-        public Dummy() { super(); }
-        @Override
-        protected GameNode createLogicTree() { return null; }
-        @Override
-        protected RenderNode createRenderTree() { return null; }
-    }
 }

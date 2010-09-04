@@ -5,7 +5,6 @@ import chum.engine.GameController;
 import chum.engine.GameEvent;
 import chum.engine.GameNode;
 import chum.engine.GameSequence;
-import chum.engine.GameTree;
 import chum.f.Vec3;
 import chum.gl.Color;
 import chum.gl.Font;
@@ -228,42 +227,34 @@ public class AnimatedTextExample extends GameActivity
     }
             
 
-    @Override
-    protected GameTree createGameTree() {
-        return (new GameTree() {
+    // The logic tree consists of two nodes:
+    // - a node to control the active animation (if any)
+    // - a TouchNode to register touch events
+    protected GameNode createLogicTree() {
+        GameNode node = new GameNode();
+        node.addNode(new StateNode().setName("state"));
+        node.addNode(new TouchNode().setName("touch"));
+        return node;
+    }
 
-                // The logic tree consists of two nodes:
-                // - a node to control the active animation (if any)
-                // - a TouchNode to register touch events
-                @Override
-                protected GameNode createLogicTree() {
-                    GameNode node = new GameNode();
-                    node.addNode(new StateNode().setName("state"));
-                    node.addNode(new TouchNode().setName("touch"));
-                    return node;
-                }
+    // The render tree consists of:
+    // - the root node is an orthographic (2D) projection
+    //   - ClearNode to clear the scene
+    //   - "animation" node to be the root for the animations
+    //   - ColorNode to set the current draw color
+    //   - TextNode to display the text
+    protected RenderNode createRenderTree(GameNode logic) {
+        Standard2DNode base = new chum.gl.render.Standard2DNode();
+        base.addNode(new ClearNode(Color.WHITE));
 
-                // The render tree consists of:
-                // - the root node is an orthographic (2D) projection
-                //   - ClearNode to clear the scene
-                //   - "animation" node to be the root for the animations
-                //   - ColorNode to set the current draw color
-                //   - TextNode to display the text
-                @Override
-                protected RenderNode createRenderTree() {
-                    Standard2DNode base = new chum.gl.render.Standard2DNode();
-                    base.addNode(new ClearNode(Color.WHITE));
+        // Draw the text
+        textNode = new TextNode();
+        textNode.setName("text");
+        textNode.setColor(Color.BLACK);
+        textNode.setPosition(new Vec3());
+        base.addNode(textNode);
 
-                    // Draw the text
-                    textNode = new TextNode();
-                    textNode.setName("text");
-                    textNode.setColor(Color.BLACK);
-                    textNode.setPosition(new Vec3());
-                    base.addNode(textNode);
-
-                    return base;
-                }
-            });
+        return base;
     }
 
     @Override

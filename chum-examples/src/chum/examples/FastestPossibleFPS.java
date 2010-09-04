@@ -1,8 +1,10 @@
 package chum.examples;
 
-import android.os.Bundle;
+import chum.engine.GameActivity;
+import chum.engine.GameNode;
+import chum.gl.RenderNode;
 
-import chum.engine.*;
+import android.os.Bundle;
 
 
 /**
@@ -57,4 +59,8 @@ public class FastestPossibleFPS extends GameActivity
             gameController.uiHandler.postDelayed(runFPS, 3000);
     }
     
+    
+    protected GameNode createLogicTree() { return new GameNode(); }
+
+    protected RenderNode createRenderTree(GameNode logic) { return new RenderNode(); }
 }

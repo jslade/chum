@@ -2,7 +2,6 @@ package chum.examples;
 
 import chum.engine.GameActivity;
 import chum.engine.GameNode;
-import chum.engine.GameTree;
 import chum.engine.common.FPSNode;
 import chum.f.Vec2;
 import chum.f.Vec3;
@@ -50,83 +49,77 @@ public class TexturedCube extends GameActivity
     }
 
 
+    // The logic tree consists of two nodes:
+    // - one to spin the pyramid
+    // - one to periodically display the FPS
     @Override
-    protected GameTree createGameTree() {
-        return (new GameTree() {
-
-                // The logic tree consists of two nodes:
-                // - one to spin the pyramid
-                // - one to periodically display the FPS
-                @Override
-                protected GameNode createLogicTree() {
-                    GameNode node = new GameNode();
-
-                    node.addNode(new GameNode(){
-                            @Override
-                            public boolean update(long millis) {
-                                spin(millis);
-                                return true;
-                            }
-                        });
-
-                    node.addNode(new FPSNode(){
-                            @Override
-                            public void showFPS() {
-                                super.showFPS();
-                                showFPSInTitle();
-                            }
-                        });
-
-                    return node;
-                }
-
-                /**
-                   The render tree consists of:
-                   - the root node is an 3D projection
-                   - camera node that doesn't move, at the default
-                     location and looking to the origin
-                   - ClearNode to clear the scene
-                   - Rotate node for x-axis
-                     - Rotate node for y-axis
-                       - Rotate node for z-axis
-                         - MeshNode to draw the pyramid
-                */
-                @Override
-                protected RenderNode createRenderTree() {
-                    Standard3DNode base = new chum.gl.render.Standard3DNode();
-                                
-                    base.setPerspective(120f,0f,.5f,5f);
-                    base.addNode(new CameraNode(new Vec3(0f,2f,-2f), Vec3.ORIGIN));
-                    base.addNode(new ClearNode(new Color("#880000")));
-                                        
-                    cube = createCube();
-                    cubeNode = new MeshNode(cube);
-
-                    tex = new Texture();
-                    tex.setProvider(new Texture.ResourceProvider(R.drawable.textured_cube));
-                    cubeNode.setTexture(tex);
-
-                    rot_x = new RotateNode(0,Vec3.X_AXIS);
-                    rot_y = new RotateNode(0,Vec3.Y_AXIS);
-                    rot_z = new RotateNode(0,Vec3.Z_AXIS);
-                    base.addNode(rot_x);
-                    rot_x.addNode(rot_y);
-                    rot_y.addNode(rot_z);
-                    rot_z.addNode(cubeNode);
-
-                    // The first RotateNode has push=true, so that it pushes
-                    // the modelview matrix onto the stack going in, the pops it off
-                    // going out to restore the original transformation.
-                    rot_x.push = true;
-
-                    // Add an extra node displaying a 3D axis
-                    // just to show orientation more clearly
-                    //MeshNode axisNode = new MeshNode(chum.util.mesh.Axis.create3D(6f));
-                    //rot_z.addNode(axisNode);
-
-                    return base;
-                }
-            });
+    protected GameNode createLogicTree() {
+        GameNode node = new GameNode();
+        
+        node.addNode(new GameNode(){
+            @Override
+            public boolean update(long millis) {
+                spin(millis);
+                return true;
+            }
+        });
+        
+        node.addNode(new FPSNode(){
+            @Override
+            public void showFPS() {
+                super.showFPS();
+                showFPSInTitle();
+            }
+        });
+        
+        return node;
+    }
+    
+    /**
+       The render tree consists of:
+         - the root node is an 3D projection
+         - camera node that doesn't move, at the default
+           location and looking to the origin
+         - ClearNode to clear the scene
+            - Rotate node for x-axis
+              - Rotate node for y-axis
+                - Rotate node for z-axis
+                  - MeshNode to draw the pyramid
+     */
+    @Override
+    protected RenderNode createRenderTree(GameNode logic) {
+        Standard3DNode base = new chum.gl.render.Standard3DNode();
+        
+        base.setPerspective(120f,0f,.5f,5f);
+        base.addNode(new CameraNode(new Vec3(0f,2f,-2f), Vec3.ORIGIN));
+        base.addNode(new ClearNode(new Color("#880000")));
+        
+        cube = createCube();
+        cubeNode = new MeshNode(cube);
+        
+        tex = new Texture();
+        tex.setProvider(new Texture.ResourceProvider(R.drawable.textured_cube));
+        cubeNode.setTexture(tex);
+        
+        rot_x = new RotateNode(0,Vec3.X_AXIS);
+        rot_y = new RotateNode(0,Vec3.Y_AXIS);
+        rot_z = new RotateNode(0,Vec3.Z_AXIS);
+        base.addNode(rot_x);
+        rot_x.addNode(rot_y);
+        rot_y.addNode(rot_z);
+        rot_z.addNode(cubeNode);
+        
+        // The first RotateNode has push=true, so that it pushes
+        // the modelview matrix onto the stack going in, the pops it off
+        // going out to restore the original transformation.
+        rot_x.push = true;
+        
+        // Add an extra node displaying a 3D axis
+        // just to show orientation more clearly
+        //MeshNode axisNode = new MeshNode(chum.util.mesh.Axis.create3D(6f));
+        //rot_z.addNode(axisNode);
+        
+        return base;
     }
 
 

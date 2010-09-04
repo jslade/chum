@@ -57,19 +57,17 @@ public class RenderNode extends GameNode {
     /**
        RenderNodes only render if visible
     */
+    @Override
     public boolean update(long millis) {
-        if ( visible ) {
-            return super.update(millis);
-        } else {
-            dispatchEvents();
-            return false;
-        }
+        if ( !visible ) return false;
+        return super.update(millis);
     }
 
 
     /**
        RenderNodes just render but do not do any updates
     */
+    @Override
     public boolean updatePrefix(long millis) {
         if ( visible )
             renderPrefix(renderContext.gl10);
@@ -80,6 +78,7 @@ public class RenderNode extends GameNode {
     /**
        RenderNodes just render but do not do any updates
     */
+    @Override
     public boolean updatePostfix(long millis) {
         if ( visible )
             renderPostfix(renderContext.gl10);
@@ -104,6 +103,7 @@ public class RenderNode extends GameNode {
     /**
        Handle a GameEvent -- default behavior is to stop all propogation
     */
+    @Override
     public boolean onGameEvent(GameEvent event) {
         return true;
     }

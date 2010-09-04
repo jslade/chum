@@ -2,7 +2,9 @@ package chum.engine;
 
 import chum.cfg.Config;
 import chum.gl.RenderContext;
+import chum.gl.RenderNode;
 import chum.util.DefaultExceptionHandler;
+import chum.util.Log;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
@@ -52,8 +54,7 @@ public abstract class GameActivity extends Activity
         super.onCreate(savedInstanceState);
         //setupExceptionHandler();
 
-        gameController = new GameController();
-        gameController.activity = this;
+        gameController = new GameController(this);
         gameController.uiHandler = new Handler(new Handler.Callback(){
                 public boolean handleMessage(Message msg) {
                     return handleUI(msg);
@@ -64,7 +65,7 @@ public abstract class GameActivity extends Activity
         setViewOptions();
         applyViewOptions();
         glSurface = createGLSurface();
-        glSurface.setRenderer(this);
+        glSurface.setRenderer(GameActivity.this);
         this.setContentView(createContentView(glSurface));
 
         // By default, the glSurface is the view that receives
@@ -107,8 +108,7 @@ public abstract class GameActivity extends Activity
        Create the GLSurfaceView
     */
     protected GLSurfaceView createGLSurface() {
-        GLSurfaceView glsv = new GLSurfaceView(this);
-        return glsv;
+        return new GLSurfaceView(this);
     }
 
 
@@ -116,24 +116,33 @@ public abstract class GameActivity extends Activity
        Create the GameTree instance to be used for this activity
     */
     protected GameTree createGameTree() {
-        return new GameTree.Dummy();
+        GameTree tree = new GameTree();
+        tree.setLogicTree(createLogicTree());
+        tree.setRenderTree(createRenderTree(tree.logic));
+        return tree;
     }
 
+    protected abstract GameNode createLogicTree();
+    
+    protected abstract RenderNode createRenderTree(GameNode logic);
+    
 
     /**
        Set the GameTree instance to be used for this activity
     */
     public void setGameTree(GameTree tree) {
+        Log.d("setGameTree() tree=%s logic=%s render=%s",
+              tree,tree.logic,tree.rendering);
         this.tree = tree;
         gameController.tree = tree;
     }
 
 
     /**
-       Called each Frame
+       Called when the rendering thread is ready to draw the next frame.
     */
     public void onDrawFrame(GL10 _gl) {
-        gameController.update();
+        gameController.onDrawFrame();
     }
 
 
@@ -165,6 +174,7 @@ public abstract class GameActivity extends Activity
         
         // At this point, everything is setup for the game to begin
         tree.postDown(GameEvent.obtain(GameEvent.GAME_INIT));
+        gameController.start();
     }
 
 
@@ -201,10 +211,12 @@ public abstract class GameActivity extends Activity
     */
     @Override
     protected void onPause() {
-	super.onPause();
-	glSurface.onPause();
-        gameController.paused = true;
-        if ( tree != null ) tree.onPause();
+        super.onPause();
+        gameController.onPause();
+        if ( tree != null ) {
+            tree.onPause();
+            glSurface.onPause();
+        }
     }
 
 
@@ -215,10 +227,11 @@ public abstract class GameActivity extends Activity
     @Override
     protected void onResume() {
         super.onResume();
-        glSurface.onResume();
-        if ( tree != null ) tree.onResume();
-        gameController.paused = false;
-        gameController.resetFrame();
+        if ( tree != null ) {
+            tree.onResume();
+            glSurface.onResume();
+        }
+        gameController.onResume();
     }
 
     

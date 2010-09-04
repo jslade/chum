@@ -1,10 +1,12 @@
 package chum.examples;
 
+import chum.engine.GameActivity;
+import chum.engine.GameNode;
+import chum.gl.RenderNode;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
-import chum.engine.GameActivity;
 
 
 /**
@@ -29,6 +31,10 @@ public class ForceCloseExample extends GameActivity
     }
 
 
+    protected GameNode createLogicTree() { return new GameNode(); }
+    protected RenderNode createRenderTree(GameNode logic) { return new RenderNode(); }
+
+    
     public void doForceClose() {
     	// This causes an intentional "Force Close"
     	// by generating a NullPointerException

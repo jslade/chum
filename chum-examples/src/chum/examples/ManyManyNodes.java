@@ -2,7 +2,6 @@ package chum.examples;
 
 import chum.engine.GameActivity;
 import chum.engine.GameNode;
-import chum.engine.GameTree;
 import chum.engine.GameNode.Visitor;
 import chum.engine.common.FPSNode;
 import chum.gl.RenderNode;
@@ -51,49 +50,47 @@ public class ManyManyNodes extends GameActivity
     }
 
 
-    @Override
-    protected GameTree createGameTree() {
-        return (new GameTree() {
-                @Override
-                protected GameNode createLogicTree() {
-                    GameNode logic = new GameNode();
-                    logic.addNode(new FPSNode(){
-                        @Override
-                        public void showFPS() {
-                            super.showFPS();
-                            showFPSInTitle();
-                        }
-                    });
+    protected GameNode createLogicTree() {
+        GameNode logic = new GameNode();
+        logic.addNode(new FPSNode(){
+            @Override
+            public void showFPS() {
+                super.showFPS();
+                showFPSInTitle();
+            }
+        });
                     
-                    logic.addNode(new GestureInputNode(){
-                        @Override
-                        public boolean onDoubleTap(MotionEvent e) {
-                            addNodes();
-                            return true;
-                        }
-                    });
-                    
-                    return logic;
+        logic.addNode(new GestureInputNode(){
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                addNodes();
+                return true;
+            }
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                Log.d("FPS = "+gameController.getFPS());
+                return true;
+            }
+        });
+        
+        return logic;
+    }
+    
+    protected RenderNode createRenderTree(GameNode logic) {
+        RenderNode node = new RenderNode();
+        for( int i=0; i<1; ++i ) {
+            GameNode inode = new RenderNode();
+            node.addNode(inode);
+            for( int j=0; j<1; ++j ) {
+                GameNode jnode = new RenderNode();
+                inode.addNode(jnode);
+                for( int k=0; k<1; ++k ) {
+                    GameNode knode = new RenderNode();
+                    jnode.addNode(knode);
                 }
-
-                @Override
-                protected RenderNode createRenderTree() {
-                    RenderNode node = new RenderNode();
-                    for( int i=0; i<1; ++i ) {
-                        GameNode inode = new RenderNode();
-                        node.addNode(inode);
-                        for( int j=0; j<1; ++j ) {
-                            GameNode jnode = new RenderNode();
-                            inode.addNode(jnode);
-                            for( int k=0; k<1; ++k ) {
-                                GameNode knode = new RenderNode();
-                                jnode.addNode(knode);
-                            }
-                        }
-                    }
-                    return node;
-                }
-            });
+            }
+        }
+        return node;
     }
 
     

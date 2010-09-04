@@ -1,13 +1,26 @@
 package chum.examples;
 
-import chum.engine.*;
-import chum.engine.common.*;
-import chum.f.*;
-import chum.gl.*;
-import chum.gl.render.*;
+import chum.engine.GameActivity;
+import chum.engine.GameController;
+import chum.engine.GameNode;
+import chum.engine.common.FPSNode;
+import chum.f.Vec3;
+import chum.gl.Color;
+import chum.gl.Font;
+import chum.gl.Mesh;
+import chum.gl.RenderContext;
+import chum.gl.RenderNode;
+import chum.gl.VertexAttribute;
+import chum.gl.VertexAttributes;
+import chum.gl.render.ClearNode;
+import chum.gl.render.ColorNode;
+import chum.gl.render.MeshNode;
+import chum.gl.render.Standard2DNode;
+import chum.gl.render.TextNode;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
+
 import javax.microedition.khronos.opengles.GL10;
 
 
@@ -55,68 +68,65 @@ public class RandomRectangles extends GameActivity
     }
 
 
+    // The logic tree consists of two nodes:
+    // - one to generate the random color and rectangle position
+    // - one to periodically display the FPS
+    protected GameNode createLogicTree() {
+        GameNode node = new GameNode();
+        
+        node.addNode(new GameNode(){
+            @Override
+            public boolean update(long millis) {
+                randomizeQuad();
+                randomizeColor();
+                return true;
+            }
+        });
+        
+        node.addNode(fpsNode = new FPSNode(){
+            @Override
+            public void showFPS() {
+                super.showFPS();
+                showFPSInTitle();
+            }
+        });
+        
+        return node;
+    }
+
+    // The render tree consists of:
+    // - the root node is an orthographic (2D) projection
+    //   - ClearNode to clear the scene
+    //   - ColorNode to set the current draw color
+    //   - MeshNode to draw the mesh (just a two-triangle quad)
+    //   - TextNode to display the FPS
+    protected RenderNode createRenderTree(GameNode logic) {
+        Standard2DNode base = new chum.gl.render.Standard2DNode();
+        base.addNode(new ClearNode());
+        
+        // Draw the rect
+        base.addNode(colorNode = new ColorNode(new Color()));
+        
+        Mesh quad = createQuad();
+        base.addNode(quadNode = new MeshNode(quad));
+        
+        // Draw the FPS text
+        fpsTextNode = new TextNode();
+        fpsTextNode.setPosition(new Vec3(10f,10f,0f));
+        fpsTextNode.setColor(Color.RED);
+        base.addNode(fpsTextNode);
+        
+        return base;
+    }
+    
+    
     @Override
-    protected GameTree createGameTree() {
-        return (new GameTree() {
-
-                // The logic tree consists of two nodes:
-                // - one to generate the random color and rectangle position
-                // - one to periodically display the FPS
-                protected GameNode createLogicTree() {
-                    GameNode node = new GameNode();
-
-                    node.addNode(new GameNode(){
-                            public boolean update(long millis) {
-                                randomizeQuad();
-                                randomizeColor();
-                                return true;
-                            }
-                        });
-
-                    node.addNode(fpsNode = new FPSNode(){
-                            public void showFPS() {
-                                super.showFPS();
-                                showFPSInTitle();
-                            }
-                        });
-
-                    return node;
-                }
-
-                // The render tree consists of:
-                // - the root node is an orthographic (2D) projection
-                //   - ClearNode to clear the scene
-                //   - ColorNode to set the current draw color
-                //   - MeshNode to draw the mesh (just a two-triangle quad)
-                //   - TextNode to display the FPS
-                protected RenderNode createRenderTree() {
-                    Standard2DNode base = new chum.gl.render.Standard2DNode();
-                    base.addNode(new ClearNode());
-
-                    // Draw the rect
-                    base.addNode(colorNode = new ColorNode(new Color()));
-
-                    Mesh quad = createQuad();
-                    base.addNode(quadNode = new MeshNode(quad));
-
-                    // Draw the FPS text
-                    fpsTextNode = new TextNode();
-                    fpsTextNode.setPosition(new Vec3(10f,10f,0f));
-                    fpsTextNode.setColor(Color.RED);
-                    base.addNode(fpsTextNode);
-
-                    return base;
-                }
-
-                
-                public void onSurfaceCreated(RenderContext renderContext) {
-                    super.onSurfaceCreated(renderContext);
-
-                    Font font = new Font(renderContext,Typeface.DEFAULT,30);
-                    fpsTextNode.setText(font.buildText("--"));
-                    fpsNode.setText(fpsTextNode.text);
-                }
-            });
+    public void onSurfaceCreated(RenderContext renderContext) {
+        super.onSurfaceCreated(renderContext);
+        
+        Font font = new Font(renderContext,Typeface.DEFAULT,30);
+        fpsTextNode.setText(font.buildText("--"));
+        fpsNode.setText(fpsTextNode.text);
     }
 
 

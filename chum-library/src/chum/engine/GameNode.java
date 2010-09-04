@@ -387,8 +387,6 @@ public class GameNode {
        @return true if something changed with the node.
     */
     public boolean update(long millis) {
-        dispatchEvents();
-
         boolean updated = false;
         if ( updatePrefix(millis) ) updated = true;
 
@@ -450,12 +448,6 @@ public class GameNode {
 
 
 
-    // Pending event chains
-    protected GameEvent pendingUpEvent;
-    protected GameEvent pendingDownEvent;
-    protected GameEvent dispatchingEvent;
-
-
     /**
        Post a GameEvent that propogates up the tree from this node.
 
@@ -463,17 +455,9 @@ public class GameNode {
        on the next call to dispatchEvents(), which happens during update()
     */
     public void postUp(GameEvent event) {
-        event.nextQueued = null;
         event.origin = this;
-        synchronized(this) {
-            if ( pendingUpEvent == null )
-                pendingUpEvent = event;
-            else {
-                GameEvent pending = pendingUpEvent;
-                while ( pending.nextQueued != null ) pending = pending.nextQueued;
-                pending.nextQueued = event;
-            }
-        }
+        event.up = true;
+        gameController.events.post(event);
     }
 
 
@@ -485,17 +469,9 @@ public class GameNode {
        on the next call to dispatchEvents(), which happens during update()
     */
     public void postDown(GameEvent event) {
-        event.nextQueued = null;
-        event.origin = this;
-        synchronized(this) {
-            if ( pendingDownEvent == null )
-                pendingDownEvent = event;
-            else {
-                GameEvent pending = pendingDownEvent;
-                while ( pending.nextQueued != null ) pending = pending.nextQueued;
-                pending.nextQueued = event;
-            }
-        }
+        event.origin = this;        
+        event.up = false;
+        gameController.events.post(event);
     }
 
 
@@ -518,44 +494,9 @@ public class GameNode {
 
 
     /**
-       Dispatch any pending events
-
-       First removes all pending events so new events can get queued during the dispatch.
-       Then dispatches all the up events, then down events.
-    */
-    protected void dispatchEvents() {
-        GameEvent dispatchingUpEvent;
-        GameEvent dispatchingDownEvent;
-
-        synchronized(this) {
-            dispatchingUpEvent = pendingUpEvent;
-            dispatchingDownEvent = pendingDownEvent;
-            pendingUpEvent = null;
-            pendingDownEvent = null;
-        }
-
-        while ( dispatchingUpEvent != null ) {
-            dispatchingEvent = dispatchingUpEvent;
-            dispatchingUpEvent = dispatchingUpEvent.nextQueued;
-            dispatchEventUp(dispatchingEvent);
-            dispatchingEvent.recycle();
-        }
-
-        while ( dispatchingDownEvent != null ) {
-            dispatchingEvent = dispatchingDownEvent;
-            dispatchingDownEvent = dispatchingDownEvent.nextQueued;
-            dispatchEventDown(dispatchingEvent);
-            dispatchingEvent.recycle();
-        }
-
-        dispatchingEvent = null;
-    }
-
-
-    /**
        Dispatch an event up the tree from this node
     */
-    protected void dispatchEventUp(GameEvent event) {
+   public void dispatchEventUp(GameEvent event) {
         if ( onGameEvent(event) )
             return; // consumed
         
@@ -567,7 +508,7 @@ public class GameNode {
     /**
        Dispatch an event down the tree from this node
     */
-    protected void dispatchEventDown(GameEvent event) {
+    public void dispatchEventDown(GameEvent event) {
         if ( onGameEvent(event) )
             return; // consumed
         

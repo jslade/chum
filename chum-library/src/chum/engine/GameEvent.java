@@ -27,6 +27,9 @@ public final class GameEvent
     /** Where the event came from */
     public GameNode origin;
 
+    /** Up or down */
+    public boolean up;
+
     /** Reference to next event in the queue */
     GameEvent nextQueued = null;
 

@@ -3,8 +3,8 @@ package chum.engine.common;
 import chum.engine.GameController;
 import chum.engine.GameEvent;
 import chum.engine.GameNode;
-import chum.gl.Text;
 import chum.gl.Font;
+import chum.gl.Text;
 import chum.gl.Font.Glyph;
 import chum.util.Log;
 
@@ -21,6 +21,29 @@ public class FPSNode extends GameNode {
     /** The most recent FPS */
     public int fps = 0;
 
+    public int count = 0;
+    
+    public long targetInterval2;
+
+    public long targetInterval3;
+    
+    /** The longest frame in the last fps calculation period */
+    public long longestFrame;
+    
+    /** The shortest frame in the last fps calculation period */
+    public long shortestFrame;
+    
+    /** Number of frame that exceed targetInterval */
+    public int longFrames;
+    
+    /** Number of frames that exceed targetInverval2 */
+    public int longFrames2;
+    
+    /** Number of frames that exceed targetInterval3 */
+    public int longFrames3; 
+        
+        
+        
     /** Whether to log to the logger */
     public boolean toLogger = true;
 
@@ -49,11 +72,36 @@ public class FPSNode extends GameNode {
     @Override
     public void onSetup(GameController gameController) {
         super.onSetup(gameController);
-        showFPS(); // kick off the cycle
+        
+        targetInterval2 = gameController.targetInterval * 2;
+        targetInterval3 = gameController.targetInterval * 3;        
+        
+        reset();
+        postUpDelayed(GameEvent.obtain(0,this),interval); // kick off the cycle
     }
 
     
-
+    @Override
+    public boolean updatePrefix(long frameDelta) {
+        count++;
+        if ( frameDelta > gameController.targetInterval ) {
+            longFrames++;
+            if ( frameDelta > targetInterval2 ) {
+                longFrames2++;
+                if (frameDelta > targetInterval3) {
+                    longFrames3++;
+                }
+            }
+            if ( frameDelta > longestFrame )
+                longestFrame = frameDelta;
+        }
+        else if ( frameDelta < shortestFrame ) {
+            shortestFrame = frameDelta;
+        }
+        return false;
+    }
+    
+    
     @Override
     public boolean onGameEvent(GameEvent event) {
         if ( event.object == this ) {
@@ -65,6 +113,13 @@ public class FPSNode extends GameNode {
     }
 
 
+    public void reset() {
+        count = 0;
+        longFrames = longFrames2 = longFrames3 = 0;
+        longestFrame = shortestFrame = gameController.targetInterval;
+    }
+    
+    
     public void showFPS() {
         fps = gameController.getFPS();
         if ( callback != null )
@@ -76,8 +131,12 @@ public class FPSNode extends GameNode {
 
 
         if ( toLogger )
-            Log.d("FPS = %d", fps);
-
+            Log.d("FPS = %d #frames=%d #long=%d/%d/%d longest=%d shortest=%d",
+                  fps, count,
+                  longFrames, longFrames2, longFrames3,
+                  longestFrame, shortestFrame);
+        reset();
+        
         // Show it again in the future
         postUpDelayed(GameEvent.obtain(0,this),interval);
     }
