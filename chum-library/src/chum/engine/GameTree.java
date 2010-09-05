@@ -153,14 +153,10 @@ public class GameTree extends GameNode {
        back down another.
     */
     @Override
-    public void dispatchEventUp(GameEvent event) {
-        dispatchEventDown(event);
-    }
-
-    @Override
-    public void dispatchEventDown(GameEvent event) {
-        if ( !gameController.activity.onGameEvent(event) )
-            super.dispatchEventDown(event);
+    public boolean dispatchEventUp(GameEvent event) {
+        if (gameController.activity.onGameEvent(event))
+            return true;
+        return dispatchEventDown(event,false);
     }
 
 }

@@ -236,7 +236,8 @@ public class GameController {
             if ( event.up ) {
                 event.origin.dispatchEventUp(event);
             } else {
-                event.origin.dispatchEventDown(event);
+                event.lastUp = null;
+                event.origin.dispatchEventDown(event,true);
             }
         }
         

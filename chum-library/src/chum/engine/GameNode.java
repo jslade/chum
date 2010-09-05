@@ -449,7 +449,7 @@ public class GameNode {
 
 
     /**
-       Post a GameEvent that propogates up the tree from this node.
+       Post a GameEvent that propagates up the tree from this node.
 
        The event is just added to a linked list of events to be dispatched
        on the next call to dispatchEvents(), which happens during update()
@@ -463,7 +463,7 @@ public class GameNode {
 
 
     /**
-       Post a GameEvent that propogates down the tree from this node
+       ost a GameEvent that propagates down the tree from this node
 
        The event is just added to a linked list of events to be dispatched
        on the next call to dispatchEvents(), which happens during update()
@@ -476,7 +476,7 @@ public class GameNode {
 
 
     /**
-       Post an event to propogate up after a certain delay
+       Post an event to propagate up after a certain delay
     */
     public void postUpDelayed(GameEvent event,long delay) {
         GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,true);
@@ -485,7 +485,7 @@ public class GameNode {
 
 
     /**
-       Post an event to propogate down after a certain delay
+       Post an event to propagate down after a certain delay
     */
     public void postDownDelayed(GameEvent event,long delay) {
         GameEvent.Delayed delayed = GameEvent.Delayed.obtain(this,event,false);
@@ -496,24 +496,40 @@ public class GameNode {
     /**
        Dispatch an event up the tree from this node
     */
-   public void dispatchEventUp(GameEvent event) {
+   public boolean dispatchEventUp(GameEvent event) {
         if ( onGameEvent(event) )
-            return; // consumed
+            return true; // consumed
+
+        // Propagate it back down, but don't stop even
+        // if it was consumed
+        if ( this != event.origin )
+            dispatchEventDown(event,false);
+
+        // Now go up the tree
+        if ( parent != null ) {
+            event.lastUp = this;
+            return parent.dispatchEventUp(event);
+        }
         
-        if ( parent != null )
-            parent.dispatchEventUp(event);
+        return false;
     }
 
 
-    /**
-       Dispatch an event down the tree from this node
-    */
-    public void dispatchEventDown(GameEvent event) {
-        if ( onGameEvent(event) )
-            return; // consumed
+     /**
+        Dispatch an event down the tree from this node
+     */
+     public boolean dispatchEventDown(GameEvent event,boolean doLocal) {
+        if ( doLocal && onGameEvent(event) )
+            return true; // consumed
         
-        for(int i=0; i<num_children; ++i)
-            children[i].dispatchEventDown(event);
+        for(int i=0; i<num_children; ++i) {
+            GameNode child = children[i];
+            if ( child != event.lastUp )
+                if ( child.dispatchEventDown(event,true) )
+                    return true;
+        }
+        
+        return false;
     }
 
 

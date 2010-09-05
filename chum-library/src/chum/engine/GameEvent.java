@@ -30,6 +30,9 @@ public final class GameEvent
     /** Up or down */
     public boolean up;
 
+    /** Last node it propagated up from */
+    public GameNode lastUp;
+    
     /** Reference to next event in the queue */
     GameEvent nextQueued = null;
 
