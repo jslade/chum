@@ -131,8 +131,6 @@ public abstract class GameActivity extends Activity
        Set the GameTree instance to be used for this activity
     */
     public void setGameTree(GameTree tree) {
-        Log.d("setGameTree() tree=%s logic=%s render=%s",
-              tree,tree.logic,tree.rendering);
         this.tree = tree;
         gameController.tree = tree;
     }
