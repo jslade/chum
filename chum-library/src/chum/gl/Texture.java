@@ -1,5 +1,7 @@
 package chum.gl;
 
+import chum.util.Log;
+
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -84,7 +86,9 @@ public class Texture {
 
      */
     public void onSetup(RenderContext renderContext) {
-        if ( renderContext != null ) load(renderContext);
+        if ( renderContext != null &&
+         	 Thread.currentThread() == renderContext.renderThread )
+        	load(renderContext);
     }
     
     
@@ -151,7 +155,14 @@ public class Texture {
        Load the texture image data and filters onto the GPU
     */
     public void load(RenderContext renderContext, int num) {
-        define(renderContext.gl10);
+    	// Can only be done from the rendering thread
+    	if ( Thread.currentThread() != renderContext.renderThread ) {
+    		Log.w("Can't load texture data from non-rendering thread (current thread=%s)",
+    		      Thread.currentThread());
+    		return;
+    	}
+
+    	define(renderContext.gl10);
 
         Bitmap bitmap = getBitmap(renderContext,num);
         if ( bitmap == null ) return;
@@ -207,19 +218,22 @@ public class Texture {
     /**
        Bind the texture, preparing it to be applied to following rendering
     */
-    public void bind(GL10 gl) {
-        bind(gl,0);
+    public void bind(RenderContext renderContext) {
+        bind(renderContext,0);
     }
 
 
     /**
        Bind the texture, preparing it to be applied to following rendering
     */
-    public void bind(GL10 gl, int num) {
+    public void bind(RenderContext renderContext, int num) {
         int id = tex_ids[num];
-        if ( id == 0 )
-            chum.util.Log.w("bind() on texture which has not been loaded into GPU");
-        gl.glBindTexture(tex_dim, id);
+        if ( id == 0 ) {
+        	//chum.util.Log.w("bind() on texture which has not been loaded into GPU");
+        	load(renderContext);
+        	id = tex_ids[num];
+        }
+        renderContext.gl10.glBindTexture(tex_dim, id);
     }
 
 

@@ -200,7 +200,7 @@ public class MeshNode extends RenderNode {
         // The texture is bound before hand, so any tex coords in the
         // vertices apply to this texture
         if ( texture != null )
-            texture.bind(renderContext.gl10);
+            texture.bind(renderContext);
 
         if( mesh.vertexBufferObjectHandle != 0 )
             renderVBO( primitiveType, offset, count );
