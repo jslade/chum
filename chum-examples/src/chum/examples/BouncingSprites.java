@@ -91,13 +91,8 @@ public class BouncingSprites extends GameActivity
             }
         });
         
-        node.addNode(new TouchInputNode(){
-            @Override
-            protected void handle(View v, MotionEvent event) {
-                this.postUp(GameEvent.obtain(TOUCH,event));
-            }
-        });
-        
+        node.addNode(new TouchInputNode());
+
         return node;
     }
 
@@ -144,7 +139,7 @@ public class BouncingSprites extends GameActivity
     @Override
     public boolean onGameEvent(GameEvent event) {
         switch(event.type) {
-        case TOUCH:
+        case GameEvent.INPUT_TOUCH:
             MotionEvent ev = (MotionEvent)event.object;
             if ( ev.getAction() == MotionEvent.ACTION_DOWN ) {
                 Color color = BouncySprite.colors

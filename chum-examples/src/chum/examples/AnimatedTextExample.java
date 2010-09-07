@@ -205,12 +205,13 @@ public class AnimatedTextExample extends GameActivity
     class TouchNode extends TouchInputNode {
 
         @Override
-        protected void handle(View v, MotionEvent event) {
-            if ( state != WaitForTouch ) return;
+        protected boolean onTouch(MotionEvent event) {
+            if ( state != WaitForTouch ) return true;
             if ( touchedText(event.getX(),event.getY()) ) {
                 state = Animate;
                 postUp(GameEvent.obtain(TouchedText));
             }
+            return true;
         }
 
         boolean touchedText(float eventX, float eventY) {

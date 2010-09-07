@@ -1,6 +1,7 @@
 package chum.input;
 
 import chum.engine.GameController;
+import chum.engine.GameEvent;
 
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,9 +41,15 @@ public class TouchInputNode extends InputNode
 
     /**
        Called when a touch event is dispatched to the view.
+       
+       All touch events get queued into the normal GameEvent queue,
+       and will get dispatched back to this node via onGameEvent() 
     */
     public boolean onTouch(View v, MotionEvent event) {
-        handle(v,event);
+    	// Have to queue a copy of the original event, since the
+    	// original will get recycled after this method returns
+    	MotionEvent copy = MotionEvent.obtain(event);
+    	postUp(GameEvent.obtain(GameEvent.INPUT_TOUCH,copy));
 
         switch(event.getAction()) {
         case MotionEvent.ACTION_MOVE:
@@ -57,9 +64,8 @@ public class TouchInputNode extends InputNode
     /**
        Do something with the touch event
     */
-    protected void handle(View v, MotionEvent event) {
-        
-
+    protected boolean onTouch(MotionEvent event) {
+    	return false;
     }
 
        
@@ -73,5 +79,13 @@ public class TouchInputNode extends InputNode
         }
     }
 
+
+    @Override
+    public boolean onGameEvent(GameEvent event) {
+    	if(event.type == GameEvent.INPUT_TOUCH) {
+    		return onTouch((MotionEvent)event.object);
+    	}
+    	return super.onGameEvent(event);
+    }
 
 }

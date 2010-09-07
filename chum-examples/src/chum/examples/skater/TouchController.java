@@ -16,12 +16,13 @@ public class TouchController extends TouchInputNode {
 
 
     @Override
-    protected void handle(View v, MotionEvent event) {
+    protected boolean onTouch(MotionEvent event) {
         int newY = (int)event.getY();
         if ( Math.abs(newY - lastY) >= threshold ) {
             lastY = newY;
             postUp(GameEvent.obtain(StateNode.Steered,newY));
         }
+        return true;
     }
 
 }

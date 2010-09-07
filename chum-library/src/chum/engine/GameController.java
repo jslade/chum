@@ -168,8 +168,6 @@ public class GameController {
             frameDelta = targetInterval;
         }
 
-        // Process pending input
-
         // Process queued events
         int dispatched = events.dispatchAll();
         
@@ -214,7 +212,7 @@ public class GameController {
         frameCounter = 0;
         fpsStart = lastFrameStart;
     }
-    
+ 
 
     public static class EventQueue {
         public volatile GameEvent first;

@@ -9,7 +9,6 @@ import chum.input.TouchInputNode;
 
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.view.View;
 
 
 
@@ -30,20 +29,24 @@ public class BackgroundColorTouch extends GameActivity
     }
 
 
+    @Override
     protected GameNode createLogicTree() {
         return new TouchInputNode(){
             @Override
-            protected void handle(View v, MotionEvent event) {
-                float px = event.getX() / v.getWidth();
-                float py = event.getY() / v.getHeight();
+            protected boolean onTouch(MotionEvent event) {
+                float px = event.getX() / renderContext.width;
+                float py = event.getY() / renderContext.height;
 
                 bg.red = px;
                 bg.green = py;
                 bg.blue = (px + py)/2f;
+                
+                return true;
             }
         };
     }
 
+    @Override
     protected RenderNode createRenderTree(GameNode logic) {
         return new ClearNode(bg);
     }
