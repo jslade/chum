@@ -101,10 +101,14 @@ public class RenderNode extends GameNode {
 
 
     /**
-       Handle a GameEvent -- default behavior is to stop all propogation
+       For events that originate in the rendering tree (postUp() on a RenderNode),
+       those events don't propogate back down side branches of the rendering tree,
+       they only go straight to the top of the tree, and from there possibly back
+       down the logic tree.
     */
     @Override
-    public boolean onGameEvent(GameEvent event) {
-        return true;
+    protected boolean dispatchEventSideways(GameEvent event) {
+        return false;
     }
+    
 }

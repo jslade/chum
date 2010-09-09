@@ -50,11 +50,25 @@ public class GameSequence extends GameNode {
 
 
     /** Create a new sequence with the given duration */
-    public GameSequence(long duration) {
+    protected GameSequence(long duration) {
         super();
         this.duration = duration;
     }
 
+
+    /**
+       Reset the sequence to its original state
+     */
+    public void reset() {
+        hold = started = ended = false;
+        startTime = endTime = stepTime = elapsedTime = 0;
+        for(int i=0;i < this.num_children; ++i){
+            GameNode child = this.children[i];
+            if ( child instanceof GameSequence )
+                ((GameSequence)child).reset();
+        }
+    }  
+ 
 
     /**
        Set the sequence to hold (not start)
@@ -70,8 +84,8 @@ public class GameSequence extends GameNode {
         super.onAdded(parent);
         start();
     }
-
-
+    
+    
     /**
        Set the start and end time of the sequence, using the current
        time as the start and the given duration for the end
@@ -80,7 +94,7 @@ public class GameSequence extends GameNode {
         startTime = 0;
         if ( gameController != null )
             startTime = gameController.totalElapsed;
-        endTime = startTime + duration;
+        if ( endTime == 0 ) endTime = startTime + duration;
         //Log.d("Sequence.start(): %s start=%d end=%d duration=%d",
         //      this, startTime, endTime, duration);
         hold = false;
@@ -104,17 +118,19 @@ public class GameSequence extends GameNode {
             if ( shouldStart() ) {
                 //Log.d("Starting sequence: %s", this);
                 started = true;
+                if ( startTime == 0 ) startTime = gameController.totalElapsed;
+                if ( endTime == 0 ) endTime = startTime + duration;
                 postStart();
                 stepTime = scheduleNextStep();
             }
         }
         else if ( shouldStep() ) {
+            //Log.d("step seq: %s", this);
             postStep();
             stepTime = scheduleNextStep();
             
-            if ( stepTime == 0 && endTime == 0 ) {
-                // if at least one step was made, but no more, and if no end
-                // time is defined, then use now as the end time
+            if ( endTime == 0 ) {
+                // if no end  time is defined, then use now as the end time
                 endTime = gameController.totalElapsed;
             }
         }
@@ -126,6 +142,7 @@ public class GameSequence extends GameNode {
         else if ( ended && removeOnEnd ) {
             //Log.d("Removing finished sequence: %s", this);
             parent.removeNode(this);
+            this.recycle();
         }
 
 
@@ -192,8 +209,29 @@ public class GameSequence extends GameNode {
     protected long scheduleNextStep() {
         return 0;
     }
+    
+    
+    
+    private static GameSequence first_avail; // TODO: need synchronized() on obtain() and recycle()
+    protected GameSequence next_avail;
+    
+    
+    public static GameSequence obtain() {
+        if ( first_avail == null ) first_avail = new GameSequence(0);
+        GameSequence seq = first_avail;
+        first_avail = first_avail.next_avail;
+        seq.reset();
+        return seq;
+    }
 
+    
+    public void recycle() {
+        next_avail = first_avail;
+        first_avail = this;
+    }
 
+    
+    
 
     /**
        A Series is a set of GameSequences that run back-to-back (in serial), each starting
@@ -203,12 +241,12 @@ public class GameSequence extends GameNode {
     */
     public static class Series extends GameSequence {
 
-        public Series() {
+        protected Series() {
             this(0);
         }
 
 
-        public Series(long duration) {
+        protected Series(long duration) {
             super(duration);
         }
 
@@ -290,6 +328,24 @@ public class GameSequence extends GameNode {
             
             return true;
         }
+        
+        
+        private static Series first_avail;
+        
+        public static GameSequence obtain() {
+            if ( first_avail == null ) first_avail = new Series(0);
+            Series seq = first_avail;
+            first_avail = (Series)first_avail.next_avail;
+            seq.reset();
+            return seq;
+        }
+
+    
+        @Override
+        public void recycle() {
+            next_avail = first_avail;
+            first_avail = this;
+        }
     }
 
 
@@ -300,12 +356,12 @@ public class GameSequence extends GameNode {
     */
     public static class Parallel extends GameSequence {
 
-        public Parallel() {
+        protected Parallel() {
             this(0);
         }
 
 
-        public Parallel(long duration) {
+        protected Parallel(long duration) {
             super(duration);
         }
 
@@ -343,6 +399,24 @@ public class GameSequence extends GameNode {
             }
             return super.onGameEvent(event);
         }
+
+
+        private static Parallel first_avail;
+        
+        public static GameSequence obtain() {
+            if ( first_avail == null ) first_avail = new Parallel();
+            Parallel seq = first_avail;
+            first_avail = (Parallel)first_avail.next_avail;
+            seq.reset();
+            return seq;
+        }
+
+    
+        @Override
+        public void recycle() {
+            next_avail = first_avail;
+            first_avail = this;
+        }
     }
 
 
@@ -362,7 +436,7 @@ public class GameSequence extends GameNode {
         public Interpolator interpolator;
 
 
-        public Interpolated(long duration, Interpolator interp) {
+        protected Interpolated(long duration, Interpolator interp) {
             super(duration);
             this.interpolator = interp;
         }
@@ -387,6 +461,25 @@ public class GameSequence extends GameNode {
             else
                 progress = rawProgress;
         }
+        
+
+        private static Interpolated first_avail;
+        
+        public static GameSequence obtain() {
+            if ( first_avail == null ) first_avail = new Interpolated(0,null);
+            Interpolated seq = first_avail;
+            first_avail = (Interpolated)first_avail.next_avail;
+            seq.reset();
+            return seq;
+        }
+
+    
+        @Override
+        public void recycle() {
+            next_avail = first_avail;
+            first_avail = this;
+        }
+        
     }
 
 }

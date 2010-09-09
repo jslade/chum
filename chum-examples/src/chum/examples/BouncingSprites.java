@@ -23,7 +23,6 @@ import chum.sound.SoundManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.view.View;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -72,6 +71,7 @@ public class BouncingSprites extends GameActivity
     // The logic tree consists of two nodes:
     // - one to move the sprites
     // - one to periodically display the FPS
+    @Override
     protected GameNode createLogicTree() {
         GameNode node = new GameNode();
         
@@ -103,6 +103,7 @@ public class BouncingSprites extends GameActivity
        - Parent node for all the sprites
        - A text node to display the number when sprites are added
      */
+    @Override
     protected RenderNode createRenderTree(GameNode logic) {
         Standard2DNode base = new chum.gl.render.Standard2DNode();
         base.addNode(new ClearNode(Color.WHITE));
@@ -213,12 +214,12 @@ public class BouncingSprites extends GameActivity
         };
 
         Vec3 to = new Vec3(sprite.position);
-        to.x += 5;
-        to.y -= 20;
+        to.x += 10;
+        to.y -= 30;
         
-        anim.addNode(text.animatePosition(sprite.position,to,1500));
-        anim.addNode(text.animateScale(1f,2f,1500));
-        anim.addNode(text.animateAlpha(1f,0f,1500));
+        anim.addNode(text.animatePosition(sprite.position,to,2000));
+        anim.addNode(text.animateScale(1f,2f,2000));
+        anim.addNode(text.animateAlpha(1f,0f,2000));
         text.addNode(anim);
     }
     

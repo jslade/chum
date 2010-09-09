@@ -137,10 +137,6 @@ public class GameNode {
     }
 
     
-    // Track nodes that get removed during iteration (update())
-    protected GameNode removedNode;
-
-
     /**
        Remove a node from this node's list of child nodes.
 
@@ -213,8 +209,7 @@ public class GameNode {
 
     protected void _added(GameNode n) {
         n.parent = this;
-        n.onAdded(this);
-
+    
         // Need to also call onSetup() on the node, and
         // any of its children, if onSetup() was previously
         // called on this node
@@ -222,6 +217,9 @@ public class GameNode {
             _addedSetupVisitor.gameController = this.gameController;
             n.visit(_addedSetupVisitor,false);
         }
+
+        // Call onAdded() after onSetup() so gameController is in place
+        n.onAdded(this);
     }
 
 
@@ -492,21 +490,24 @@ public class GameNode {
         gameController.uiHandler.postDelayed(delayed,delay);
     }
 
-
+    
     /**
        Dispatch an event up the tree from this node
-    */
-   public boolean dispatchEventUp(GameEvent event) {
+     */
+    public boolean dispatchEventUp(GameEvent event) {
         if ( onGameEvent(event) )
             return true; // consumed
-
-        // Propagate it back down, but don't stop even
-        // if it was consumed
+        
+        // Propagate it back down on side branches
         if ( this != event.origin )
-            dispatchEventDown(event,false);
+            if ( dispatchEventSideways(event) )
+                return true; // consumed
 
         // Now go up the tree
-        if ( parent != null ) {
+        if ( parent == null ) {
+            //Log.w("Can't dispatch an event (type=%d) up from a node not in the tree (%s)",
+            //      event.type, this);
+        } else {
             event.lastUp = this;
             return parent.dispatchEventUp(event);
         }
@@ -514,11 +515,21 @@ public class GameNode {
         return false;
     }
 
+    
+    /**
+       This method is in here as a separate method just to enable it to be
+       overridden in RenderNode.  The 'sideways' propagation really happens
+       in dispatchEventDown(), where it pays attention to the event.lastUp field
+     */
+    protected boolean dispatchEventSideways(GameEvent event) {
+        return dispatchEventDown(event,false);
+    }
 
-     /**
+    
+    /**
         Dispatch an event down the tree from this node
      */
-     public boolean dispatchEventDown(GameEvent event,boolean doLocal) {
+    public boolean dispatchEventDown(GameEvent event,boolean doLocal) {
         if ( doLocal && onGameEvent(event) )
             return true; // consumed
         

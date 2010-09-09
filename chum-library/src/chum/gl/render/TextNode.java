@@ -1,6 +1,10 @@
 package chum.gl.render;
 
-import chum.engine.common.TextAnimation;
+import chum.engine.common.Animation;
+import chum.engine.common.Colorable;
+import chum.engine.common.Movable;
+import chum.engine.common.Rotatable;
+import chum.engine.common.Scalable;
 import chum.f.Vec3;
 import chum.gl.Color;
 import chum.gl.RenderContext;
@@ -12,7 +16,9 @@ import javax.microedition.khronos.opengles.GL10;
 /**
    A TextNode renders a Text string.
 */
-public class TextNode extends MeshNode {
+public class TextNode extends MeshNode
+    implements Scalable, Movable, Rotatable, Colorable
+{
     
     /** The Text to be rendered */
     public Text text;
@@ -86,12 +92,28 @@ public class TextNode extends MeshNode {
 
 
     /**
+       Get the current color
+     */
+    public Color getColor() {
+        return this.color;
+    }
+    
+
+    /**
        Set the position of the text
        @param position the vector to translate to before drawing the text
     */
     public void setPosition(Vec3 position) {
         if ( this.position == null ) this.position = new Vec3();
         this.position.set(position);
+    }
+
+    
+    /**
+       Get the current position of the text
+     */
+    public Vec3 getPosition() {
+        return this.position;
     }
 
 
@@ -103,7 +125,15 @@ public class TextNode extends MeshNode {
         this.scale = scale;
     }
 
+    
+    /**
+       Get the current scale of the text
+     */
+    public float getScale() {
+        return this.scale;
+    }
 
+    
     /**
        Set the angle of the text
        @param angle from 0-360
@@ -112,8 +142,33 @@ public class TextNode extends MeshNode {
         this.angle = angle;
     }
 
+    
+    /**
+       Get the current angle of the text
+     */
+    public float getAngle() {
+        return this.angle;
+    }
 
+    
+    /**
+       Set the rotation axis of the text.
+       Needed for Rotatable interface, but currently does nothing
+     */
+    public void setAxis(Vec3 axis) {
+        
+    }
+    
 
+    /**
+       Get the rotation axis of the text.
+       Only rotation around z axis is current supported
+     */
+    public Vec3 getAxis() {
+        return Vec3.Z_AXIS;
+    }
+
+    
     /** When the surface is created, ensure that the mesh is setup to render */
     @Override
     public void onSurfaceCreated(RenderContext renderContext) {
@@ -180,8 +235,10 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Scale instance}
     */
-    public TextAnimation.Scale animateScale(float start, float end, long duration) {
-        TextAnimation.Scale anim = new TextAnimation.Scale(this,duration);
+    public Animation.Scale animateScale(float start, float end, long duration) {
+        Animation.Scale anim = Animation.Scale.obtain();
+        anim.scalable = this;
+        anim.duration = duration;
         anim.setScale(start,end);
         anim.removeOnEnd = true;
         this.addNode(anim);
@@ -189,7 +246,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Scale animateScale(float end,long duration) {
+    public Animation.Scale animateScale(float end,long duration) {
         return this.animateScale(this.scale,end,duration);
     }
 
@@ -202,8 +259,10 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Angle instance}
     */
-    public TextAnimation.Angle animateAngle(float start, float end, long duration) {
-        TextAnimation.Angle anim = new TextAnimation.Angle(this,duration);
+    public Animation.Angle animateAngle(float start, float end, long duration) {
+        Animation.Angle anim = Animation.Angle.obtain();
+        anim.rotatable = this;
+        anim.duration = duration;
         anim.setAngle(start,end);
         anim.removeOnEnd = true;
         this.addNode(anim);
@@ -211,7 +270,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Angle animateAngle(float end,long duration) {
+    public Animation.Angle animateAngle(float end,long duration) {
         return this.animateAngle(this.angle,end,duration);
     }
 
@@ -223,9 +282,11 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Position instance}
     */
-    public TextAnimation.Position animatePosition(Vec3 start, Vec3 end, long duration) {
+    public Animation.Position animatePosition(Vec3 start, Vec3 end, long duration) {
         if ( this.position == null ) this.position = new Vec3();
-        TextAnimation.Position anim = new TextAnimation.Position(this,duration);
+        Animation.Position anim = Animation.Position.obtain();
+        anim.movable = this;
+        anim.duration = duration;
         anim.setPosition(start,end);
         anim.removeOnEnd = true;
         this.addNode(anim);
@@ -233,7 +294,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Position animatePosition(Vec3 end,long duration) {
+    public Animation.Position animatePosition(Vec3 end,long duration) {
         if ( this.position == null ) this.position = new Vec3();
         return this.animatePosition(this.position,end,duration);
     }
@@ -246,9 +307,11 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Color instance}
     */
-    public TextAnimation.Color animateColor(Color start, Color end, long duration) {
+    public Animation.Color animateColor(Color start, Color end, long duration) {
         if ( this.color == null ) this.color = new Color();
-        TextAnimation.Color anim = new TextAnimation.Color(this,duration);
+        Animation.Color anim = Animation.Color.obtain();
+        anim.colorable = this;
+        anim.duration = duration;
         anim.setColor(start,end);
         anim.removeOnEnd = true;
         this.addNode(anim);
@@ -256,7 +319,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Color animateColor(Color end,long duration) {
+    public Animation.Color animateColor(Color end,long duration) {
         if ( this.color == null ) this.color = new Color();
         return this.animateColor(this.color,end,duration);
     }
@@ -269,9 +332,11 @@ public class TextNode extends MeshNode {
        @param duration the duration for the animation (millis)
        @return the new {@link TextAnimation.Color instance}
     */
-    public TextAnimation.Color animateAlpha(float start, float end, long duration) {
+    public Animation.Color animateAlpha(float start, float end, long duration) {
         if ( this.color == null ) this.color = new Color(Color.BLACK); // TODO: allocate Color from pool
-        TextAnimation.Color anim = new TextAnimation.Color(this,duration);
+        Animation.Color anim = Animation.Color.obtain();
+        anim.colorable = this;
+        anim.duration = duration;
         Color startColor = new Color(this.color);
         Color endColor = new Color(this.color);
         startColor.alpha = start;
@@ -283,7 +348,7 @@ public class TextNode extends MeshNode {
     }
 
 
-    public TextAnimation.Color animateAlpha(float end,long duration) {
+    public Animation.Color animateAlpha(float end,long duration) {
         if ( this.color == null ) this.color = new Color();
         return this.animateAlpha(this.color.alpha,end,duration);
     }

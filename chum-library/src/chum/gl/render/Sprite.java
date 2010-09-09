@@ -1,5 +1,9 @@
 package chum.gl.render;
 
+import chum.engine.common.Animation;
+import chum.engine.common.Movable;
+import chum.engine.common.Rotatable;
+import chum.engine.common.Scalable;
 import chum.f.Vec3;
 import chum.gl.Mesh;
 import chum.gl.RenderContext;
@@ -17,7 +21,9 @@ import javax.microedition.khronos.opengles.GL10;
  * A Sprite renders a single Sprite. The SpriteNode has positioning info
  * (translate / rotate / scale), whereas the Sprite its
  */
-public class Sprite extends MeshNode {
+public class Sprite extends MeshNode
+    implements Scalable, Movable, Rotatable
+{
 
     /** The SpriteBatch to be rendered */
     public SpriteBatch batch;
@@ -127,6 +133,12 @@ public class Sprite extends MeshNode {
     }
 
 
+    @Override
+    public Vec3 getPosition() {
+        return this.position;
+    }
+
+
     /**
      * Set the scale of the sprite
      * 
@@ -135,6 +147,11 @@ public class Sprite extends MeshNode {
      */
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+
+    public float getScale() {
+        return this.scale;
     }
 
 
@@ -149,8 +166,24 @@ public class Sprite extends MeshNode {
     }
 
 
+    @Override
+    public float getAngle() {
+        return this.angle;
+    }
+
+
+    public void setAxis(Vec3 axis) {
+
+    }
+    
+    @Override
+    public Vec3 getAxis() {
+        return Vec3.Z_AXIS;
+    }
+
+
     /**
-     * Prepares the render state for drawing the text
+     * Prepares the render state for drawing the sprite mesh
      */
     @Override
     public void renderPrefix(GL10 gl) {
@@ -223,4 +256,80 @@ public class Sprite extends MeshNode {
         return sprite;
     }
 
+    
+    
+    
+    /**
+    Scale the sprite smoothly
+    @param start the starting scale factor
+    @param end the ending scale factor
+    @param duration the duration for the animation (millis)
+    @return the new {@link Animation.Scale instance}
+     */
+    public Animation.Scale animateScale(float start, float end, long duration) {
+        Animation.Scale anim = Animation.Scale.obtain();
+        anim.scalable = this;
+        anim.duration = duration;
+        anim.setScale(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+    
+    
+    public Animation.Scale animateScale(float end,long duration) {
+        return this.animateScale(this.scale,end,duration);
+    }
+    
+    
+    
+    /**
+    Rotate the sprite smoothly
+    @param start the starting angle (degrees)
+    @param end the ending angle (degrees)
+    @param duration the duration for the animation (millis)
+    @return the new {@link Animation.Angle instance}
+     */
+    public Animation.Angle animateAngle(float start, float end, long duration) {
+        Animation.Angle anim = Animation.Angle.obtain();
+        anim.rotatable = this;
+        anim.duration = duration;
+        anim.setAngle(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+    
+    
+    public Animation.Angle animateAngle(float end,long duration) {
+        return this.animateAngle(this.angle,end,duration);
+    }
+    
+    
+    /**
+    Move the sprite smoothly
+    @param start the starting position
+    @param end the ending ending postion
+    @param duration the duration for the animation (millis)
+    @return the new {@link Animation.Position instance}
+     */
+    public Animation.Position animatePosition(Vec3 start, Vec3 end, long duration) {
+        if ( this.position == null ) this.position = new Vec3();
+        Animation.Position anim = Animation.Position.obtain();
+        anim.movable = this;
+        anim.duration = duration;
+        anim.setPosition(start,end);
+        anim.removeOnEnd = true;
+        this.addNode(anim);
+        return anim;
+    }
+    
+    
+    public Animation.Position animatePosition(Vec3 end,long duration) {
+        if ( this.position == null ) this.position = new Vec3();
+        return this.animatePosition(this.position,end,duration);
+    }
+
+
+    
 }

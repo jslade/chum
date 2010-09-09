@@ -19,7 +19,6 @@ import chum.util.Log;
 
 import android.graphics.Typeface;
 import android.view.MotionEvent;
-import android.view.View;
 
 
 /**
@@ -129,7 +128,7 @@ public class AnimatedTextExample extends GameActivity
                 break;
             case 1:
                 // Scale the text up, and fade out at the same time
-                animation = new GameSequence.Parallel();
+                animation = GameSequence.Parallel.obtain();
                 animation.addNode(textNode.animateScale(1f,5f,1000));
                 animation.addNode(textNode.animateAlpha(1f,0f,1000));
                 break;
@@ -144,17 +143,20 @@ public class AnimatedTextExample extends GameActivity
             case 4:
                 // Move the text to the top of the screen, and shrink it down
                 // Once it's there, pause for a bit
-                animation = new GameSequence.Series();
-                GameSequence par = new GameSequence.Parallel();
+                animation = GameSequence.Series.obtain();
+                GameSequence par = GameSequence.Parallel.obtain();
                 animation.addNode(par);
                 to.set(center.x,(renderContext.height-30),0);
                 par.addNode(textNode.animatePosition(to,500));
                 par.addNode(textNode.animateScale(1f,0.5f,500));
-                animation.addNode(new GameSequence(500));
+
+                GameSequence seq = GameSequence.obtain();
+                seq.duration = 500;
+                animation.addNode(seq);
                 break;
             case 5:
                 // Shake side to side
-                animation = new GameSequence.Series();
+                animation = GameSequence.Series.obtain();
                 float offset = 30f;
                 to.set(center);
 
@@ -231,6 +233,7 @@ public class AnimatedTextExample extends GameActivity
     // The logic tree consists of two nodes:
     // - a node to control the active animation (if any)
     // - a TouchNode to register touch events
+    @Override
     protected GameNode createLogicTree() {
         GameNode node = new GameNode();
         node.addNode(new StateNode().setName("state"));
@@ -244,6 +247,7 @@ public class AnimatedTextExample extends GameActivity
     //   - "animation" node to be the root for the animations
     //   - ColorNode to set the current draw color
     //   - TextNode to display the text
+    @Override
     protected RenderNode createRenderTree(GameNode logic) {
         Standard2DNode base = new chum.gl.render.Standard2DNode();
         base.addNode(new ClearNode(Color.WHITE));
