@@ -83,6 +83,7 @@ public class GameSequence extends GameNode {
         startType = GameEvent.SEQUENCE_START;
         stepType = GameEvent.SEQUENCE_STEP;
         endType = GameEvent.SEQUENCE_END;
+        name = null;
     }   
 
     
@@ -97,14 +98,18 @@ public class GameSequence extends GameNode {
     */
     public void hold() {
         hold = true;
-        //Log.d("Holding sequence: %s",this);
     }
       
 
     @Override
     public void onAdded(GameNode parent) {
         super.onAdded(parent);
-        start();
+        if ( parent instanceof GameSequence ) {
+            GameSequence pseq = (GameSequence)parent;
+            if ( pseq.started ) start();
+        } else {
+            start();
+        }
     }
     
     
@@ -117,8 +122,6 @@ public class GameSequence extends GameNode {
         if ( startTime == 0 && gameController != null)
             startTime = gameController.totalElapsed;
         if ( endTime == 0 ) endTime = startTime + duration;
-        //Log.d("Sequence.start(): %s start=%d end=%d duration=%d",
-        //      this, startTime, endTime, duration);
         hold = false;
     }
 
@@ -128,17 +131,15 @@ public class GameSequence extends GameNode {
     */
     @Override
     public boolean updatePrefix(long millis) {
-        if ( started ) {
-            elapsedTime += millis;
-            //Log.d("Sequence %s: %d elapsed", this, elapsedTime);
-        }
-
         if ( hold )
             return false;
 
+        if ( started ) {
+            elapsedTime += millis;
+        }
+
         if ( !started ) {
             if ( shouldStart() ) {
-                //Log.d("Starting sequence: %s", this);
                 started = true;
                 if ( startTime == 0 ) startTime = gameController.totalElapsed;
                 if ( endTime == 0 ) endTime = startTime + duration;
@@ -147,7 +148,6 @@ public class GameSequence extends GameNode {
             }
         }
         else if ( shouldStep() ) {
-            //Log.d("step seq: %s", this);
             postStep();
             stepTime = scheduleNextStep();
             
@@ -156,13 +156,11 @@ public class GameSequence extends GameNode {
                 endTime = gameController.totalElapsed;
             }
         }
-        else if ( shouldEnd() ) {
-            //Log.d("Ending sequence: %s", this);
+        else if ( !ended && shouldEnd() ) {
             ended = true;
             postEnd();
         }
         else if ( ended && removeOnEnd ) {
-            //Log.d("Removing finished sequence: %s", this);
             parent.removeNode(this);
             this.recycle();
         }
@@ -188,7 +186,6 @@ public class GameSequence extends GameNode {
 
     public boolean shouldEnd() {
         return ( started && 
-                 !ended &&
                  endTime > 0 &&
                  gameController.totalElapsed >= endTime );
     }
@@ -256,84 +253,53 @@ public class GameSequence extends GameNode {
     
 
     /**
-       A Series is a set of GameSequences that run back-to-back (in serial), each starting
-       in turn after the previous one completes.  The sequences are added to the
-       chain as normal nodes, but each node is not given a chance to start
-       (by calling its update()) method until the previous one is done.
-    */
-    public static class Series extends GameSequence {
-
-        protected Series() {
+       Base class for sequences intended to hold other sequences
+     */
+    public static class Nested extends GameSequence {
+        
+        protected Nested() {
             this(0);
         }
-
-
-        protected Series(long duration) {
+        
+        protected Nested(long duration) {
             super(duration);
         }
+        
 
-
-        /** 
-            Whenever a new sequence is added to the chain, set it to hold.
-        */
+        // Reset all child sequences along with this one
         @Override
-        public GameNode addNode(GameNode n) {
-            super.addNode(n);
-            if ( n instanceof GameSequence ) {
-                GameSequence seq = (GameSequence)n;
-                seq.hold();
+        public void reset() {
+            super.reset();
+            for(int i=0; i<num_children;++i) {
+                GameNode child = children[i];
+                if ( child instanceof GameSequence ) {
+                    GameSequence seq = (GameSequence)child;
+                    seq.reset();
+                    seq.hold();
+                }
             }
-            return this;
+            
         }
+        
 
-        /**
-           When this sequence starts, start the first held child sequence
-        */
+        // Nested sequences get held until explicitly started
         @Override
         protected void postStart() {
             super.postStart();
-            startNext();
+            holdAll();            
         }
-
-
-        /**
-           Whenever a child sequence finishes, start the next one
-        */
-        @Override
-        public boolean onGameEvent(GameEvent event) {
-            if ( event.origin instanceof GameSequence ) {
-                GameSequence seq = (GameSequence)event.origin;
-                if ( event.type == seq.endType &&
-                     seq.parent == this ) {
-                    startNext();
-                }
-            }
-            return super.onGameEvent(event);
-        }
-
-
-        /**
-           Find the next child sequence that is being held and start it
-        */
-        public void startNext() {
-            //Log.d("GameSequence.Series startNext()");
-            synchronized(this) {
-                for(int i=0; i<num_children; ++i) {
-                    GameNode child = children[i];
-                    if ( child instanceof GameSequence ) {
-                        GameSequence seq = (GameSequence)child;
-                        if ( seq.hold ) {
-                            seq.start();
-                            if ( seq.endTime > endTime )
-                                endTime = seq.endTime;
-                            break;
-                        }
-                    }
+        
+        protected void holdAll() {
+            for(int i=0; i<num_children; ++i) {
+                GameNode child = children[i];
+                if ( child instanceof GameSequence ) {
+                    GameSequence seq = (GameSequence)child;
+                    seq.hold();
                 }
             }
         }
-
-
+        
+        
         // Don't end until all the child sequences indicate they are done
         @Override
         public boolean shouldEnd() {
@@ -351,7 +317,88 @@ public class GameSequence extends GameNode {
             return true;
         }
         
-        
+    }
+
+    
+    
+    /**
+       A Series is a set of GameSequences that run back-to-back (in serial), each starting
+       in turn after the previous one completes.  The sequences are added to the
+       chain as normal nodes, but each node is not given a chance to start
+       (by calling its update()) method until the previous one is done.
+    */
+    public static class Series extends Nested {
+
+        protected Series() {
+            this(0);
+        }
+
+
+        protected Series(long duration) {
+            super(duration);
+        }
+
+
+        /** 
+           Whenever a new sequence is added to the chain, set it to hold.
+         */
+        @Override
+        public GameNode addNode(GameNode n) {
+            super.addNode(n);
+            if ( n instanceof GameSequence ) {
+                GameSequence seq = (GameSequence)n;
+                seq.hold();
+            }
+            return this;
+        }
+
+ 
+        /**
+           When this sequence starts, start the first held child sequence
+        */
+        @Override
+        protected void postStart() {
+            super.postStart();
+            startNext(); // Start the first child
+        }
+
+
+        /**
+           Find the next child sequence that is being held and start it
+        */
+        public void startNext() {
+            for(int i=0; i<num_children; ++i) { 
+                GameNode child = children[i];
+                if ( child instanceof GameSequence ) {
+                    GameSequence seq = (GameSequence)child;
+                    if ( seq.hold ) {
+                        seq.start();
+                        if ( seq.endTime > endTime )
+                            endTime = seq.endTime;
+                        return;
+                    }
+                }
+            }
+        }
+
+
+        /**
+        Whenever a child sequence finishes, start the next one
+         */
+        @Override
+        public boolean onGameEvent(GameEvent event) {
+            if ( event.origin instanceof GameSequence ) {
+                GameSequence seq = (GameSequence)event.origin;
+                if ( event.type == seq.endType &&
+                        seq.parent == this ) {
+                    startNext();
+                    return true;
+                }
+            }
+            return super.onGameEvent(event);
+        }
+
+
         private static Series first_avail;
         
         public static Series obtain() {
@@ -376,7 +423,7 @@ public class GameSequence extends GameNode {
        The sequences are added to the set as normal nodes, and this sequence is considered
        complete when the last one ends.
     */
-    public static class Parallel extends GameSequence {
+    public static class Parallel extends Nested {
 
         protected Parallel() {
             this(0);
@@ -388,21 +435,34 @@ public class GameSequence extends GameNode {
         }
 
 
-        // Don't end until all the child sequences indicate they are done
+        // Whenever a new sequence is added to the list, set it to hold.
         @Override
-        public boolean shouldEnd() {
-            if ( !super.shouldEnd() ) return false;
+        public GameNode addNode(GameNode n) {
+            super.addNode(n);
+            if ( n instanceof GameSequence ) {
+                GameSequence seq = (GameSequence)n;
+                if ( started ) seq.start();
+                else seq.hold();
+            }
+            return this;
+        }
 
+
+        @Override
+        protected void postStart() {
+            super.postStart();
+            startAll();
+        }
+        
+        
+        protected void startAll() {
             for(int i=0; i<num_children; ++i) {
                 GameNode child = children[i];
                 if ( child instanceof GameSequence ) {
                     GameSequence seq = (GameSequence)child;
-                    if ( !seq.shouldEnd() )
-                        return false;
+                    if ( !seq.started ) seq.start();
                 }
             }
-            
-            return true;
         }
 
 
@@ -417,6 +477,7 @@ public class GameSequence extends GameNode {
                      seq.parent == this ) {
                     if ( seq.endTime > endTime )
                         endTime = seq.endTime;
+                    return true;
                 }
             }
             return super.onGameEvent(event);

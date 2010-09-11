@@ -62,7 +62,13 @@ public class GameNode {
         return this;
     }
 
+    
+    public String getName() {
+        if ( name != null ) return name;
+        return this.toString();
+    }
 
+    
     /**
        Add a node to this node's list of child nodes.
 

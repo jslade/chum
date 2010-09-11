@@ -215,7 +215,7 @@ public class BouncingSprites extends GameActivity
 
         Vec3 to = new Vec3(sprite.position);
         to.x += 10;
-        to.y -= 30;
+        to.y += 30;
         
         anim.addNode(text.animatePosition(sprite.position,to,2000));
         anim.addNode(text.animateScale(1f,2f,2000));
