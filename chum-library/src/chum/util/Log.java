@@ -29,6 +29,11 @@ public class Log {
     }
 
     static public void puts(String tag,String fmt, Object ... args) {
+        if (tag.contains("%")) {
+            puts(default_tag,tag,_args(fmt,args));
+            return;
+        }
+        
         String msg = String.format(fmt,args);
 
         if ( !_init ) _init();
@@ -51,11 +56,19 @@ public class Log {
     }
 
     static public void d(String tag,String fmt, Object ... args) {
+        if (tag.contains("%")) {
+            d(default_tag,tag,_args(fmt,args));
+            return;
+        }
         String msg = String.format(fmt,args);
         d(tag,msg);
     }
 
     static public void d(String tag,String msg) {
+        if (tag.contains("%")) {
+            d(default_tag,tag,msg);
+            return;
+        }
         if ( !_init ) _init();
         if ( _android ) {
             android.util.Log.d(tag,msg);
@@ -76,11 +89,19 @@ public class Log {
     }
 
     static public void w(String tag,String fmt, Object ... args) {
+        if (tag.contains("%")) {
+            w(default_tag,tag,_args(fmt,args));
+            return;
+        }
         String msg = String.format(fmt,args);
         w(tag,msg);
     }
 
     static public void w(String tag,String msg) {
+        if (tag.contains("%")) {
+            w(default_tag,tag,msg);
+            return;
+        }
         if ( !_init ) _init();
         if ( _android ) {
             android.util.Log.w(tag,msg);
@@ -101,11 +122,19 @@ public class Log {
     }
 
     static public void i(String tag,String fmt, Object ... args) {
+        if (tag.contains("%")) {
+            i(default_tag,tag,_args(fmt,args));
+            return;
+        }
         String msg = String.format(fmt,args);
         i(tag,msg);
     }
 
     static public void i(String tag,String msg) {
+        if (tag.contains("%")) {
+            i(default_tag,tag,msg);
+            return;
+        }
         if ( !_init ) _init();
         if ( _android ) {
             android.util.Log.i(tag,msg);
@@ -126,11 +155,19 @@ public class Log {
     }
 
     static public void e(String tag,String fmt, Object ... args) {
+        if (tag.contains("%")) {
+            e(default_tag,tag,_args(fmt,args));
+            return;
+        }
         String msg = String.format(fmt,args);
         e(tag,msg);
     }
 
     static public void e(String tag,String msg) {
+        if (tag.contains("%")) {
+            e(default_tag,tag,msg);
+            return;
+        }
         if ( !_init ) _init();
         if ( _android ) {
             android.util.Log.e(tag,msg);
@@ -148,6 +185,13 @@ public class Log {
             android.util.Log.isLoggable("x",android.util.Log.ASSERT);
             _android = true;
         } catch( NoClassDefFoundError e ) {}
+    }
+    
+    private static Object[] _args(Object x,Object[] a) {
+        Object[] r = new Object[a.length+1];
+        r[0] = x;
+        for(int i=0,j=1; i<a.length; ++i, ++j) r[j] = a[i];
+        return r;
     }
 }
 
