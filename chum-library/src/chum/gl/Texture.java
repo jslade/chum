@@ -321,7 +321,7 @@ public class Texture {
 
         public Bitmap getBitmap(RenderContext renderContext) {
             if ( bitmap == null ) {
-                if ( asset == null || asset.equals("") ) return;
+                if ( asset == null || asset.equals("") ) return null;
                 
                 InputStream is;
                 try {
