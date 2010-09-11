@@ -322,9 +322,10 @@ public class MeshNode extends RenderNode {
             }
         }
         
-        if( mesh.maxIndices > 0 )
+        if( mesh.maxIndices > 0 ) {
+            mesh.indices.position(offset);
             gl.glDrawElements( primitiveType, count, GL10.GL_UNSIGNED_SHORT, mesh.indices );
-        else
+        } else
             gl.glDrawArrays( primitiveType, offset, count);
         
         textureUnit--;
@@ -402,6 +403,6 @@ public class MeshNode extends RenderNode {
         super.renderPostfix(gl);
     }
 
-
+    
 
 }
