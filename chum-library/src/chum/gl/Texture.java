@@ -321,9 +321,11 @@ public class Texture {
 
         public Bitmap getBitmap(RenderContext renderContext) {
             if ( bitmap == null ) {
+                if ( asset == null || asset.equals("") ) return;
+                
                 InputStream is;
                 try {
-                    chum.util.Log.d("AssetProvider: loading %s", asset);
+                    //chum.util.Log.d("AssetProvider: loading %s", asset);
                     is = renderContext.appContext.getAssets()
                         .open(asset,AssetManager.ACCESS_STREAMING);
                 }
@@ -334,7 +336,7 @@ public class Texture {
 
                 try {
                     bitmap = BitmapFactory.decodeStream(is);
-                    chum.util.Log.d("AssetProvider: loaded %s", asset);
+                    //chum.util.Log.d("AssetProvider: loaded %s", asset);
                 }
                 finally {
                     try { is.close(); }
