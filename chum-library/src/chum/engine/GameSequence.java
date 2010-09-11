@@ -54,6 +54,13 @@ public class GameSequence extends GameNode {
         super();
         this.duration = duration;
     }
+    
+    
+    /** Add a child Sequence */
+    public void addNode(GameSequence child,boolean removeOnEnd) {
+        child.removeOnEnd = removeOnEnd;
+        addNode(child);
+    }
 
 
     /**
@@ -69,7 +76,22 @@ public class GameSequence extends GameNode {
         }
     }  
  
+    
+    protected void resetInternal() {
+        duration = 0;
+        removeOnEnd = true;
+        startType = GameEvent.SEQUENCE_START;
+        stepType = GameEvent.SEQUENCE_STEP;
+        endType = GameEvent.SEQUENCE_END;
+    }   
 
+    
+    protected void resetAll() {
+        resetInternal();
+        reset();
+    }
+    
+    
     /**
        Set the sequence to hold (not start)
     */
@@ -92,7 +114,7 @@ public class GameSequence extends GameNode {
     */
     public void start() {
         startTime = 0;
-        if ( gameController != null )
+        if ( startTime == 0 && gameController != null)
             startTime = gameController.totalElapsed;
         if ( endTime == 0 ) endTime = startTime + duration;
         //Log.d("Sequence.start(): %s start=%d end=%d duration=%d",
@@ -220,7 +242,7 @@ public class GameSequence extends GameNode {
         if ( first_avail == null ) first_avail = new GameSequence(0);
         GameSequence seq = first_avail;
         first_avail = first_avail.next_avail;
-        seq.reset();
+        seq.resetAll();
         return seq;
     }
 
@@ -332,11 +354,11 @@ public class GameSequence extends GameNode {
         
         private static Series first_avail;
         
-        public static GameSequence obtain() {
+        public static Series obtain() {
             if ( first_avail == null ) first_avail = new Series(0);
             Series seq = first_avail;
             first_avail = (Series)first_avail.next_avail;
-            seq.reset();
+            seq.resetAll();
             return seq;
         }
 
@@ -403,11 +425,11 @@ public class GameSequence extends GameNode {
 
         private static Parallel first_avail;
         
-        public static GameSequence obtain() {
+        public static Parallel obtain() {
             if ( first_avail == null ) first_avail = new Parallel();
             Parallel seq = first_avail;
             first_avail = (Parallel)first_avail.next_avail;
-            seq.reset();
+            seq.resetAll();
             return seq;
         }
 
@@ -465,11 +487,11 @@ public class GameSequence extends GameNode {
 
         private static Interpolated first_avail;
         
-        public static GameSequence obtain() {
+        public static Interpolated obtain() {
             if ( first_avail == null ) first_avail = new Interpolated(0,null);
             Interpolated seq = first_avail;
             first_avail = (Interpolated)first_avail.next_avail;
-            seq.reset();
+            seq.resetAll();
             return seq;
         }
 

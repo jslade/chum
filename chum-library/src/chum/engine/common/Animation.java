@@ -71,7 +71,7 @@ public abstract class Animation extends GameSequence.Interpolated {
             if ( first_avail == null ) first_avail = new Scale(null,0);
             Scale scale = first_avail;
             first_avail = (Scale)first_avail.next_avail;
-            scale.reset();
+            scale.resetAll();
             return scale;
         }
 
@@ -130,7 +130,7 @@ public abstract class Animation extends GameSequence.Interpolated {
             if ( first_avail == null ) first_avail = new Angle(null,0);
             Angle angle = first_avail;
             first_avail = (Angle)first_avail.next_avail;
-            angle.reset();
+            angle.resetAll();
             return angle;
         }
 
@@ -196,7 +196,7 @@ public abstract class Animation extends GameSequence.Interpolated {
             if ( first_avail == null ) first_avail = new Position(null,0);
             Position position = first_avail;
             first_avail = (Position)first_avail.next_avail;
-            position.reset();
+            position.resetAll();
             return position;
         }
 
@@ -264,7 +264,7 @@ public abstract class Animation extends GameSequence.Interpolated {
             if ( first_avail == null ) first_avail = new Color(null,0);
             Color c = first_avail;
             first_avail = (Color)first_avail.next_avail;
-            c.reset();
+            c.resetAll();
             return c;
         }
 
