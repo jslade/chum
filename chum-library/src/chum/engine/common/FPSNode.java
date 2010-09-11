@@ -3,6 +3,7 @@ package chum.engine.common;
 import chum.engine.GameController;
 import chum.engine.GameEvent;
 import chum.engine.GameNode;
+import chum.gl.Anchor;
 import chum.gl.Font;
 import chum.gl.Text;
 import chum.gl.Font.Glyph;
@@ -177,7 +178,7 @@ public class FPSNode extends GameNode {
         glyphs[0] = font.getGlyph((char)('0' + tens));
         glyphs[1] = font.getGlyph((char)('0' + ones));
         
-        text.setGlyphs(glyphs,0,2);
+        text.setGlyphs(glyphs,0,2,Anchor.SOUTHWEST);
     }
 
 

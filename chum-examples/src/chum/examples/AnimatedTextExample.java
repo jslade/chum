@@ -6,6 +6,7 @@ import chum.engine.GameEvent;
 import chum.engine.GameNode;
 import chum.engine.GameSequence;
 import chum.f.Vec3;
+import chum.gl.Anchor;
 import chum.gl.Color;
 import chum.gl.Font;
 import chum.gl.Mesh;
@@ -268,13 +269,8 @@ public class AnimatedTextExample extends GameActivity
             
         Font font = new Font(renderContext,Typeface.DEFAULT_BOLD,30);
         font.spacing = 5f;
-        textNode.setText(font.buildText("Touch me!"));
-        
-        // The text should be centered at its given location,
-        // not placed at its lower-left corner
-        Mesh.Transform xform = new Mesh.Transform();
-        xform.center(textNode.text);
-    }
+        textNode.setText(font.buildText("Touch me!",Anchor.CENTER));
+   }
     
     @Override
     protected void onSurfaceChanged(int width, int height) {

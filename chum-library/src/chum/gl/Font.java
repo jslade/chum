@@ -197,50 +197,58 @@ public class Font {
        Construct a Text mesh to display the given string
     */
     public Text buildText(String str) {
-    	int len = str.length();
-        Glyph[] glyphs = getGlyphs(len);
-        getGlyphs(str,glyphs);
-        return buildText(glyphs,0,len);
+        return buildText(str,Anchor.SOUTHWEST);
     }
 
     
     /**
+    Construct a Text mesh to display the given string
+     */
+    public Text buildText(String str, Anchor anchor) {
+        int len = str.length();
+        Glyph[] glyphs = getGlyphs(len);
+        getGlyphs(str,glyphs);
+        return buildText(glyphs,0,len,anchor);
+    }
+
+ 
+    /**
        Construct a Text mesh to display the given characters
     */
-    public Text builtText(char[] chars) {
+    public Text builtText(char[] chars, Anchor anchor) {
         int len = chars.length;
         Glyph[] glyphs = getGlyphs(len);
         for (int i=0; i<len; ++i ) {
             Glyph glyph = getGlyph(chars[i]);
             glyphs[i] = glyph;
         }
-        return buildText(glyphs,0,len);
+        return buildText(glyphs,0,len,anchor);
     }
 
 
     /**
        Construct a Text mesh to display the given glyphs
     */
-    public Text buildText(Glyph[] glyphs) {
-        return buildText(glyphs, 0, glyphs.length);
+    public Text buildText(Glyph[] glyphs, Anchor anchor) {
+        return buildText(glyphs, 0, glyphs.length, anchor);
     }
 
 
     /**
        Populate the given Text mesh with the given glyphs
     */
-    public Text buildText(Glyph[] glyphs, int offset, int count) {
+    public Text buildText(Glyph[] glyphs, int offset, int count, Anchor anchor) {
         Text text = new Text(count,spacing);
         text.font = this;
-        return buildText(glyphs, offset, count, text);
+        return buildText(glyphs, offset, count, text, anchor);
     }
 
 
     /**
        Construct a Text designed to display the given glyphs.
     */
-    public Text buildText(Glyph[] glyphs, int offset, int count, Text text) {
-        text.setGlyphs(glyphs, offset,count);
+    public Text buildText(Glyph[] glyphs, int offset, int count, Text text, Anchor anchor) {
+        text.setGlyphs(glyphs, offset, count, anchor);
         return text;
     }
 

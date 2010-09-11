@@ -5,8 +5,10 @@ import chum.engine.common.Colorable;
 import chum.engine.common.Movable;
 import chum.engine.common.Rotatable;
 import chum.engine.common.Scalable;
+import chum.f.M4;
 import chum.f.Vec3;
 import chum.gl.Color;
+import chum.gl.Mesh;
 import chum.gl.RenderContext;
 import chum.gl.Text;
 
@@ -225,6 +227,19 @@ public class TextNode extends MeshNode
         super.renderPostfix(gl);
     }
 
+
+
+    /**
+        Update a Boundary with the bounding box for this text + transforms
+     */
+    public void updateBounds(Mesh.Bounds bounds) {
+        bounds.update(text);
+        M4 xform = new M4();
+        if ( scale != 1f ) xform.scale(scale,xform);
+        if ( angle != 0f ) xform.rotate(Vec3.ORIGIN,(float)(angle * Math.PI / 180f), xform);
+        xform.translate(position,xform);
+        bounds.transform(xform);
+    }
 
 
 

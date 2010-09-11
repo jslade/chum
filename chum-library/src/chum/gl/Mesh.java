@@ -1131,6 +1131,45 @@ public class Mesh {
 
 
         /**
+         * Apply a transformation matrix to the bounds
+         */
+        public void transform(M4 matrix) {
+            Vec3 xmin = new Vec3();
+            Vec3 xmax = new Vec3();
+            matrix.multiply(center,center);
+            matrix.multiply(minimum,xmin);
+            matrix.multiply(maximum,xmax);
+            
+            if ( xmin.x < xmax.x ) {
+                minimum.x = xmin.x;
+                maximum.x = xmax.x;
+            } else {
+                minimum.x = xmax.x;
+                maximum.x = xmin.x;
+            }
+
+            if ( xmin.y < xmax.y ) {
+                minimum.y = xmin.y;
+                maximum.y = xmax.y;
+            } else {
+                minimum.y = xmax.y;
+                maximum.y = xmin.y;
+            }
+
+            if ( xmin.z < xmax.z ) {
+                minimum.z = xmin.z;
+                maximum.z = xmax.z;
+            } else {
+                minimum.z = xmax.z;
+                maximum.z = xmin.z;
+            }
+
+            maximum.delta(minimum,size);
+            
+        }
+        
+        
+        /**
          * Test whether the given point is within the bounding box of the mesh
          * -- does not check for inclusion within the actual volume of the mesh
          * itself, that's a much harder problem.

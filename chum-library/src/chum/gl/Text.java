@@ -1,5 +1,6 @@
 package chum.gl;
 
+import chum.f.Vec3;
 import chum.gl.Font.Glyph;
 import chum.gl.VertexAttributes.Usage;
 
@@ -83,15 +84,23 @@ public class Text extends Mesh {
     */
     public Text(String str) {
         this(str.length());
-        setString(str);
+        setString(str,Anchor.SOUTHWEST);
     }
 
 
     /**
        Populate the text with a new string, provided it fits within the maxGlyphs
-       limit
+       limit.  Uses the default anchor point (SOUTHWEST)
     */
     public void setString(String str) {
+        setString(str,Anchor.SOUTHWEST);
+    }
+    
+    /**
+        Populate the text with a new string, provided it fits within the maxGlyphs
+        limit.
+     */
+    public void setString(String str,Anchor anchor) {
         if ( str.length() > maxGlyphs )
             throw new IllegalArgumentException("string length exceeds maxGlyphs");
         if ( font == null )
@@ -100,7 +109,7 @@ public class Text extends Mesh {
         if ( reusableGlyphs == null )
             reusableGlyphs = new Glyph[maxGlyphs];
         font.getGlyphs(str,reusableGlyphs);
-        setGlyphs(reusableGlyphs,0,str.length());
+        setGlyphs(reusableGlyphs,0,str.length(),anchor);
     }
 
     private Glyph[] reusableGlyphs;
@@ -110,8 +119,8 @@ public class Text extends Mesh {
     /**
        Populate the mesh with vertices corresponding to the given set of glyphs
     */
-    public void setGlyphs(Glyph[] glyphs) {
-        setGlyphs(glyphs,0,glyphs.length);
+    public void setGlyphs(Glyph[] glyphs,Anchor anchor) {
+        setGlyphs(glyphs,0,glyphs.length,anchor);
     }
 
 
@@ -120,7 +129,7 @@ public class Text extends Mesh {
 
        todo: perhaps this would be cleaner / clearer if done with a MeshBuilder?
     */
-    public void setGlyphs(Glyph[] glyphs, int offset, int count) {
+    public void setGlyphs(Glyph[] glyphs, int offset, int count, Anchor anchor) {
         if ( count > maxGlyphs )
             throw new IllegalArgumentException("count exceeds maxGlyphs");
 
@@ -129,9 +138,11 @@ public class Text extends Mesh {
         int i = 0;
         short vert = 0;
 
+        float maxHeight = 0;
+        
         for (int g=0; g < count; ++g ) {
             Glyph glyph = glyphs[offset + g];
-            float y1 = (float)-glyph.baseline;
+            float y1 = -glyph.baseline;
             float x2 = x1 + glyph.width;
             float y2 = y1 + glyph.height;
 
@@ -140,6 +151,8 @@ public class Text extends Mesh {
             float u2 = u1 + glyph.texWidth;
             float v2 = v1 - glyph.texHeight;
 
+            if ( glyph.height > maxHeight ) maxHeight = glyph.height;
+            
             // lower left
             dynVertices[v++] = x1;
             dynVertices[v++] = y1;
@@ -189,8 +202,44 @@ public class Text extends Mesh {
             dynIndices[i++] = ul;
         }
 
+        float maxWidth = x1 - spacing;
+
+        // Need to zero out the rest of the vertex and index data, because some devices
+        // apparently don't use the count/offset properly when rendering array elements
+        // TODO: Could unroll these loops for speed
+        short vert0 = vert;
+        for (int g=count; g<maxGlyphs; ++g){
+            for (int gv=0; gv<20; ++gv) { // 20 = 4 verts, 5 floats per vert
+                dynVertices[v++] = 0;
+            }
+            vert += 4;
+            
+            for (int gi=0; gi<6; ++gi) { // 6 = 6 indices per glyph quad
+                dynIndices[i++] = vert0;
+            }
+        }
+        
+        
         this.setVertices(dynVertices,0,v);
         this.setIndices(dynIndices,0,i);
+        
+        
+        if ( anchor != Anchor.SOUTHWEST ) {
+            Vec3 delta = new Vec3();
+            switch(anchor) {
+            case NORTHWEST: delta.y = -maxHeight; break;
+            case WEST: delta.y = -0.5f*maxHeight; break;
+            case SOUTH: delta.x = -0.5f*maxWidth; break;
+            case CENTER: delta.x = -0.5f*maxWidth; delta.y = -0.5f*maxHeight; break;
+            case NORTH: delta.x = -0.5f*maxWidth; delta.y = -maxHeight; break;            
+            case SOUTHEAST: delta.x = -maxWidth; break;
+            case EAST: delta.x = -maxWidth; delta.y = -0.5f*maxHeight; break;
+            case NORTHEAST: delta.x = -maxWidth; delta.y = -maxHeight; break;            
+            }
+            Mesh.Transform adjust = new Mesh.Transform();
+            adjust.translate(delta);
+            adjust.apply(this);
+        }
     }
               
 
