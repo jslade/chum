@@ -271,7 +271,6 @@ public class Sprite extends MeshNode
         anim.scalable = this;
         anim.duration = duration;
         anim.setScale(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -295,7 +294,6 @@ public class Sprite extends MeshNode
         anim.rotatable = this;
         anim.duration = duration;
         anim.setAngle(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -319,7 +317,6 @@ public class Sprite extends MeshNode
         anim.movable = this;
         anim.duration = duration;
         anim.setPosition(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }

@@ -45,8 +45,8 @@ public class GameSequence extends GameNode {
     /** Whether end time has been reached previously */
     public boolean ended;
 
-    /** Whether to auto-remove from the game tree when done */
-    public boolean removeOnEnd = true;
+    /** Is it a one-shot sequence? */
+    public boolean oneShot = true;
 
 
     /** Create a new sequence with the given duration */
@@ -56,13 +56,6 @@ public class GameSequence extends GameNode {
     }
     
     
-    /** Add a child Sequence */
-    public void addNode(GameSequence child,boolean removeOnEnd) {
-        child.removeOnEnd = removeOnEnd;
-        addNode(child);
-    }
-
-
     /**
        Reset the sequence to its original state
      */
@@ -79,7 +72,7 @@ public class GameSequence extends GameNode {
     
     protected void resetInternal() {
         duration = 0;
-        removeOnEnd = true;
+        oneShot = true;
         startType = GameEvent.SEQUENCE_START;
         stepType = GameEvent.SEQUENCE_STEP;
         endType = GameEvent.SEQUENCE_END;
@@ -160,9 +153,11 @@ public class GameSequence extends GameNode {
             ended = true;
             postEnd();
         }
-        else if ( ended && removeOnEnd ) {
-            parent.removeNode(this);
-            this.recycle();
+        else if ( ended ) {
+            if ( oneShot ) {
+                parent.removeNode(this);
+                this.recycle();
+            }
         }
 
 
@@ -265,6 +260,18 @@ public class GameSequence extends GameNode {
             super(duration);
         }
         
+        /** Add a child Sequence */
+        @Override
+        public GameNode addNode(GameNode child) {
+            GameNode node = super.addNode(child);
+            if ( child instanceof GameSequence ) {
+                GameSequence seq = (GameSequence)child;
+                seq.oneShot = this.oneShot;
+            }
+            return node;
+        }
+
+
 
         // Reset all child sequences along with this one
         @Override

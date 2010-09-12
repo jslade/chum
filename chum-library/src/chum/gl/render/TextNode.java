@@ -255,7 +255,6 @@ public class TextNode extends MeshNode
         anim.scalable = this;
         anim.duration = duration;
         anim.setScale(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -279,7 +278,6 @@ public class TextNode extends MeshNode
         anim.rotatable = this;
         anim.duration = duration;
         anim.setAngle(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -303,7 +301,6 @@ public class TextNode extends MeshNode
         anim.movable = this;
         anim.duration = duration;
         anim.setPosition(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -328,7 +325,6 @@ public class TextNode extends MeshNode
         anim.colorable = this;
         anim.duration = duration;
         anim.setColor(start,end);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
@@ -357,7 +353,6 @@ public class TextNode extends MeshNode
         startColor.alpha = start;
         endColor.alpha = end;
         anim.setColor(startColor,endColor);
-        anim.removeOnEnd = true;
         this.addNode(anim);
         return anim;
     }
