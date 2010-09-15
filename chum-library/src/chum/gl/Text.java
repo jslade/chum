@@ -101,10 +101,13 @@ public class Text extends Mesh {
         limit.
      */
     public void setString(String str,Anchor anchor) {
-        if ( str.length() > maxGlyphs )
-            throw new IllegalArgumentException("string length exceeds maxGlyphs");
         if ( font == null )
             throw new IllegalStateException("Can't call setString() without a font defined");
+        if ( str.length() > maxGlyphs ) {
+            //throw new IllegalArgumentException("string length exceeds maxGlyphs");
+            chum.util.Log.d("string length exceeds maxGlyphs, truncating text (%d > %d)", str.length(), maxGlyphs);
+            str = str.substring(0,maxGlyphs);
+        }            
 
         if ( reusableGlyphs == null )
             reusableGlyphs = new Glyph[maxGlyphs];
