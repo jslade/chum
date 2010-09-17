@@ -4,9 +4,9 @@ import chum.cfg.Config;
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
 import chum.util.DefaultExceptionHandler;
-import chum.util.Log;
 
 import android.app.Activity;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
@@ -74,6 +74,10 @@ public abstract class GameActivity extends Activity
         gameController.inputView = glSurface;
 
         setGameTree(createGameTree());
+        
+        
+        // Always want to control the media volume in the game...
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
 
