@@ -235,9 +235,9 @@ public class TextNode extends MeshNode
     public void updateBounds(Mesh.Bounds bounds) {
         bounds.update(text);
         M4 xform = new M4();
-        if ( scale != 1f ) xform.scale(scale,xform);
-        if ( angle != 0f ) xform.rotate(Vec3.ORIGIN,(float)(angle * Math.PI / 180f), xform);
         xform.translate(position,xform);
+        if ( angle != 0f ) xform.rotate(Vec3.ORIGIN,(float)(angle * Math.PI / 180f), xform);
+        if ( scale != 1f ) xform.scale(scale,xform);
         bounds.transform(xform);
     }
 
