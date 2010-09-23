@@ -1,6 +1,7 @@
 package chum.examples;
 
 import chum.engine.GameActivity;
+import chum.engine.GameController;
 import chum.engine.GameEvent;
 import chum.engine.GameNode;
 import chum.engine.GameSequence;
@@ -144,7 +145,7 @@ public class BouncingSprites extends GameActivity
             MotionEvent ev = (MotionEvent)event.object;
             if ( ev.getAction() == MotionEvent.ACTION_DOWN ) {
                 Color color = BouncySprite.colors
-                    [gameController.random.nextInt(BouncySprite.colors.length)];
+                    [GameController.random.nextInt(BouncySprite.colors.length)];
                 addSprite(color,ev.getX(),renderContext.height - ev.getY());
             }   
             return true;
@@ -179,7 +180,7 @@ public class BouncingSprites extends GameActivity
 
     
     protected void addSprite(Color color, float x, float y) {
-        int shape = gameController.random.nextInt(batch.maxSprites);
+        int shape = GameController.random.nextInt(batch.maxSprites);
         BouncySprite sprite = new BouncySprite(batch,color,shape);
         sprite.setPosition(new Vec3(x,y,0));
 
@@ -192,8 +193,8 @@ public class BouncingSprites extends GameActivity
         spritesNode.addNode(sprite);
         
         // Choose random direction:
-        float speed = 0.08f + gameController.random.nextFloat() * 0.15f;        
-        double angle = gameController.random.nextDouble() * 3.1416;
+        float speed = 0.08f + GameController.random.nextFloat() * 0.15f;        
+        double angle = GameController.random.nextDouble() * 3.1416;
 
         sprite.velocity.set(speed * (float)Math.cos(angle),
                             speed * (float)Math.sin(angle),
