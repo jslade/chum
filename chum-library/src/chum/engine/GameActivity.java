@@ -143,8 +143,12 @@ public abstract class GameActivity extends Activity
     /**
        Called when the rendering thread is ready to draw the next frame.
     */
-    public void onDrawFrame(GL10 _gl) {
+    public void onDrawFrame(GL10 gl) {
         gameController.update();
+    
+        // Prevent random lockups in Froyo/2.2
+        // See http://groups.google.com/group/android-developers/browse_thread/thread/d5b7e87f4b42fa8f
+        gl.glFinish();
     }
 
 
