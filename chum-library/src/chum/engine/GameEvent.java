@@ -222,20 +222,22 @@ public final class GameEvent
        ------------------------------------------------------------ */
 
     // Game flow control
-    public static final int GAME_INIT = 0x7fff0000;
-    public static final int GAME_START = 0x7fff0001;
-    public static final int GAME_END = 0x7fff0002;
-    public static final int GAME_PAUSE = 0x7fff0003;
+    public static final int GAME_INIT =    0x7fff0000;
+    public static final int GAME_START =   0x7fff0001;
+    public static final int GAME_END =     0x7fff0002;
+    public static final int GAME_PAUSE =   0x7fff0003;
     public static final int GAME_UNPAUSE = 0x7fff0004;
 
 
     // GameSequence control
     public static final int SEQUENCE_START = 0x7fff0010;
-    public static final int SEQUENCE_STEP = 0x7fff0011;
-    public static final int SEQUENCE_END = 0x7fff0012;
+    public static final int SEQUENCE_STEP =  0x7fff0011;
+    public static final int SEQUENCE_END =   0x7fff0012;
 
     // Input events
-    public static final int INPUT_TOUCH = 0x7fff020;
-    
+    public static final int INPUT_TOUCH =     0x7fff020;
+    public static final int INPUT_KEY_DOWN =  0x7fff021;
+    public static final int INPUT_KEY_UP =    0x7fff022;
+    public static final int INPUT_KEY_MULTI = 0x7fff023;
 
 }
