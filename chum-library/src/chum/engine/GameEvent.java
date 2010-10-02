@@ -236,8 +236,5 @@ public final class GameEvent
 
     // Input events
     public static final int INPUT_TOUCH =     0x7fff020;
-    public static final int INPUT_KEY_DOWN =  0x7fff021;
-    public static final int INPUT_KEY_UP =    0x7fff022;
-    public static final int INPUT_KEY_MULTI = 0x7fff023;
-
+    
 }

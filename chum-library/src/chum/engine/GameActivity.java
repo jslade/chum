@@ -3,6 +3,7 @@ package chum.engine;
 import chum.cfg.Config;
 import chum.gl.RenderContext;
 import chum.gl.RenderNode;
+import chum.input.KeyInputNode;
 import chum.util.DefaultExceptionHandler;
 
 import android.app.Activity;
@@ -11,6 +12,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -282,7 +284,70 @@ public abstract class GameActivity extends Activity
         tree.postDownDelayed(event,delay);
     }
 
+
+    public KeyInputNode keyNode = null;
+    protected boolean trackingBack = false;
+    protected boolean trackingMenu = false;
+
+    /**
+       Special processing for some key events.
+       Sort of modeled on pattern recommended for 2.0 API, but still supporting pre-2.0
+
+       TODO: simplify / update this when pre-2.0 API support is dropped, or figure
+       out a way to use 2.0 features when running on such devices
+     */
+    @Override
+    public boolean onKeyDown(int keyCode,KeyEvent event) {
+        if ( keyNode != null ) {
+            switch(keyCode){
+            case KeyEvent.KEYCODE_BACK:
+                trackingBack = true;
+                return true;
+
+            case KeyEvent.KEYCODE_MENU:
+                trackingMenu = true;
+                return true;
+
+            default:
+                return keyNode.onKeyDown(keyCode,event);
+            }
+        }
+
+        return super.onKeyDown(keyCode,event);
+    }
     
+    
+    @Override
+    public boolean onKeyUp(int keyCode,KeyEvent event) {
+        if ( keyNode != null ) {
+            switch(keyCode) {
+            case KeyEvent.KEYCODE_BACK:
+                if ( trackingBack ) {
+                    trackingBack = false;
+                    if ( keyNode.onBackPressed(event) )
+                        return true;
+                    else
+                        finish(); // This is the default behavior of BACK 
+                }   
+                break;
+
+            case KeyEvent.KEYCODE_MENU:
+                if ( trackingMenu ) {
+                    trackingMenu = false;
+                    if ( keyNode.onMenuPressed(event) )
+                        return true;
+                }
+                break;
+
+            default:
+                return keyNode.onKeyUp(keyCode,event);
+            }
+        }
+
+        return super.onKeyUp(keyCode,event);
+    }
+    
+
     /**
        Setup the default exception handler.
 
