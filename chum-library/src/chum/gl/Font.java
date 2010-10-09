@@ -36,7 +36,7 @@ public class Font {
     protected Glyph[] commonGlyphs;
 
     /** The common characters */
-    protected static final String commonChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#$%^&*()-_=+[]\\{}|;':\",./<>? ";
+    protected static final String commonChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`~!@#$%^&*()-_=+[]\\{}|;':\",./<>?\n ";
 
     /** The character metrics for less-common characters (extended unicode) */
     protected HashMap<Character,Glyph> moreGlyphs;
@@ -508,6 +508,10 @@ public class Font {
             if ( typeface == null )
                 throw new IllegalArgumentException("Can't paint into this bitmap");
                 
+            if ( ch == '\n' ) {
+                return defineCharacter(ch,0,0,0,0,0);
+            }
+            
             // Get the size needed for the char
             chars[0] = ch;
             paint.getTextBounds(chars,0,1,charBounds);

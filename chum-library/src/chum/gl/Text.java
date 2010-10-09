@@ -136,16 +136,39 @@ public class Text extends Mesh {
         if ( count > maxGlyphs )
             throw new IllegalArgumentException("count exceeds maxGlyphs");
 
+        // Count the number of lines ahead of time
+        int numLines = 1;
+        float maxHeight = 0; // height of tallest glyph from starting point
+        float maxBase = 0; // largest descent of glyph below starting point
+        for(int i=offset, j=offset+count; i<j; ++i) {
+            Glyph glyph = glyphs[i];
+            if ( glyph.ch == '\n' ) numLines++;
+            if ( glyph.height > maxHeight ) maxHeight = glyph.height;
+            if ( glyph.baseline > maxBase ) maxBase = glyph.baseline;
+        }
+        
+        float lineHeight = maxHeight + maxBase; 
+        float lineSpace = 0.1f * lineHeight; // todo: should be configurable?
+        float lineOffset = lineHeight + lineSpace;
+        float totalHeight = maxHeight; // total height doesn't actually include descent of bottom line
+        if ( numLines > 1 ) totalHeight += (numLines - 1) * lineOffset;
+
         float x1 = 0;
+        float y0 = totalHeight - maxHeight;
         int v = 0;
         int i = 0;
         short vert = 0;
-
-        float maxHeight = 0;
+        float maxWidth = 0;
         
         for (int g=0; g < count; ++g ) {
             Glyph glyph = glyphs[offset + g];
-            float y1 = -glyph.baseline;
+            if ( glyph.ch == '\n' ) {
+                y0 -= lineOffset;
+                x1 = 0;
+                continue;
+            }
+            
+            float y1 = y0 - glyph.baseline;
             float x2 = x1 + glyph.width;
             float y2 = y1 + glyph.height;
 
@@ -154,8 +177,6 @@ public class Text extends Mesh {
             float u2 = u1 + glyph.texWidth;
             float v2 = v1 - glyph.texHeight;
 
-            if ( glyph.height > maxHeight ) maxHeight = glyph.height;
-            
             // lower left
             dynVertices[v++] = x1;
             dynVertices[v++] = y1;
@@ -195,6 +216,7 @@ public class Text extends Mesh {
 //                   u1, v1, u2, v2);
 
             x1 = x2 + spacing;
+            if ( x1 > maxWidth ) maxWidth = x1;
 
             // Now the two triangles
             dynIndices[i++] = ll;
@@ -205,7 +227,7 @@ public class Text extends Mesh {
             dynIndices[i++] = ul;
         }
 
-        float maxWidth = x1 - spacing;
+        maxWidth -= spacing;
 
         // Need to zero out the rest of the vertex and index data, because some devices
         // apparently don't use the count/offset properly when rendering array elements
@@ -227,24 +249,28 @@ public class Text extends Mesh {
         this.setIndices(dynIndices,0,i);
         
         
-        if ( anchor != Anchor.SOUTHWEST ) {
-            Vec3 delta = new Vec3();
-            switch(anchor) {
-            case NORTHWEST: delta.y = -maxHeight; break;
-            case WEST: delta.y = -0.5f*maxHeight; break;
-            case SOUTH: delta.x = -0.5f*maxWidth; break;
-            case CENTER: delta.x = -0.5f*maxWidth; delta.y = -0.5f*maxHeight; break;
-            case NORTH: delta.x = -0.5f*maxWidth; delta.y = -maxHeight; break;            
-            case SOUTHEAST: delta.x = -maxWidth; break;
-            case EAST: delta.x = -maxWidth; delta.y = -0.5f*maxHeight; break;
-            case NORTHEAST: delta.x = -maxWidth; delta.y = -maxHeight; break;            
-            }
+        // default anchor point is SOUTHWEST
+        delta.x = 0;
+        delta.y = 0;
+        switch(anchor) {
+        case NORTHWEST: delta.y = -totalHeight; break;
+        case WEST: delta.y = -0.5f*totalHeight; break;
+        case SOUTH: delta.x = -0.5f*maxWidth; break;
+        case CENTER: delta.x = -0.5f*maxWidth; delta.y = -0.5f*totalHeight; break;
+        case NORTH: delta.x = -0.5f*maxWidth; delta.y = -totalHeight; break;            
+        case SOUTHEAST: delta.x = -maxWidth; break;
+        case EAST: delta.x = -maxWidth; delta.y = -0.5f*totalHeight; break;
+        case NORTHEAST: delta.x = -maxWidth; delta.y = -totalHeight; break;            
+        }
+        if ( delta.y != 0 || delta.x != 0 ) {
             Mesh.Transform adjust = new Mesh.Transform();
             adjust.translate(delta);
             adjust.apply(this);
-        }
+        }   
     }
               
+    private final Vec3 delta = new Vec3();
+
 
     @Override
     public Texture getTexture() {
