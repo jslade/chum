@@ -167,7 +167,8 @@ public class MeshNode extends RenderNode {
         if ( blend )
             gl10.glEnable(GL10.GL_BLEND);
 
-        mesh.checkManagedAndDirty();
+        // TODO: Need to change this so it doesn't happen every frame        
+        mesh.checkManagedAndDirty(); 
 
         if ( renderContext.isGL20 ) {
             //render(shader,...);
@@ -194,7 +195,7 @@ public class MeshNode extends RenderNode {
         if( renderContext.isGL20 )
             throw new IllegalStateException( "can't use this render method with OpenGL ES 2.0" );
         
-        if ( count == 0 )
+        if ( count == 0 ) // TODO: belongs in checkManagedAndDirty()?
             count = mesh.maxIndices > 0? mesh.getNumIndices(): mesh.getNumVertices();
 
         // The texture is bound before hand, so any tex coords in the
@@ -391,10 +392,8 @@ public class MeshNode extends RenderNode {
     
 
     /**
-       Restore the previous drawing state after the text is drawn.
-       If a translation or a scaling were a applied, restores the previous
-       ModelView matrix
-    */
+       Restore the previous drawing state after the mesh is drawn.
+     */
     @Override
     public void renderPostfix(GL10 gl) {
         if ( blend )

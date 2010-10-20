@@ -390,6 +390,7 @@ public class Mesh {
 
     /** Frees all resources associated with this Mesh */
     public void dispose() {
+        if (renderContext == null) return;
         if (renderContext.isGL20)
             ;// dispose( renderContext.gl20 );
         else if (renderContext.isGL11)
@@ -401,10 +402,12 @@ public class Mesh {
         int handle[] = new int[1];
         handle[0] = vertexBufferObjectHandle;
         gl.glDeleteBuffers(1, handle, 0);
-
+        vertexBufferObjectHandle = 0;
+        
         if (maxIndices > 0) {
             handle[0] = indexBufferObjectHandle;
             gl.glDeleteBuffers(1, handle, 0);
+            indexBufferObjectHandle = 0;
         }
     }
 
