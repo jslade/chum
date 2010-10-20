@@ -46,7 +46,7 @@ public class Sprite extends MeshNode
     /** The rotation angle (degrees 0-360) -- always around z-axis */
     public float angle = 0;
 
-    private boolean pushed;
+    protected boolean pushed;
 
 
     /**
@@ -217,10 +217,16 @@ public class Sprite extends MeshNode
             pushed = true;
         }
 
+        renderUnder(gl);
+        
         // Super renderPrefix() is sufficient to actually draw the mesh
         super.renderPrefix(gl);
     }
 
+    
+    public void renderUnder(GL10 gl) {}
+    
+    
 
     /**
      * Restore the previous drawing state after the text is drawn. If a
