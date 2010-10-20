@@ -143,6 +143,7 @@ public class TraceNode extends HookNode {
         
         @Override
         public boolean update(long millis) {
+            traceNode.setTracer();
             traceNode.trace10.trace(String.format("+++ %s '%s'",realNode,realNode.name));
             boolean updated = super.update(millis);
             traceNode.trace10.trace(String.format("--- %s '%s'",realNode,realNode.name));
