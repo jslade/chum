@@ -30,7 +30,7 @@ public class Standard2DNode extends OrthographicProjection {
 
         GL10 gl = renderContext.gl10;
 
-        gl.glEnable(GL10.GL_DEPTH_TEST);
+        gl.glDisable(GL10.GL_DEPTH_TEST);
         gl.glClearDepthf(1f);
         gl.glDepthFunc(GL10.GL_LEQUAL);
         
