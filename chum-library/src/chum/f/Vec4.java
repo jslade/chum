@@ -33,6 +33,7 @@ public class Vec4 extends Vec3 {
         this.w = w;
     }
 
+    @Override
     public boolean equals(Object other) {
         if (other instanceof Vec4) {
             Vec4 o = (Vec4)other;
@@ -50,6 +51,7 @@ public class Vec4 extends Vec3 {
     }
 
 
+    @Override
     public float length () {
         float square = x*x + y*y + z*z + w*w;
         return (float)Math.sqrt(square);
@@ -64,12 +66,16 @@ public class Vec4 extends Vec3 {
     }
 
 
-    public void normalize () {
+    @Override
+    public float normalize () {
         float len = length();
-        x = x/len;
-        y = y/len;
-        z = z/len;
-        w = w/len;
+        if ( len > 0 ) {
+            x = x/len;
+            y = y/len;
+            z = z/len;
+            w = w/len;
+        }
+        return len;
     }
 
 

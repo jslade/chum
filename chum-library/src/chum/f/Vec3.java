@@ -33,6 +33,7 @@ public class Vec3 implements java.io.Serializable {
         this.z = z;
     }
 
+    @Override
     public boolean equals(Object other) {
         if (other instanceof Vec3) {
             Vec3 v = (Vec3)other;
@@ -101,13 +102,14 @@ public class Vec3 implements java.io.Serializable {
     }
     
 
-    public void normalize () {
+    public float normalize () {
         float len = length();
-        if ( len == 0f ) return;
-
-        x = x/len;
-        y = y/len;
-        z = z/len;
+        if ( len > 0f ) {
+            x = x/len;
+            y = y/len;
+            z = z/len;
+        }   
+        return len;
     }
 
 
