@@ -246,6 +246,58 @@ public class GameSequence extends GameNode {
 
     
     
+    /**
+       Special sequence that fires an extra event at the end, separate from it's
+       normal finish type.  This is intended to be used as part of a nested
+       sequence, where the normal finish type is used to signal the next step
+       of the nested sequence (and therefore doesn't get propagated)
+     */
+    public static class Poster extends GameSequence {
+    
+        public int postType;
+        public long postDelay;
+        
+        protected Poster() {
+            this(0);
+        }
+     
+        protected Poster(long duration) {
+            super(duration);
+        }
+     
+        @Override
+        protected void postEnd() {
+            super.postEnd();
+            if ( postDelay != 0 ) {
+                postUpDelayed(GameEvent.obtain(postType,this),postDelay);
+            } else {
+                postUp(GameEvent.obtain(postType,this));
+            }
+        }
+
+        private static Poster first_avail;
+        
+        public static Poster obtain() {
+            if ( first_avail == null ) first_avail = new Poster(0);
+            Poster p = first_avail;
+            first_avail = (Poster)first_avail.next_avail;
+
+            p.postType = 0;
+            p.postDelay = 0;
+            p.resetAll();
+
+            return p;
+        }
+
+        @Override
+        public void recycle() {
+            next_avail = first_avail;
+            first_avail = this;
+        }
+        
+     }
+     
+    
 
     /**
        Base class for sequences intended to hold other sequences
