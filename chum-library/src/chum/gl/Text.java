@@ -229,6 +229,27 @@ public class Text extends Mesh {
 
         maxWidth -= spacing;
 
+        // Adjust vertices based on anchor point
+        // default anchor point is SOUTHWEST
+        delta.x = 0;
+        delta.y = 0;
+        switch(anchor) {
+        case NORTHWEST: delta.y = -totalHeight; break;
+        case WEST: delta.y = -0.5f*totalHeight; break;
+        case SOUTH: delta.x = -0.5f*maxWidth; break;
+        case CENTER: delta.x = -0.5f*maxWidth; delta.y = -0.5f*totalHeight; break;
+        case NORTH: delta.x = -0.5f*maxWidth; delta.y = -totalHeight; break;            
+        case SOUTHEAST: delta.x = -maxWidth; break;
+        case EAST: delta.x = -maxWidth; delta.y = -0.5f*totalHeight; break;
+        case NORTHEAST: delta.x = -maxWidth; delta.y = -totalHeight; break;            
+        }
+        if ( delta.y != 0 || delta.x != 0 ) {
+            for(int j=0; j<v;j += 3) {
+                dynVertices[j++] += delta.x;
+                dynVertices[j++] += delta.y;
+            }
+        }   
+        
         // Need to zero out the rest of the vertex and index data, because some devices
         // apparently don't use the count/offset properly when rendering array elements
         // TODO: Could unroll these loops for speed
@@ -244,29 +265,8 @@ public class Text extends Mesh {
             }
         }
         
-        
         this.setVertices(dynVertices,0,v);
         this.setIndices(dynIndices,0,i);
-        
-        
-        // default anchor point is SOUTHWEST
-        delta.x = 0;
-        delta.y = 0;
-        switch(anchor) {
-        case NORTHWEST: delta.y = -totalHeight; break;
-        case WEST: delta.y = -0.5f*totalHeight; break;
-        case SOUTH: delta.x = -0.5f*maxWidth; break;
-        case CENTER: delta.x = -0.5f*maxWidth; delta.y = -0.5f*totalHeight; break;
-        case NORTH: delta.x = -0.5f*maxWidth; delta.y = -totalHeight; break;            
-        case SOUTHEAST: delta.x = -maxWidth; break;
-        case EAST: delta.x = -maxWidth; delta.y = -0.5f*totalHeight; break;
-        case NORTHEAST: delta.x = -maxWidth; delta.y = -totalHeight; break;            
-        }
-        if ( delta.y != 0 || delta.x != 0 ) {
-            Mesh.Transform adjust = new Mesh.Transform();
-            adjust.translate(delta);
-            adjust.apply(this);
-        }   
     }
               
     private final Vec3 delta = new Vec3();
