@@ -1,7 +1,8 @@
 package chum.gl;
 
-import android.content.Context;
+import chum.gl.render.primitive.RenderPrimitive;
 
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -61,6 +62,16 @@ public class RenderContext {
     public Context appContext;
 
 
+    /** The head of the RenderPrimitive chain currently being built */
+    public RenderPrimitive renderHead;
+    
+    /** The tail of the RenderPrimitive chain currently being built */
+    public RenderPrimitive renderTail;
+
+    /** The rendering phase -- alternates for each frame */
+    public boolean phase;
+    
+    
     /**
        Create a new RenderContext
     */
@@ -81,6 +92,26 @@ public class RenderContext {
         }
     }
 
+
+    /**
+       Add one or more nodes to the render chain.
+       This gets called by GameNodes during GameNode.render() to build up
+       the RenderPrimitive chain.
+     */
+    public void add(RenderPrimitive node) {
+        if ( node == null ) {
+            throw new IllegalArgumentException("node can't be null");
+        }
+        
+        if (renderHead == null) {
+            renderHead = node;
+            renderTail = node;
+        } else {
+            renderTail.nextNode = node;
+            renderTail = node;
+        }
+    }
+    
     
     /**
      * Execute something in the rendering thread.  The calling thread will block

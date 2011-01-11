@@ -23,6 +23,9 @@ import java.util.ArrayList;
 */
 public class ManyManyNodes extends GameActivity
 {
+    /** The root of the rendering tree */
+    private RenderNode rendering;
+    
     /** Keep track of the original title string, so it can be updated (appended) */
     private CharSequence origTitle;
 
@@ -50,6 +53,7 @@ public class ManyManyNodes extends GameActivity
     }
 
 
+    @Override
     protected GameNode createLogicTree() {
         GameNode logic = new GameNode();
         logic.addNode(new FPSNode(){
@@ -76,11 +80,12 @@ public class ManyManyNodes extends GameActivity
         return logic;
     }
     
+    @Override
     protected RenderNode createRenderTree(GameNode logic) {
-        RenderNode node = new RenderNode();
+        rendering = new RenderNode();
         for( int i=0; i<1; ++i ) {
             GameNode inode = new RenderNode();
-            node.addNode(inode);
+            rendering.addNode(inode);
             for( int j=0; j<1; ++j ) {
                 GameNode jnode = new RenderNode();
                 inode.addNode(jnode);
@@ -90,7 +95,7 @@ public class ManyManyNodes extends GameActivity
                 }
             }
         }
-        return node;
+        return rendering;
     }
 
     
@@ -102,7 +107,7 @@ public class ManyManyNodes extends GameActivity
                 existing.add(node);
             }
         };
-        gameController.tree.rendering.visit(v,false);
+        rendering.visit(v,false);
         
 
         // Now add a new child to each one -- doubles the number of nodes
@@ -119,6 +124,7 @@ public class ManyManyNodes extends GameActivity
     protected void showFPSInTitle() {
         gameController.uiHandler.post(showFPS);
     }
-    
+
+
 }
 

@@ -1,9 +1,9 @@
 package chum.gl.render;
 
 import chum.gl.Color;
+import chum.gl.RenderContext;
 import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.render.primitive.SetColor;
 
 
 /**
@@ -14,35 +14,27 @@ public class ColorNode extends RenderNode {
     /** The color to set on renderPrefix */
     public Color color;
 
-
-    /** The color to set on renderPostfix */
-    public Color postColor;
+    /** The render node for phase a */
+    protected SetColor colorA = new SetColor();
+    
+    /** The render node for phase b */
+    protected SetColor colorB = new SetColor();
     
     
     public ColorNode(Color color) {
-        this(color,null);
-    }
-    
-    
-    public ColorNode(Color pre, Color post) {
         super();
-        this.color = pre;
-        this.postColor = post;
+        this.color = color;
     }
 
 
     @Override
-    public void renderPrefix(GL10 gl) {
-        if ( color != null )
-            gl.glColor4f(color.red,color.green,color.blue,color.alpha);
-    }
-
-
-    @Override
-    public void renderPostfix(GL10 gl) {
-        if ( postColor != null &&
-             postColor != color )
-            gl.glColor4f(postColor.red,postColor.green,postColor.blue,postColor.alpha);
+    public boolean renderPrefix(RenderContext renderContext) {
+        if ( color != null ) {
+            SetColor set = renderContext.phase ? colorA : colorB;
+            set.color.set(color);
+            renderContext.add(set);
+        }
+        return true;
     }
 
 }

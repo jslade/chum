@@ -50,6 +50,7 @@ public class SpinningColorPyramid extends GameActivity
     // The logic tree consists of two nodes:
     // - one to spin the pyramid
     // - one to periodically display the FPS
+    @Override
     protected GameNode createLogicTree() {
         GameNode node = new GameNode();
         
@@ -84,6 +85,7 @@ public class SpinningColorPyramid extends GameActivity
                 - MeshNode to draw the pyramid
               
      */
+    @Override
     protected RenderNode createRenderTree(GameNode logic) {
         Standard3DNode base = new chum.gl.render.Standard3DNode();
         base.setPerspective(90f,0f,1f,20f);
@@ -104,7 +106,7 @@ public class SpinningColorPyramid extends GameActivity
         // The first RotateNode has push=true, so that it pushes
         // the modelview matrix onto the stack going in, the pops it off
         // going out to restore the original transformation.
-        rot_x.push = true;
+        rot_x.setPush(true);
         
         // Add an extra node displaying a 3D axis
         // just to show orientation more clearly

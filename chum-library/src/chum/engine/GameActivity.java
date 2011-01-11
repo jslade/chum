@@ -17,16 +17,12 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 
 /**
    GameActivity is intended to provide the basic setup for using the rest of the engine
    components (GameContext, GameTree, etc) along with a GLSurfaceView.
  */
 public abstract class GameActivity extends Activity 
-    implements GLSurfaceView.Renderer
 {
     /** GLSurfaceView **/
     public GLSurfaceView glSurface;
@@ -67,7 +63,7 @@ public abstract class GameActivity extends Activity
         setViewOptions();
         applyViewOptions();
         glSurface = createGLSurface();
-        glSurface.setRenderer(GameActivity.this);
+        glSurface.setRenderer(gameController);
         this.setContentView(createContentView(glSurface));
 
         // By default, the glSurface is the view that receives
@@ -80,6 +76,7 @@ public abstract class GameActivity extends Activity
         
         // Always want to control the media volume in the game...
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        
     }
 
 
@@ -99,13 +96,13 @@ public abstract class GameActivity extends Activity
      */
     protected void setViewOptions() {
     }
-    
-    
+
+
     /**
        After view options are set, make them active
      */
     protected void applyViewOptions() {
-    	if ( this.hideTitlebar ) requestWindowFeature(Window.FEATURE_NO_TITLE);
+        if ( this.hideTitlebar ) requestWindowFeature(Window.FEATURE_NO_TITLE);
         if ( this.fullscreen ) getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
     
@@ -123,89 +120,32 @@ public abstract class GameActivity extends Activity
     */
     protected GameTree createGameTree() {
         GameTree tree = new GameTree();
-        tree.setLogicTree(createLogicTree());
-        tree.setRenderTree(createRenderTree(tree.logic));
+        GameNode logic = createLogicTree(); 
+        tree.addNode(logic);
+
+        tree.addNode(createRenderTree(logic));
         return tree;
     }
 
+    
+    /**
+       Create the logic part of the GameTree
+     */
     protected abstract GameNode createLogicTree();
     
+    
+    /**
+       Create the rendering part of the GameTree
+     */
     protected abstract RenderNode createRenderTree(GameNode logic);
     
-
+    
     /**
        Set the GameTree instance to be used for this activity
     */
     public void setGameTree(GameTree tree) {
         this.tree = tree;
         gameController.tree = tree;
-    }
-
-
-    /**
-       Called when the rendering thread is ready to draw the next frame.
-    */
-    public void onDrawFrame(GL10 gl) {
-        gameController.update();
-    }
-
-
-    /**
-       Called when the GLSurfaceView has finished initialization
-    */
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        renderContext = new RenderContext(this,gl,config);
-        renderContext.glSurface = this.glSurface;
-
-        this.onSetup(gameController);
-        tree.doSetup(gameController);
-
-        this.onSurfaceCreated(this.renderContext);
-        tree.doSurfaceCreated(this.renderContext);
-
-        gameController.resetFrame();
-    }
-
-
-    /**
-       Called when the surface size changed, e.g. due to tilting
-    */
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        renderContext.width = width;
-        renderContext.height = height;
-        this.onSurfaceChanged(width, height);
-        tree.doSurfaceChanged(width, height);
-        
-        // At this point, everything is setup for the game to begin
-        tree.postDown(GameEvent.obtain(GameEvent.GAME_INIT));
-        gameController.start();
-    }
-
-
-    /**
-       Called to perform initial setup
-    */
-    protected void onSetup(GameController gameController) {
-
-    }
-
-
-    /**
-       Called when the GLSurfaceView has finished initialization.
-       This method is meant to be overridden in a subclass.
-    */
-    protected void onSurfaceCreated(RenderContext renderContext) {
-
-    }
-
-
-    /**
-       Called when the GLSurface view has changed size (or is created
-       for the first time).
-       This method is meant to be overridden in a subclass.
-    */
-    protected void onSurfaceChanged(int width, int height) {
-
     }
 
 
@@ -239,6 +179,31 @@ public abstract class GameActivity extends Activity
     }
 
     
+    /**
+        Called to perform initial setup
+     */
+    protected void onSetup(GameController gameController) {
+
+    }
+
+
+    /**
+       Called when the GLSurfaceView has finished initialization.
+     */
+    protected void onSurfaceCreated(RenderContext renderContext) {
+        this.renderContext = renderContext;
+    }
+
+
+    /**
+       Called when the GLSurface view has changed size (or is created
+       for the first time).
+     */
+    protected void onSurfaceChanged(int width, int height) {
+
+    }
+
+
     /**
        @return the current average framerate, as an integer number
        of frames per second

@@ -1,87 +1,59 @@
 package chum.gl.render;
 
-import chum.engine.GameController;
 import chum.engine.common.Rotatable;
 import chum.f.Vec3;
-import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.RenderContext;
+import chum.gl.render.primitive.Rotate;
 
 
 /**
    A node to set the active color
 */
-public class RotateNode extends RenderNode
+public class RotateNode extends TransformNode
     implements Rotatable
 {
 
     /** The axis of the rotation */
     public Vec3 rotation;
 
-    /** The relative location of the rotation (optional) */
-    public Vec3 position;
-    
     /** The angle, expressed in degrees */
     public float degrees;
 
-    /** Whether to save/restore the matrix */
-    public boolean push;
+    /** The a phase render node for translation */
+    public Rotate rotateA = new Rotate();
+
+    /** The b phase render node for translation */
+    public Rotate rotateB = new Rotate();
 
 
-    public RotateNode(float deg, Vec3 x) {
-        super();
-        rotation = new Vec3(Vec3.Z_AXIS);
+    public RotateNode(float deg,Vec3 x,boolean push) {
+        super(push);
+        rotation = new Vec3(x);
         degrees = deg;
     }
 
 
+    public RotateNode(float deg,Vec3 x) {
+        this(deg,x,true);
+    }
+
+    
     public RotateNode() {
-        super();
-        rotation = new Vec3();
-        degrees = 0;
-    }
-
-
-    @Override
-    public void onSetup(GameController gc) {
-    	super.onSetup(gc);
-    	if ( num_children > 0 ) push = true;
-    }
-    
-    
-    @Override
-    public void renderPrefix(GL10 gl) {
-        if ( push ) gl.glPushMatrix();
-
-        if ( degrees == 0 ) return;
-
-        if ( position != null ) {
-            gl.glTranslatef(position.x,
-                            position.y,
-                            position.z);
-        }
-        
-        gl.glRotatef(degrees,
-                     rotation.x,
-                     rotation.y,
-                     rotation.z);
-
-        if ( position != null ) {
-            gl.glTranslatef(-position.x,
-                            -position.y,
-                            -position.z);
-        }
+        this(0,Vec3.ORIGIN);
     }
 
     
     @Override
-    public void renderPostfix(GL10 gl) {
-        if ( push ) gl.glPopMatrix();
-        
-        if ( degrees == 0 ) return;
+    public void renderTransform(RenderContext renderContext) {
+        if ( degrees != 0f ) {
+            Rotate rot = renderContext.phase ? rotateA : rotateB;
+            rot.rotation.set(rotation);
+            rot.degrees = degrees;
+            renderContext.add(rot);
+        }   
     }
 
-
+    
     @Override
     public float getAngle() {
         return degrees;

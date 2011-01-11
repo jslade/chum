@@ -1,49 +1,47 @@
 package chum.gl.render;
 
-import chum.engine.GameController;
-import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.RenderContext;
+import chum.gl.render.primitive.Scale;
 
 
 /**
    A node to set the scale factor
 */
-public class ScaleNode extends RenderNode {
+public class ScaleNode extends TransformNode {
 
     /** The scale factor */
     public float scale;
 
-    /** Whether to save/restore the matrix */
-    public boolean push;
+    /** The a phase render node for translation */
+    public Scale scaleA = new Scale();
+
+    /** The b phase render node for translation */
+    public Scale scaleB = new Scale();
 
 
-    public ScaleNode(float scale) {
-        super();
+    public ScaleNode(float scale,boolean push) {
+        super(push);
         this.scale = scale;
     }
 
 
+    public ScaleNode(float scale) {
+        this(scale,true);
+    }
+    
+    
     public ScaleNode() {
-        super();
-        scale = 1f;
+        this(1f);
     }
 
 
-    public void onSetup(GameController gc) {
-    	super.onSetup(gc);
-    	if ( num_children > 0 ) push = true;
-    }
-    
-    
-    public void renderPrefix(GL10 gl) {
-        if ( push ) gl.glPushMatrix();
-
-        if ( scale != 1f)
-            gl.glScalef(scale,scale,scale);
+    @Override
+    public void renderTransform(RenderContext renderContext) {
+        if ( scale != 1f) {
+            Scale prim = renderContext.phase ? scaleA : scaleB;
+            prim.scale = scale;
+            renderContext.add(prim);
+        }
     }
 
-    public void renderPostfix(GL10 gl) {
-        if ( push ) gl.glPopMatrix();
-    }
 }

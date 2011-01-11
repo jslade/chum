@@ -1,30 +1,21 @@
 package chum.engine;
 
 import chum.gl.RenderContext;
-import chum.gl.RenderNode;
 
 
 /**
    This special GameNode is intended to be the root node of the game graph.
 
-   It devides the overall graph into two parts: logic, and rendering.
-   The logic subtree is intended to control behavior, whereas the rendering
-   subtree should do all the rendering.
-
-   This almost maps to a MVC architecture -- the View is the rendering subtree.
-   The Controller is intended to be the logic side, and the Model is likely
-   split between the two for practical reasons.
+   Each frame, the GameTree is traversed node by node.  In that process, GameNodes
+   that are involved in the rendering get added to the chain for the rendering pass.
+   
+   In the rendering pass, RenderNodes get added to the actual rendering chain that
+   will be used to render the scene.  The RenderPrimitive chain is built separate from
+   the processing of the GameNodes so that the actual rendering can happen in
+   a separate thread.
  */
 public class GameTree extends GameNode {
-
-    /** The root GameNode for logic */
-    public GameNode logic;
-
-    /** The root RenderNode */
-    public RenderNode rendering;
-
-
-
+    
     /**
        Create a new GameTree
     */
@@ -33,28 +24,6 @@ public class GameTree extends GameNode {
     }
     
 
-    public void setLogicTree(GameNode newLogic) {
-        if ( logic != null )
-            removeNode(logic);
-        
-        logic = newLogic;
-        
-        if ( newLogic != null )
-            addNode(newLogic);
-    }
-    
-    
-    public void setRenderTree(RenderNode newRendering) {
-        if ( rendering != null )
-            removeNode(rendering);
-        
-        rendering = newRendering;
-        
-        if ( newRendering != null )
-            addNode(newRendering);
-    }
-    
-    
     /**
        Called when the game tree is initially created
     */
@@ -148,7 +117,8 @@ public class GameTree extends GameNode {
 
 
     /**
-       Any GameEvents dispatched up to the root of the GameTree get reflected
+       Any GameEvents dispatched up to the root of the GameTree get passed to
+       the GameActivity.  If it's not handled there, it gets reflected
        back down.  That allows events to propagate up one branch of the tree and
        back down another.
     */
@@ -158,5 +128,16 @@ public class GameTree extends GameNode {
             return true;
         return dispatchEventDown(event,false);
     }
+    
 
+    /**
+       In the render phase, all nodes in the tree will have render() called
+     */
+    @Override
+    public void render(RenderContext renderContext) {
+        for(int i=0; i<num_children; ++i) {
+            GameNode child = children[i];
+            child.render(renderContext);
+        }
+    }
 }

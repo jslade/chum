@@ -1,6 +1,6 @@
 package chum.gl;
 
-import chum.util.Log;
+import chum.gl.render.primitive.RenderPrimitive;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -24,12 +24,6 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class Texture {
 
-    /** The ImageProvider to (re)load the image as needed */
-    public ImageProvider[] provider;
-    
-    private final int[] tex_ids;
-    private final int tex_dim;
-
     /** The minimization filter */
     public int minFilter = GL10.GL_LINEAR;
 
@@ -39,6 +33,26 @@ public class Texture {
     /** The texture environment */
     public int texEnv = GL10.GL_MODULATE;
 
+    /** The ImageProvider to (re)load the image as needed */
+    public ImageProvider[] provider;
+    
+    /** The GPU-assigned texture ID(s) */
+    protected final int[] tex_ids;
+        
+    protected final int tex_dim;
+
+    /** The render primitives for allocating the texture in the GPU */
+    protected final Allocate allocatePrim;
+
+    /** The render primitives for loading the texture in the GPU */
+    protected final Load[] loadPrim;
+    
+    /** The render primitives to bind the texture */
+    protected final Bind[] bindPrim;
+
+    protected final Unbind unbindPrim;
+    
+    
     
     /**
        Create a Texture for managing a single standard 2D texture image
@@ -63,7 +77,18 @@ public class Texture {
         this.tex_dim = tex_dim;
         tex_ids = new int[num_tex];
         provider = new ImageProvider[num_tex];
+
+        allocatePrim = new Allocate();
+        loadPrim = new Load[num_tex];
+        bindPrim = new Bind[num_tex];
+        unbindPrim = new Unbind();
+        
+        for( int i=0; i<num_tex; ++i ) {
+            loadPrim[i] = new Load(i);
+            bindPrim[i] = new Bind(i);
+        }
     }
+    
 
 
     /**
@@ -83,50 +108,91 @@ public class Texture {
 
 
     /**
-
+        @return true if the texture has been defined on the GPU
      */
-    public void onSetup(RenderContext renderContext) {
-        if ( renderContext != null &&
-         	 Thread.currentThread() == renderContext.renderThread )
-        	load(renderContext);
+    public boolean isAllocated() {
+        return tex_ids[0] > 0;
     }
-    
+
     
     /**
-       Initialize the texture prior to using it for rendering.  This allocates
-       a texture handle for the texture on the GPU.
-
-       This will typically be called from a TextureNode or MeshNode.
+       Allocate a new texture id
      */
-    public void onSurfaceCreated(RenderContext renderContext) {
-        forceReload(renderContext);
+    public void allocate(RenderContext renderContext) {
+        if ( !isAllocated() )
+            renderContext.add(allocatePrim);
     }
-  
-
-    /**
-     */
-    public void onSurfaceChanged(RenderContext renderContext, int width, int height) {
-        load(renderContext);
-    }   
 
 
     /**
      */
     public void forceReload(RenderContext renderContext) {
         for(int i=0; i<tex_ids.length; ++i)
-            tex_ids[i] = 0; // force redefined...
+            tex_ids[i] = 0; // force re-allocated...
         load(renderContext);
     }
         
 
+    public void load(RenderContext renderContext) {
+        allocate(renderContext);
+        for(int i=0,n=tex_ids.length; i<n; ++i)
+            renderContext.add(loadPrim[i]);
+    }
+    
+    
     /**
-       Define the texture
-    */
-    protected void define(GL10 gl) {
-        if ( !isDefined() ) {
+       Bind the texture, preparing it to be applied to following rendering
+     */
+    public void bind(RenderContext renderContext) {
+        bind(renderContext,0);
+    }
+
+
+    /**
+        Bind the texture, preparing it to be applied to following rendering
+     */
+    public void bind(RenderContext renderContext, int num) {
+        renderContext.add(bindPrim[num]);
+    }
+
+
+    /**
+       Unbind the texture
+     */
+    public void unbind(RenderContext renderContext) {
+        unbind(renderContext,0);
+    }
+
+
+    /**
+        Unbind the texture, so it will no longer be applied
+     */
+    public void unbind(RenderContext renderContext, int num) {
+        renderContext.add(unbindPrim);
+    }
+ 
+ 
+    protected Bitmap getBitmap(RenderContext renderContext,int num) {
+        if ( provider[num] == null ) return null;
+        return provider[num].getBitmap(renderContext);
+    }
+    
+    
+    protected void recycleBitmap(Bitmap bitmap, int num) {
+        provider[num].recycleBitmap(bitmap);
+    }
+    
+
+    /**
+       Allocate the texture -- this just allocates a texture id in
+       the GPU for future reference.
+     */
+    protected class Allocate extends RenderPrimitive {
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
             IntBuffer tex_ids_buf = IntBuffer.wrap(tex_ids);
             gl.glGenTextures(tex_ids.length,tex_ids_buf);
-            //chum.util.Log.d("Texture %s: define tex=%d", this, tex_ids[0]);
+            chum.util.Log.d("Texture %s: define tex=%d", this, tex_ids[0]);
             for(int i=0; i<tex_ids.length;++i){
                 if (tex_ids[i] == 0) {
                     chum.util.Log.e("Failed to generate tex id for %s [%d]:",this,i);
@@ -138,134 +204,81 @@ public class Texture {
 
 
     /**
-       @return true if the texture has been defined on the GPU
-    */
-    public boolean isDefined() {
-        return tex_ids[0] > 0;
-    }
-
-
-    public void load(RenderContext renderContext) {
-        for(int i=0,n=tex_ids.length; i<n; ++i)
-            load(renderContext,i);
-    }
-    
-    
-    /**
        Load the texture image data and filters onto the GPU
     */
-    public void load(RenderContext renderContext, int num) {
-    	// Can only be done from the rendering thread
-    	if ( Thread.currentThread() != renderContext.renderThread ) {
-    		Log.w("Can't load texture data from non-rendering thread (current thread=%s)",
-    		      Thread.currentThread());
-    		return;
-    	}
-
-    	define(renderContext.gl10);
-
-        Bitmap bitmap = getBitmap(renderContext,num);
-        if ( bitmap == null ) return;
+    protected class Load extends RenderPrimitive {
         
-        GL10 gl10 = renderContext.gl10;
-        gl10.glBindTexture(tex_dim, tex_ids[num]);
-
-        gl10.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
-        gl10.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
-
-        Bitmap pot_bitmap = ensurePOT(renderContext,bitmap);
-        GLUtils.texImage2D(tex_dim, 0, pot_bitmap, 0);
-        if (pot_bitmap != bitmap) pot_bitmap.recycle();
-        recycleBitmap(bitmap, num);
-    }
-
-    
-    protected Bitmap getBitmap(RenderContext renderContext,int num) {
-        if ( provider[num] == null ) return null;
-        return provider[num].getBitmap(renderContext);
-    }
-    
-    
-    protected void recycleBitmap(Bitmap bitmap, int num) {
-        provider[num].recycleBitmap(bitmap);
-    }
-    
-    
-    /**
-       Ensure the bitmap to be used for the texture mapping has
-       power-of-two dimensions, if required for this render context.
-       If it is not, generates a scaled version.
-     */
-    protected Bitmap ensurePOT(RenderContext renderContext, Bitmap bmp) {
-    	double width_ln2 = Math.log(bmp.getWidth())/Math.log(2.0);
-    	double height_ln2 = Math.log(bmp.getHeight())/Math.log(2.0);
-    	
-    	if ( renderContext.allowNPOT ||
-    		 (width_ln2 - Math.floor(width_ln2) == 0 &&
-    		  height_ln2 - Math.floor(height_ln2) == 0) ) {
-    		return bmp; // usable as is
-    	}
-
-    	// width or height isn't a power of two
-    	int scaledWidth = (int) Math.pow(2,Math.ceil(width_ln2));
-    	int scaledHeight = (int) Math.pow(2,Math.ceil(height_ln2));
-    	chum.util.Log.w("Creating POT scaled bitmap (%dx%d) from non-POT bitmap (%dx%d)",
-    					scaledWidth, scaledHeight, bmp.getWidth(), bmp.getHeight()); 
-    	return Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false);
-    }
- 
-    
-    /**
-       Bind the texture, preparing it to be applied to following rendering
-    */
-    public void bind(RenderContext renderContext) {
-        bind(renderContext,0);
-    }
-
-
-    /**
-       Bind the texture, preparing it to be applied to following rendering
-    */
-    public void bind(RenderContext renderContext, int num) {
-        int id = tex_ids[num];
-        if ( id == 0 ) {
-        	//chum.util.Log.w("bind() on texture which has not been loaded into GPU");
-        	load(renderContext);
-        	id = tex_ids[num];
+        int index = 0;
+        
+        public Load(int index) {
+            super();
+            this.index = index;
         }
-        renderContext.gl10.glBindTexture(tex_dim, id);
-    }
-
-
-    /**
-       Unbind the texture
-    */
-    public void unbind(GL10 gl) {
-        unbind(gl,0);
-    }
-
-
-    /**
-       Unbind the texture, so it will no longer be applied
-    */
-    public void unbind(GL10 gl, int num) {
-        gl.glBindTexture(tex_dim, 0);
-    }
-    
-    
-    
-
-    /**
-       Texture.Node implements the methods to prepare the texture
-       for drawing (loading the image, loading into GPU) 
-     */
-    public static class Node extends RenderNode {
         
-        public Texture texture;
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            Bitmap bitmap = getBitmap(renderContext,index);
+            if ( bitmap == null ) return;
         
+            bindPrim[index].render(renderContext,gl); //gl.glBindTexture(tex_dim, tex_ids[index]);
+
+            gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MIN_FILTER, minFilter);
+            gl.glTexParameterx(tex_dim, GL10.GL_TEXTURE_MAG_FILTER, magFilter);
+
+            Bitmap pot_bitmap = ensurePOT(renderContext,bitmap);
+            GLUtils.texImage2D(tex_dim, 0, pot_bitmap, 0);
+            if (pot_bitmap != bitmap) pot_bitmap.recycle();
+            recycleBitmap(bitmap, index);
+        }
+        
+        /**
+            Ensure the bitmap to be used for the texture mapping has
+            power-of-two dimensions, if required for this render context.
+            If it is not, generates a scaled version.
+         */
+        protected Bitmap ensurePOT(RenderContext renderContext, Bitmap bmp) {
+            double width_ln2 = Math.log(bmp.getWidth())/Math.log(2.0);
+            double height_ln2 = Math.log(bmp.getHeight())/Math.log(2.0);
+         
+            if ( renderContext.allowNPOT ||
+                 (width_ln2 - Math.floor(width_ln2) == 0 &&
+                  height_ln2 - Math.floor(height_ln2) == 0) ) {
+                return bmp; // usable as is
+            }
+
+            // width or height isn't a power of two
+            int scaledWidth = (int) Math.pow(2,Math.ceil(width_ln2));
+            int scaledHeight = (int) Math.pow(2,Math.ceil(height_ln2));
+            chum.util.Log.w("Creating POT scaled bitmap (%dx%d) from non-POT bitmap (%dx%d)",
+                            scaledWidth, scaledHeight, bmp.getWidth(), bmp.getHeight()); 
+            return Bitmap.createScaledBitmap(bmp, scaledWidth, scaledHeight, false);
+        }
+
     }
+
     
+    protected class Bind extends RenderPrimitive {
+        int index = 0;
+
+        public Bind(int index) {
+            super();
+            this.index = index;
+        }
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            gl.glBindTexture(tex_dim, tex_ids[index]);
+        }
+    }
+
     
+    protected class Unbind extends RenderPrimitive {
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            gl.glBindTexture(tex_dim, 0);
+        }
+    }
+
     
     /**
      * ImageProvider loads the image data for a texture on demand

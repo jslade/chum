@@ -11,6 +11,8 @@ import chum.gl.Color;
 import chum.gl.Mesh;
 import chum.gl.RenderContext;
 import chum.gl.Text;
+import chum.gl.render.primitive.Matrix;
+import chum.gl.render.primitive.RenderPrimitive;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -40,6 +42,12 @@ public class TextNode extends MeshNode
 
     private boolean pushed;
 
+    protected Transform transformA = new Transform();
+    protected Transform transformB = new Transform();
+    protected Matrix.Push ppush = new Matrix.Push();
+    protected Matrix.Pop ppop = new Matrix.Pop();
+    
+    
 
     /**
        Create a TextNode, initially not displaying any text
@@ -88,7 +96,11 @@ public class TextNode extends MeshNode
        @param color the color to set as the current draw color before drawing the text
     */
     public void setColor(Color color) {
-        if ( this.color == null ) this.color = new Color();
+        if ( this.color == null ) {
+            this.color = new Color();
+            transformA.color = new Color();
+            transformB.color = new Color();
+        }
         this.color.set(color);
     }
 
@@ -106,7 +118,11 @@ public class TextNode extends MeshNode
        @param position the vector to translate to before drawing the text
     */
     public void setPosition(Vec3 position) {
-        if ( this.position == null ) this.position = new Vec3();
+        if ( this.position == null ) {
+            this.position = new Vec3();
+            transformA.position = new Vec3();
+            transformB.position = new Vec3();
+        }
         this.position.set(position);
     }
 
@@ -183,36 +199,43 @@ public class TextNode extends MeshNode
        Prepares the render state for drawing the text
     */
     @Override
-    public void renderPrefix(GL10 gl) {
+    public boolean renderPrefix(RenderContext renderContext) {
         pushed = false;
 
-        if ( position != null ) {
-            if ( pushed == false ) gl.glPushMatrix();
-            gl.glTranslatef(position.x,
-                            position.y,
-                            position.z);
-            pushed = true;
-        }
+        Transform transform = renderContext.phase ? transformA : transformB;
+        boolean transformed = false;
+        
+        if (position != null) {
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.position.set(position);
+            transform.positioned = transformed = true;
+        } else
+            transform.positioned = false;
+        
+        if (angle != 0) {
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.angle = angle;
+            transform.angled = transformed = true;
+        } else
+            transform.angled = false;
 
-        if ( angle != 0f ) {
-            if ( pushed == false ) gl.glPushMatrix();
-            gl.glRotatef(angle,0f,0f,1f);
-            pushed = true;
-        }
-            
-        if ( scale != 1f ) {
-            if ( pushed == false ) gl.glPushMatrix();
-            gl.glScalef(scale,scale,scale);
-            pushed = true;
-        }
+        if (scale != 1f) {
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.scale = scale;
+            transform.scaled = transformed = true;
+        } else
+            transform.scaled = false;
 
-            
         if ( color != null ) {
-            gl.glColor4f(color.red,color.green,color.blue,color.alpha);
-        }
+            transform.color.set(color);
+            transform.colored = transformed = true;
+        } else
+            transform.scaled = false;
+        
+        if (transformed) renderContext.add(transform);
         
         // Super renderPrefix() is sufficient to actually draw the text mesh
-        super.renderPrefix(gl);
+        return super.renderPrefix(renderContext);
     }
 
 
@@ -222,12 +245,34 @@ public class TextNode extends MeshNode
        ModelView matrix
     */
     @Override
-    public void renderPostfix(GL10 gl) {
-        if ( pushed ) gl.glPopMatrix();
-        super.renderPostfix(gl);
+    public void renderPostfix(RenderContext renderContext) {
+        if ( pushed ) renderContext.add(ppop);
+        super.renderPostfix(renderContext);
     }
 
 
+
+    protected class Transform extends RenderPrimitive {
+        Vec3 position;
+        float angle;
+        float scale;
+        Color color;
+        
+        boolean positioned, angled, scaled, colored;
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if ( positioned )
+                gl.glTranslatef(position.x,position.y,position.z);
+            if ( angled )
+                gl.glRotatef(angle, 0, 0, 1f);
+            if ( scaled )
+                gl.glScalef(scale,scale,scale);
+            if ( colored )
+                gl.glColor4f(color.red,color.green,color.blue,color.alpha);
+        }
+    }
+    
 
     /**
         Update a Boundary with the bounding box for this text + transforms

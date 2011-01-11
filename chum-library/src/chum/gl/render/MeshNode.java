@@ -7,6 +7,8 @@ import chum.gl.RenderNode;
 import chum.gl.Texture;
 import chum.gl.VertexAttribute;
 import chum.gl.VertexAttributes.Usage;
+import chum.gl.render.primitive.Blend;
+import chum.gl.render.primitive.RenderPrimitive;
 
 import javax.microedition.khronos.opengles.GL10;
 import javax.microedition.khronos.opengles.GL11;
@@ -37,6 +39,10 @@ public class MeshNode extends RenderNode {
     /** Whether blending should be enabled */
     public boolean blend;
 
+    protected Blend.Enable enableBlend = new Blend.Enable();
+    protected Blend.Disable disableBlend = new Blend.Disable();
+    protected Renderer renderer = new Renderer();
+    
     
     public MeshNode() {
         super();
@@ -83,8 +89,6 @@ public class MeshNode extends RenderNode {
         if ( mesh == null )
             setTexture(null);
         else {
-            if ( renderContext != null ) mesh.onSurfaceCreated(renderContext);
-            
             Texture tex = mesh.getTexture();
             if ( tex != null ) setTexture(tex);
             else ;// keep the texture already set
@@ -97,8 +101,6 @@ public class MeshNode extends RenderNode {
      */
     public void setTexture(Texture tex) {
         texture = tex;
-        if ( texture != null )
-            if ( renderContext != null ) texture.load(renderContext);
     }
 
     
@@ -106,12 +108,7 @@ public class MeshNode extends RenderNode {
     public void onSetup(GameController gc) {
         super.onSetup(gc);
         if ( mesh != null ) {
-            mesh.renderContext = gc.renderContext;
             if ( texture == null ) setTexture(mesh.getTexture());
-        }
-        
-        if ( texture != null ) {
-            texture.onSetup(gc.renderContext);
         }
     }
 
@@ -122,28 +119,12 @@ public class MeshNode extends RenderNode {
         super.onSurfaceCreated(renderContext);
 
         if ( mesh != null ) {
-            mesh.onSurfaceCreated(renderContext);
+            mesh.checkManagedAndDirty(renderContext);
             if ( texture == null ) setTexture(mesh.getTexture());
         }
         
         if ( texture != null ) {
-            texture.onSurfaceCreated(renderContext);
-        }
-    }
-
-       
-    /** Inform the mesh and texture when the surface is resized */
-    @Override
-    public void onSurfaceChanged(int width, int height) {
-        super.onSurfaceChanged(width,height);
-
-        if ( mesh != null ) {
-            mesh.onSurfaceChanged(width,height);
-            if ( texture == null ) setTexture(mesh.getTexture());
-        }
-
-        if ( texture != null ) {
-            texture.onSurfaceChanged(renderContext,width,height);
+            texture.load(renderContext);
         }
     }
 
@@ -158,198 +139,214 @@ public class MeshNode extends RenderNode {
        throw an IllegalStateException when OpenGL ES 2.0 is used.
     */
     @Override
-    public void renderPrefix(GL10 gl10) {
-        if ( mesh == null ) {
-            //throw new IllegalStateException("can't render without a Mesh");
-            return;
-        }
+    public boolean renderPrefix(RenderContext renderContext) {
+        if ( mesh != null ) {
+            // TODO: Need to change this so it doesn't happen every frame, since
+            // most of the time it won't be dirty
+            mesh.checkManagedAndDirty(renderContext); 
 
-        if ( blend )
-            gl10.glEnable(GL10.GL_BLEND);
-
-        // TODO: Need to change this so it doesn't happen every frame        
-        mesh.checkManagedAndDirty(); 
-
-        if ( renderContext.isGL20 ) {
-            //render(shader,...);
-        } else {
-            render( this.type, this.offset, this.count );
-        }
+            if ( blend )
+                renderContext.add(enableBlend);
+            renderContext.add(renderer);
+        }   
+        return true;
     }
+
     
     /**
-       Renders the mesh using the given primitive type. offset specifies the
-       offset into either the vertex buffer or the index buffer depending on
-       whether indices are defined. count specifies the number of 
-       vertices or indices to use thus count / #vertices per primitive primitives
-       are rendered.
+       Restore the previous drawing state after the mesh is drawn.
+     */
+    @Override
+    public void renderPostfix(RenderContext renderContext) {
+        if ( blend )
+            renderContext.add(disableBlend);
+    }
+
+
+    protected class Renderer extends RenderPrimitive {
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if ( renderContext.isGL20 ) {
+                //render(shader,...);
+            } else {
+                render(renderContext,type,offset,count );
+            }
+        }
+        
+        /**
+           Renders the mesh using the given primitive type. offset specifies the
+           offset into either the vertex buffer or the index buffer depending on
+           whether indices are defined. count specifies the number of 
+           vertices or indices to use thus count / #vertices per primitive primitives
+           are rendered.
        
-       This method is intended for use with OpenGL ES 1.x and will
-       throw an IllegalStateException when OpenGL ES 2.0 is used.
+           This method is intended for use with OpenGL ES 1.x and will
+           throw an IllegalStateException when OpenGL ES 2.0 is used.
        
-       @param primitiveType the primitive type
-       @param offset the offset into the vertex or index buffer
-       @param count number of vertices or indices to use
-    */
-    protected void render( int primitiveType, int offset, int count ) {
-        if( renderContext.isGL20 )
-            throw new IllegalStateException( "can't use this render method with OpenGL ES 2.0" );
+           @param primitiveType the primitive type
+           @param offset the offset into the vertex or index buffer
+           @param count number of vertices or indices to use
+         */
+        protected void render(RenderContext renderContext, int primitiveType, int offset, int count) {
+            if( renderContext.isGL20 )
+                throw new IllegalStateException( "can't use this render method with OpenGL ES 2.0" );
+            
+            if ( count == 0 ) // TODO: belongs in checkManagedAndDirty()?
+                count = mesh.maxIndices > 0? mesh.getNumIndices(): mesh.getNumVertices();
+
+            // The texture is bound before hand, so any tex coords in the
+            // vertices apply to this texture
+            if ( texture != null )
+                texture.bind(renderContext);
+
+            if( mesh.vertexBufferObjectHandle != 0 )
+                renderVBO(renderContext, primitiveType, offset, count);
+            else
+                renderVA(renderContext, primitiveType, offset, count);
+
+
+            // Assume it is not necessary to unbind the texture afterward
+            // if ( texture != null )
+            //    texture.unbind();
+        }
+
+
+        /** TODO: don't disable/enable client state for every render -- share across meshes */
+        protected void renderVBO(RenderContext renderContext, int primitiveType, int offset, int count ) {
+            GL11 gl = renderContext.gl11;
+
+            gl.glBindBuffer( GL11.GL_ARRAY_BUFFER, mesh.vertexBufferObjectHandle );
         
-        if ( count == 0 ) // TODO: belongs in checkManagedAndDirty()?
-            count = mesh.maxIndices > 0? mesh.getNumIndices(): mesh.getNumVertices();
-
-        // The texture is bound before hand, so any tex coords in the
-        // vertices apply to this texture
-        if ( texture != null )
-            texture.bind(renderContext);
-
-        if( mesh.vertexBufferObjectHandle != 0 )
-            renderVBO( primitiveType, offset, count );
-        else
-            renderVA( primitiveType, offset, count );
-
-
-        // Assume it is not necessary to unbind the texture afterward
-        //if ( texture != null )
-        //    texture.unbind();
-    }
-
-    
-    /** todo: don't disable/enable client state for every render -- share across meshes */
-    protected void renderVBO( int primitiveType, int offset, int count ) {
-        GL11 gl = renderContext.gl11;
-
-        gl.glBindBuffer( GL11.GL_ARRAY_BUFFER, mesh.vertexBufferObjectHandle );
+            int numAttributes = mesh.attributes.size();
+            int type = mesh.useFixedPoint ? GL11.GL_FIXED : GL11.GL_FLOAT;
+            int textureUnit = 0;
         
-        int numAttributes = mesh.attributes.size();
-        int type = mesh.useFixedPoint ? GL11.GL_FIXED : GL11.GL_FLOAT;
-        int textureUnit = 0;
-        
-        for( int i = 0; i < numAttributes; i++ ) {
-            VertexAttribute attribute = mesh.attributes.get( i );
-            if( attribute.usage == Usage.Position ) {
-                gl.glEnableClientState( GL11.GL_VERTEX_ARRAY );
-                gl.glVertexPointer( attribute.numComponents, type,
-                                    mesh.attributes.vertexSize, attribute.offset );
-                continue;
-            }
+            for( int i = 0; i < numAttributes; i++ ) {
+                VertexAttribute attribute = mesh.attributes.get( i );
+                if( attribute.usage == Usage.Position ) {
+                    gl.glEnableClientState( GL11.GL_VERTEX_ARRAY );
+                    gl.glVertexPointer( attribute.numComponents, type,
+                                        mesh.attributes.vertexSize, attribute.offset );
+                    continue;
+                }
                 
-            if( attribute.usage == Usage.Color ) {
-                gl.glEnableClientState( GL11.GL_COLOR_ARRAY );
-                gl.glColorPointer( attribute.numComponents, type,
-                                   mesh.attributes.vertexSize, attribute.offset );
-                continue;
-            }
+                if( attribute.usage == Usage.Color ) {
+                    gl.glEnableClientState( GL11.GL_COLOR_ARRAY );
+                    gl.glColorPointer( attribute.numComponents, type,
+                                       mesh.attributes.vertexSize, attribute.offset );
+                    continue;
+                }
                 
-            if( attribute.usage == Usage.Normal ) {
-                gl.glEnableClientState( GL11.GL_NORMAL_ARRAY );
-                gl.glNormalPointer( type, mesh.attributes.vertexSize, attribute.offset );
-                continue;
-            }
+                if( attribute.usage == Usage.Normal ) {
+                    gl.glEnableClientState( GL11.GL_NORMAL_ARRAY );
+                    gl.glNormalPointer( type, mesh.attributes.vertexSize, attribute.offset );
+                    continue;
+                }
                 
-            if( attribute.usage == Usage.Texture ) {
-                gl.glEnable(GL10.GL_TEXTURE_2D);
-                gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
-                gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
-                gl.glTexCoordPointer( attribute.numComponents, type,
-                                      mesh.attributes.vertexSize, attribute.offset );
-                textureUnit++;
-                continue;
+                if( attribute.usage == Usage.Texture ) {
+                    gl.glEnable(GL10.GL_TEXTURE_2D);
+                    gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
+                    gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
+                    gl.glTexCoordPointer( attribute.numComponents, type,
+                                          mesh.attributes.vertexSize, attribute.offset );
+                    textureUnit++;
+                    continue;
+                }
             }
-        }
 
-        if( mesh.maxIndices > 0 ) {
-            gl.glBindBuffer( GL11.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferObjectHandle );
-            gl.glDrawElements(primitiveType, count, GL10.GL_UNSIGNED_SHORT, offset );
-        } else {
-            gl.glDrawArrays(primitiveType, offset, count);
-        }
-        
-        textureUnit--;
-        
-        for( int i = 0; i < numAttributes; i++ ) {
-            VertexAttribute attribute = mesh.attributes.get( i );
-            if( attribute.usage == Usage.Color )
-                gl.glDisableClientState( GL11.GL_COLOR_ARRAY );
-            if( attribute.usage == Usage.Normal )
-                gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
-            if( attribute.usage == Usage.Texture ) {
-                gl.glDisable(GL10.GL_TEXTURE_2D);
-                gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
-                gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
-                textureUnit--;
-            }		
-        }
-
-        mesh.vertices.position(0);
-    }
-        
-    protected void renderVA( int primitiveType, int offset, int count ) {
-        GL10 gl = renderContext.gl10;
-        
-        int numAttributes = mesh.attributes.size();
-        int type = mesh.useFixedPoint ? GL11.GL_FIXED : GL11.GL_FLOAT;
-        int textureUnit = 0;
-        
-        for( int i = 0; i < numAttributes; i++ ) {
-            VertexAttribute attribute = mesh.attributes.get( i );
-            switch(attribute.usage) {
-            case  Usage.Position:
-                gl.glEnableClientState( GL11.GL_VERTEX_ARRAY );
-                mesh.vertices.position( attribute.offset );
-                gl.glVertexPointer( attribute.numComponents, type,
-                                    mesh.attributes.vertexSize, mesh.vertices );
-                break;
-            case  Usage.Color:
-                gl.glEnableClientState( GL11.GL_COLOR_ARRAY );
-                mesh.vertices.position( attribute.offset );
-                gl.glColorPointer( attribute.numComponents, type,
-                                   mesh.attributes.vertexSize, mesh.vertices );
-                break;
-            case Usage.Normal:
-                gl.glEnableClientState( GL11.GL_NORMAL_ARRAY );
-                mesh.vertices.position( attribute.offset );
-                gl.glNormalPointer( type, mesh.attributes.vertexSize, mesh.vertices );
-                break;
-            case Usage.Texture:
-                gl.glEnable(GL10.GL_TEXTURE_2D);
-                gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
-                gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
-                mesh.vertices.position( attribute.offset );
-                gl.glTexCoordPointer( attribute.numComponents, type,
-                                      mesh.attributes.vertexSize, mesh.vertices );
-                textureUnit++;
-                break;
+            if( mesh.maxIndices > 0 ) {
+                gl.glBindBuffer( GL11.GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferObjectHandle );
+                gl.glDrawElements(primitiveType, count, GL10.GL_UNSIGNED_SHORT, offset );
+            } else {
+                gl.glDrawArrays(primitiveType, offset, count);
             }
+           
+            textureUnit--;
+        
+            for( int i = 0; i < numAttributes; i++ ) {
+                VertexAttribute attribute = mesh.attributes.get( i );
+                if( attribute.usage == Usage.Color )
+                    gl.glDisableClientState( GL11.GL_COLOR_ARRAY );
+                if( attribute.usage == Usage.Normal )
+                    gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
+                if( attribute.usage == Usage.Texture ) {
+                    gl.glDisable(GL10.GL_TEXTURE_2D);
+                    gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
+                    gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
+                    textureUnit--;
+                }		
+            }
+
+            mesh.vertices.position(0);
         }
         
-        if( mesh.maxIndices > 0 ) {
-            mesh.indices.position(offset);
-            gl.glDrawElements( primitiveType, count, GL10.GL_UNSIGNED_SHORT, mesh.indices );
-        } else
-            gl.glDrawArrays( primitiveType, offset, count);
+        protected void renderVA(RenderContext renderContext, int primitiveType, int offset, int count ) {
+            GL10 gl = renderContext.gl10;
         
-        textureUnit--;
+            int numAttributes = mesh.attributes.size();
+            int type = mesh.useFixedPoint ? GL11.GL_FIXED : GL11.GL_FLOAT;
+            int textureUnit = 0;
         
-        for( int i = 0; i < numAttributes; i++ ) {
-            VertexAttribute attribute = mesh.attributes.get( i );
-            switch(attribute.usage) {
-            case Usage.Color:
-                gl.glDisableClientState( GL11.GL_COLOR_ARRAY );
-                break;
-            case Usage.Normal:
-                gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
-                break;
-            case Usage.Texture:
-                gl.glDisable(GL10.GL_TEXTURE_2D);
-                gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
-                gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
-                textureUnit--;
-                break;
-            }		
+            for( int i = 0; i < numAttributes; i++ ) {
+                VertexAttribute attribute = mesh.attributes.get( i );
+                switch(attribute.usage) {
+                case  Usage.Position:
+                    gl.glEnableClientState( GL11.GL_VERTEX_ARRAY );
+                    mesh.vertices.position( attribute.offset );
+                    gl.glVertexPointer( attribute.numComponents, type,
+                                        mesh.attributes.vertexSize, mesh.vertices );
+                    break;
+                case  Usage.Color:
+                    gl.glEnableClientState( GL11.GL_COLOR_ARRAY );
+                    mesh.vertices.position( attribute.offset );
+                    gl.glColorPointer( attribute.numComponents, type,
+                                       mesh.attributes.vertexSize, mesh.vertices );
+                    break;
+                case Usage.Normal:
+                    gl.glEnableClientState( GL11.GL_NORMAL_ARRAY );
+                    mesh.vertices.position( attribute.offset );
+                    gl.glNormalPointer( type, mesh.attributes.vertexSize, mesh.vertices );
+                    break;
+                case Usage.Texture:
+                    gl.glEnable(GL10.GL_TEXTURE_2D);
+                    gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
+                    gl.glEnableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
+                    mesh.vertices.position( attribute.offset );
+                    gl.glTexCoordPointer( attribute.numComponents, type,
+                                          mesh.attributes.vertexSize, mesh.vertices );
+                    textureUnit++;
+                    break;
+                }
+            }
+        
+            if( mesh.maxIndices > 0 ) {
+                mesh.indices.position(offset);
+                gl.glDrawElements( primitiveType, count, GL10.GL_UNSIGNED_SHORT, mesh.indices );
+            } else
+                gl.glDrawArrays( primitiveType, offset, count);
+        
+            textureUnit--;
+        
+            for( int i = 0; i < numAttributes; i++ ) {
+                VertexAttribute attribute = mesh.attributes.get( i );
+                switch(attribute.usage) {
+                case Usage.Color:
+                    gl.glDisableClientState( GL11.GL_COLOR_ARRAY );
+                    break;
+                case Usage.Normal:
+                    gl.glDisableClientState( GL11.GL_NORMAL_ARRAY );
+                    break;
+                case Usage.Texture:
+                    gl.glDisable(GL10.GL_TEXTURE_2D);
+                    gl.glClientActiveTexture( GL11.GL_TEXTURE0 + textureUnit );
+                    gl.glDisableClientState( GL11.GL_TEXTURE_COORD_ARRAY );
+                    textureUnit--;
+                    break;
+                }		
+            }
+        
         }
-        
-    }
     
 //     public void render( ShaderProgram shader, int primitiveType ) {
 //         render( shader, primitiveType, 0, maxIndices > 0? getNumIndices(): getNumVertices() );
@@ -390,18 +387,5 @@ public class MeshNode extends RenderNode {
 //         }
 //     }	
     
-
-    /**
-       Restore the previous drawing state after the mesh is drawn.
-     */
-    @Override
-    public void renderPostfix(GL10 gl) {
-        if ( blend )
-            gl.glDisable(GL10.GL_BLEND);
-
-        super.renderPostfix(gl);
     }
-
-    
-
 }

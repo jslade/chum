@@ -1,15 +1,13 @@
 package chum.gl.render;
 
-import chum.engine.GameController;
-import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.RenderContext;
+import chum.gl.render.primitive.Scale3D;
 
 
 /**
    A node to set the scale factor
 */
-public class Scale3DNode extends RenderNode {
+public class Scale3DNode extends TransformNode {
 
     /** The x-axis scale factor */
     public float x;
@@ -20,37 +18,38 @@ public class Scale3DNode extends RenderNode {
     /** The z-axis scale factor */
     public float z;
 
-    /** Whether to save/restore the matrix */
-    public boolean push;
+    /** The a phase render node for translation */
+    public Scale3D scaleA = new Scale3D();
+
+    /** The b phase render node for translation */
+    public Scale3D scaleB = new Scale3D();
 
 
-    public Scale3DNode() {
-        this(1f,1f,1f);
-    }
-    
-    public Scale3DNode(float x,float y,float z) {
-        super();
+    public Scale3DNode(float x,float y,float z,boolean push) {
+        super(push);
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
 
-    @Override
-    public void onSetup(GameController gc) {
-    	super.onSetup(gc);
-    	if ( num_children > 0 ) push = true;
+    public Scale3DNode(float x, float y, float z) {
+        this(x,y,z,true);
     }
     
-    
-    @Override
-    public void renderPrefix(GL10 gl) {
-        if ( push ) gl.glPushMatrix();
-        gl.glScalef(x,y,z);
+
+    public Scale3DNode() {
+        this(1f,1f,1f);
     }
+    
 
     @Override
-    public void renderPostfix(GL10 gl) {
-        if ( push ) gl.glPopMatrix();
+    public void renderTransform(RenderContext renderContext) {
+        Scale3D prim = renderContext.phase ? scaleA : scaleB;
+        prim.scaleX = x;
+        prim.scaleY = y;
+        prim.scaleZ = z;
+        renderContext.add(prim);
     }
+
 }

@@ -1,55 +1,45 @@
 package chum.gl.render;
 
-import chum.engine.GameController;
 import chum.f.Vec3;
-import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.RenderContext;
+import chum.gl.render.primitive.Translate;
 
 
 /**
    A node to set the active color
 */
-public class TranslateNode extends RenderNode {
+public class TranslateNode extends TransformNode {
 
-    /** The position, which will be relative to the current matrix */
-    public Vec3 position;
+    /** The translation vector */
+    public Vec3 position = new Vec3();
+    
+    /** The a phase render node for translation */
+    protected Translate translateA = new Translate();
 
-    /** Whether to save/restore the matrix */
-    public boolean push;
-
+    /** The b phase render node for translation */
+    protected Translate translateB = new Translate();
 
     public TranslateNode(Vec3 v,boolean push) {
-        super();
-        position = new Vec3(v);
-        this.push = push;
+        super(push);
+        position.set(v);
     }
 
 
     public TranslateNode(Vec3 v) {
-        this(v,false);
+        this(v,true);
     }
 
 
     public TranslateNode() {
-        this(Vec3.ORIGIN,false);
+        this(Vec3.ORIGIN);
     }
 
 
-    public void onSetup(GameController gc) {
-    	super.onSetup(gc);
-    	if ( num_children > 0 ) push = true;
-    }
-    
-    
-    public void renderPrefix(GL10 gl) {
-        if ( push ) gl.glPushMatrix();
-        gl.glTranslatef(position.x,
-                        position.y,
-                        position.z);
+    @Override
+    public void renderTransform(RenderContext renderContext) {
+        Translate xlat = renderContext.phase ? translateA : translateB;
+        xlat.position.set(position);
+        renderContext.add(xlat);
     }
 
-    public void renderPostfix(GL10 gl) {
-        if ( push ) gl.glPopMatrix();
-    }
 }

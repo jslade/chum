@@ -11,6 +11,8 @@ import chum.gl.SpriteBatch;
 import chum.gl.SpriteBatchBuilder;
 import chum.gl.SpriteSheet;
 import chum.gl.Texture;
+import chum.gl.render.primitive.Matrix;
+import chum.gl.render.primitive.RenderPrimitive;
 
 import android.graphics.Bitmap;
 
@@ -48,6 +50,11 @@ public class Sprite extends MeshNode
 
     protected boolean pushed;
 
+    protected Transform transformA = new Transform();
+    protected Transform transformB = new Transform();
+    protected Matrix.Push ppush = new Matrix.Push();
+    protected Matrix.Pop ppop = new Matrix.Pop();
+    
 
     /**
      * Create a Sprite node, initially not displaying any images
@@ -110,7 +117,11 @@ public class Sprite extends MeshNode
         if (useBatchOffset) {
             Mesh.Vertex base = new Mesh.Vertex(batch.attributes);
             batch.getVertex(batch.getIndex(this.offset), base);
-            batchPosition = new Vec3();
+            if ( batchPosition == null ) {
+                batchPosition = new Vec3();
+                transformA.batchPosition = new Vec3();
+                transformB.batchPosition = new Vec3();
+            }
             base.position.scale(-1f, batchPosition);
             if (batchPosition.x == 0 && batchPosition.y == 0 && batchPosition.z == 0)
                 batchPosition = null;
@@ -127,8 +138,11 @@ public class Sprite extends MeshNode
      *            the vector to translate to before drawing the image
      */
     public void setPosition(Vec3 position) {
-        if (this.position == null)
+        if (this.position == null) {
             this.position = new Vec3();
+            transformA.position = new Vec3();
+            transformB.position = new Vec3();
+        }
         this.position.set(position);
     }
 
@@ -186,45 +200,50 @@ public class Sprite extends MeshNode
      * Prepares the render state for drawing the sprite mesh
      */
     @Override
-    public void renderPrefix(GL10 gl) {
+    public boolean renderPrefix(RenderContext renderContext) {
         pushed = false;
-
+        
+        Transform transform = renderContext.phase ? transformA : transformB;
+        boolean transformed = false;
+        
         if (batchPosition != null) {
-            if (pushed == false)
-                gl.glPushMatrix();
-            gl.glTranslatef(batchPosition.x, batchPosition.y, batchPosition.z);
-            pushed = true;
-        }
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.batchPosition.set(batchPosition);
+            transform.batchPositioned = transformed = true;
+        } else
+            transform.batchPositioned = false;
 
         if (position != null) {
-            if (pushed == false)
-                gl.glPushMatrix();
-            gl.glTranslatef(position.x, position.y, position.z);
-            pushed = true;
-        }
-
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.position.set(position);
+            transform.positioned = transformed = true;
+        } else
+            transform.positioned = false;
+        
         if (angle != 0) {
-            if (pushed == false)
-                gl.glPushMatrix();
-            gl.glRotatef(angle, 0, 0, 1f);
-            pushed = true;
-        }
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.angle = angle;
+            transform.angled = transformed = true;
+        } else
+            transform.angled = false;
 
         if (scale != 1f) {
-            if (pushed == false)
-                gl.glPushMatrix();
-            gl.glScalef(scale, scale, scale);
-            pushed = true;
-        }
+            if (pushed == false) { renderContext.add(ppush); pushed = true; }
+            transform.scale = scale;
+            transform.scaled = transformed = true;
+        } else
+            transform.scaled = false;
 
-        renderUnder(gl);
+        if ( transformed ) renderContext.add(transform);
+        
+        renderUnder(renderContext);
         
         // Super renderPrefix() is sufficient to actually draw the mesh
-        super.renderPrefix(gl);
+        return super.renderPrefix(renderContext);
     }
 
     
-    public void renderUnder(GL10 gl) {}
+    public void renderUnder(RenderContext renderContext) {}
     
     
 
@@ -234,12 +253,33 @@ public class Sprite extends MeshNode
      * matrix
      */
     @Override
-    public void renderPostfix(GL10 gl) {
-        if (pushed)
-            gl.glPopMatrix();
-        super.renderPostfix(gl);
+    public void renderPostfix(RenderContext renderContext) {
+        if (pushed) renderContext.add(ppop);
+        super.renderPostfix(renderContext);
     }
 
+
+    protected class Transform extends RenderPrimitive {
+        Vec3 batchPosition;
+        Vec3 position;
+        float angle;
+        float scale;
+        
+        boolean batchPositioned, positioned, angled, scaled;
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if ( batchPositioned )
+                gl.glTranslatef(batchPosition.x,batchPosition.y,batchPosition.z);
+            if ( positioned )
+                gl.glTranslatef(position.x,position.y,position.z);
+            if ( angled )
+                gl.glRotatef(angle, 0, 0, 1f);
+            if ( scaled )
+                gl.glScalef(scale,scale,scale);
+        }
+    }
+    
 
     /**
      * Helper to build a sprite that displays a single image from a sheet with

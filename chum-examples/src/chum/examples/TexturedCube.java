@@ -112,7 +112,7 @@ public class TexturedCube extends GameActivity
         // The first RotateNode has push=true, so that it pushes
         // the modelview matrix onto the stack going in, the pops it off
         // going out to restore the original transformation.
-        rot_x.push = true;
+        rot_x.setPush(true);
         
         // Add an extra node displaying a 3D axis
         // just to show orientation more clearly

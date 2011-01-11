@@ -3,7 +3,6 @@ package chum.gl.render;
 import chum.engine.GameNode;
 import chum.engine.common.HookNode;
 import chum.gl.RenderContext;
-import chum.gl.RenderNode;
 import chum.util.gl.TraceGL10;
 import chum.util.gl.TraceGL11;
 
@@ -14,7 +13,7 @@ import chum.util.gl.TraceGL11;
 public class TraceNode extends HookNode {
 
     /** The tracer */
-    public TraceGL10 trace10;
+    public TraceGL10 traceGL;
     
     
     /** Whether to pass thru calls to the real GL instance */
@@ -37,7 +36,6 @@ public class TraceNode extends HookNode {
     @Override
     public void attach() {
         super.attach();
-        setTracer();
         annotateTree();
     }
 
@@ -49,13 +47,10 @@ public class TraceNode extends HookNode {
     }
     
     
-    protected void setTracer() {
-        if ( this.trace10 == null ) {
-            RenderNode renderNode = (RenderNode)realNode;
-            if ( renderNode.renderContext != null ) {
-                if ( renderNode.renderContext.isGL11 ) this.trace10 = new TraceGL11();
-                else this.trace10 = new TraceGL10();
-            }   
+    protected void setTracer(RenderContext renderContext) {
+        if ( this.traceGL == null ) {
+            if ( renderContext.isGL11 ) this.traceGL = new TraceGL11();
+            else this.traceGL = new TraceGL10();
         }
     }
     
@@ -89,38 +84,35 @@ public class TraceNode extends HookNode {
 
     
     @Override
-    public boolean update(long millis) {
-        if ( trace10 == null || traceCount == 0 )
-            return super.update(millis);
-        
-        // Swap out the GL10 in the RenderContext, then swap it back
-        // for renderPostfix
-        RenderNode render = (RenderNode)realNode;
-        RenderContext rc = render.renderContext;
-        
-        trace10.realGL10 = rc.gl10;
-        rc.gl10 = trace10;
-        if (rc.gl11 != null && trace10 instanceof TraceGL11) {
-            TraceGL11 trace11 = (TraceGL11)trace10;
-            trace11.realGL11 = rc.gl11;
-            rc.gl11 = trace11;   
+    public void render(RenderContext renderContext) {
+        if ( traceCount == 0 ) {
+            super.render(renderContext);
+            return;
         }
         
-        boolean updated = super.update(millis);
+        // Swap out the GL10 in the RenderContext, do the normal rendering,
+        // then swap it back after renderPostfix
+        traceGL.realGL10 = renderContext.gl10;
+        renderContext.gl10 = traceGL;
+        if (renderContext.gl11 != null && traceGL instanceof TraceGL11) {
+            TraceGL11 trace11 = (TraceGL11)traceGL;
+            trace11.realGL11 = renderContext.gl11;
+            renderContext.gl11 = trace11;   
+        }
+        
+        super.render(renderContext);
         
         // Swap the original GL10 back to the RenderContext
-        rc.gl10 = trace10.realGL10;
-        if (rc.gl11 != null && trace10 instanceof TraceGL11) {
-            TraceGL11 trace11 = (TraceGL11)trace10;
-            rc.gl11 = trace11.realGL11;
+        renderContext.gl10 = traceGL.realGL10;
+        if (renderContext.gl11 != null && traceGL instanceof TraceGL11) {
+            TraceGL11 trace11 = (TraceGL11)traceGL;
+            renderContext.gl11 = trace11.realGL11;
         }
         
         if ( traceCount > 0 ) traceCount--;
         if ( traceCount == 0 && detachAfterTracing ) {
             detach();
         }
-        
-        return updated;
     }
 
 
@@ -128,6 +120,9 @@ public class TraceNode extends HookNode {
      * Annotation nodes are spliced into the tree under a TraceNode
      * to add trace events for every node that gets visited.  That makes
      * it clear where the specific GL call traces occur.
+     * 
+     * TODO: this is broken now with the actual GL calls occurring
+     * separate from the traversal of the render nodes in the tree
      * 
      * @author jeremy
      *
@@ -142,12 +137,11 @@ public class TraceNode extends HookNode {
         }
         
         @Override
-        public boolean update(long millis) {
-            traceNode.setTracer();
-            traceNode.trace10.trace(String.format("+++ %s '%s'",realNode,realNode.name));
-            boolean updated = super.update(millis);
-            traceNode.trace10.trace(String.format("--- %s '%s'",realNode,realNode.name));
-            return updated;
+        public void render(RenderContext renderContext) {
+            traceNode.setTracer(renderContext);
+            traceNode.traceGL.trace(String.format("+++ %s '%s'",realNode,realNode.name));
+            super.render(renderContext);
+            traceNode.traceGL.trace(String.format("--- %s '%s'",realNode,realNode.name));
         }
     }
 }

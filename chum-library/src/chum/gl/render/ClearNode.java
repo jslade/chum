@@ -1,38 +1,40 @@
 package chum.gl.render;
 
 import chum.gl.Color;
+import chum.gl.RenderContext;
 import chum.gl.RenderNode;
-
-import javax.microedition.khronos.opengles.GL10;
 
 
 /**
-   RenderNode that clears the scene -- usually the first node in the render tree.
+   RenderPrimitive that clears the scene -- usually the first node in the render tree.
 */
 public class ClearNode extends RenderNode {
 
-    /** The color to clear to (if any) */
+    /** The color */
     public Color color;
-
-    /** The clear bits */
-    public int clearBits = (GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-
+    
+    /** Only uses a single RenderPrimitive, assumes it doesn't change between frames */
+    public chum.gl.render.primitive.Clear clearNode;
+    
 
     public ClearNode() {
-        super();
+        this(Color.BLACK);
     }
 
 
     public ClearNode(Color color) {
         super();
-        this.color = color;
+        clearNode = new chum.gl.render.primitive.Clear();
+        if ( color != null ) {
+            this.color = clearNode.color = new Color(color);
+        }   
     }
 
 
-    public void renderPrefix(GL10 gl10) {
-        if ( color != null )
-            gl10.glClearColor(color.red,color.green,color.blue,color.alpha);
-        gl10.glClear(clearBits);
+    @Override
+    public boolean renderPrefix(RenderContext renderContext) {
+        renderContext.add(clearNode);
+        return true;
     }
        
 }

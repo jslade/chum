@@ -60,7 +60,9 @@ public class FastestPossibleFPS extends GameActivity
     }
     
     
+    @Override
     protected GameNode createLogicTree() { return new GameNode(); }
 
+    @Override
     protected RenderNode createRenderTree(GameNode logic) { return new RenderNode(); }
 }

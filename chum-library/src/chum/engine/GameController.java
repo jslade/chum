@@ -1,12 +1,18 @@
 package chum.engine;
 
 import chum.gl.RenderContext;
+import chum.gl.render.primitive.RenderPrimitive;
+import chum.util.Log;
 
+import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
 
 import java.util.Random;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 
 /**
@@ -18,7 +24,9 @@ import java.util.Random;
  * TODO: can't currently use GameController without GameActivity -- need to get
  * cleaner separation
  */
-public class GameController {
+public class GameController
+    implements GLSurfaceView.Renderer
+{
 
     /** The GameActivity */
     public GameActivity activity;
@@ -38,6 +46,9 @@ public class GameController {
      **/
     public int width, height;
 
+    /** Whether the surface is ready to use */
+    public boolean surfaceReady;
+    
     /** Whether the activity is paused */
     public boolean paused;
 
@@ -83,9 +94,11 @@ public class GameController {
 
     
     final EventQueue events;
+    final GameThread gameThread;
     final RenderLock renderLock;
     final PauseLock pauseLock;
 
+    Thread renderThread;
     
     /**
        
@@ -93,6 +106,7 @@ public class GameController {
     public GameController(GameActivity activity) {
         this.activity = activity;
         events = new EventQueue();
+        gameThread = new GameThread();
         renderLock = new RenderLock();
         pauseLock = new PauseLock();
         preallocateEventPools();
@@ -118,12 +132,19 @@ public class GameController {
     
     
     /**
-     * Called once to start the GameThread initially, after the GameTree is created.
+       Start the game thread if everything is ready to go
      */
-    public void start() {
+    protected void maybeStart() {
+        if ( gameThread.isAlive() ) return;
+        if ( !surfaceReady ) return;
+        
+        tree.postDown(GameEvent.obtain(GameEvent.GAME_INIT));
+
+        Log.d("GameController.start()");
+        gameThread.start();
     }
     
-
+    
     /**
      * Called to pause the game
      */
@@ -144,14 +165,19 @@ public class GameController {
             paused = false;
             pauseLock.notifyAll();
         }
+
+        maybeStart();
     }
     
     
     
     /**
-     * Called each frame, from the GLSurfaceView rendering thread.
+     * Called each frame, from the GameThread rendering thread.
      */
-    public void update() {
+    protected void update() {
+        assert(Thread.currentThread() == gameThread);
+        
+        //Log.d("update()");
         lastFrameStart = currentFrameStart;
         currentFrameStart = SystemClock.uptimeMillis();
         frameDelta = currentFrameStart - lastFrameStart;
@@ -172,18 +198,43 @@ public class GameController {
         int dispatched = events.dispatchAll();
         
         // Process the logic half of the GameTree
-        if (tree.logic.update(frameDelta) ||
-            dispatched > 0 ) {
-            // Do the rendering part of the tree 
-            tree.rendering.update(frameDelta);
+        tree.update(frameDelta);
+        
+        // Do the rendering part of the tree 
+        tree.render(renderContext);
+        renderReady();
+    }
+    
+    
+    /**
+       Called when the rendering chain is completed and ready
+       to be executed.
+     */
+    protected void renderReady() {
+        RenderPrimitive renderHead = null;
+        
+        // If there is a built render chain ready to go, remove it
+        // and pass it to the rendering thread via the renderLock.
+        // That way this thread can immediately start building another one
+        if ( renderContext.renderTail != null ) {
+            renderContext.renderTail.nextNode = null;
+            
+            renderHead = renderContext.renderHead;
+            renderContext.renderHead = renderContext.renderTail = null;
+            
+            renderContext.phase = !renderContext.phase;
         }
-
-        // Check for pause in the game
-        while (paused) {
-            synchronized(pauseLock) {
-                try { pauseLock.wait(); }
-                catch(InterruptedException e) {}
-            }
+        
+        // Signal the rendering thread a new frame is ready to go.
+        // This will block if the rendering thread is still busy,
+        // which will throttle the game thread if it's running ahead
+        // of the rendering.
+        // If the rendering thread is currently idle, this is where
+        // it gets woken up.
+        synchronized(renderLock) {
+            renderLock.renderHead = renderHead;
+            //Log.d("renderLock.notify()");
+            renderLock.notifyAll();
         }
     }
     
@@ -263,10 +314,111 @@ public class GameController {
     
 
     
-    public static class RenderLock {
+    /**
+        Called when the rendering thread is ready to draw the next frame.
+     */ 
+    public void onDrawFrame(GL10 gl10) {
+        //Log.d("onDrawFrame()");
+        RenderPrimitive rendering;
+        assert(Thread.currentThread() == renderThread);
+        
+        synchronized(renderLock) {
+            // Wait for a frame to be available before proceeding...
+            if ( renderLock.renderHead == null ) {
+                //reLog.d("renderLock.wait()");
+                try { renderLock.wait(targetInterval); }
+                catch(InterruptedException e) {}
+            }
+            
+            // Remove the pending rendering chain 
+            rendering = renderLock.renderHead;
+            renderLock.renderHead = null;
+        }
+
+        // Now render the chain completely
+        while( rendering != null ) {
+            rendering.render(renderContext,gl10);
+            rendering = rendering.nextNode;
+        }
+    }
+ 
+ 
+    /**
+        Called when the GLSurfaceView has finished initialization
+        
+        // TODO: need to handle case of surface being created after
+        // a pause/resume of the activity
+     */
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        Log.d("onSurfaceCreated: " + width +" x " + height);
+        renderContext = new RenderContext(activity,gl,config);
+        renderContext.glSurface = activity.glSurface;
+        renderThread = Thread.currentThread();
+
+        activity.onSetup(this);
+        tree.doSetup(this);
+
+        activity.onSurfaceCreated(renderContext);
+        tree.doSurfaceCreated(renderContext);
+
+        resetFrame();
     }
     
-    public static class PauseLock {
+
+    /**
+       Called when the surface size changed, e.g. due to tilting
+     */
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        Log.d("onSurfaceChanged: " + width +" x " + height);
+        renderContext.width = width;
+        renderContext.height = height;
+        tree.doSurfaceChanged(width, height);
+
+        activity.onSurfaceChanged(width,height);
+
+        // At this point, everything is setup for the game to begin
+        // TODO: this should be handled differently if this is
+        // called after the initial onSurfaceChanged()
+        surfaceReady = true;
+        maybeStart();
     }
 
+
+    protected class RenderLock {
+        public RenderPrimitive renderHead;
+    }
+ 
+    protected class PauseLock {
+    }
+
+
+    /**
+       The GameThread runs a simple loop, calling update() each iteration.
+       update() does the heavy-lifting.
+     */
+    protected class GameThread extends Thread {
+        boolean done = false;
+
+        GameThread() {
+            super();
+            setName("GameThread");
+        }
+        
+        @Override
+        public void run() {
+           Log.d("GameThread.run()");
+            while (!done) {
+                GameController.this.update();
+
+                // Check for pause in the game
+                while (paused) {
+                    synchronized(pauseLock) {
+                        try { pauseLock.wait(); }
+                        catch(InterruptedException e) {}
+                    }
+                }
+            }
+        }
+    }
+    
 }

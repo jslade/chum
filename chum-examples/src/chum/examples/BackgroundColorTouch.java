@@ -19,9 +19,9 @@ import android.view.MotionEvent;
 */
 public class BackgroundColorTouch extends GameActivity
 {
-    private final Color bg = new Color("#ffffff");
-
-
+    /** The background color that gets changed */
+    public Color bg;
+    
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -48,7 +48,9 @@ public class BackgroundColorTouch extends GameActivity
 
     @Override
     protected RenderNode createRenderTree(GameNode logic) {
-        return new ClearNode(bg);
+        ClearNode clearNode = new ClearNode(Color.BLACK);
+        bg = clearNode.color;        
+        return clearNode;
     }
 
 }

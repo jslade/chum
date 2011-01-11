@@ -1,8 +1,9 @@
 package chum.gl.render;
 
-import chum.gl.RenderNode;
 
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.RenderContext;
+import chum.gl.RenderNode;
+import chum.gl.render.primitive.Matrix;
 
 
 /**
@@ -13,16 +14,24 @@ import javax.microedition.khronos.opengles.GL10;
 */
 public class SaveMatrixNode extends RenderNode {
 
+    protected Matrix.Push push = new Matrix.Push();
+    protected Matrix.Pop pop = new Matrix.Pop();
+    
+
     public SaveMatrixNode() {
         super();
     }
 
 
-    public void renderPrefix(GL10 gl) {
-        gl.glPushMatrix();
+    @Override
+    public boolean renderPrefix(RenderContext renderContext) {
+        renderContext.add(push);
+        return true;
     }
 
-    public void renderPostfix(GL10 gl) {
-        gl.glPopMatrix();
+    
+    @Override
+    public void renderPostfix(RenderContext renderContext) {
+        renderContext.add(pop);
     }
 }

@@ -8,6 +8,7 @@ import chum.fp.FP;
 import chum.fp.Vec2FP;
 import chum.fp.Vec3FP;
 import chum.gl.VertexAttributes.Usage;
+import chum.gl.render.primitive.RenderPrimitive;
 import chum.util.Log;
 
 import java.nio.Buffer;
@@ -59,13 +60,12 @@ public class Mesh {
     /** the IBO handle */
     public int indexBufferObjectHandle;
 
-    /** dirty flag */
-    public boolean dirty = false;
-
-    /** the rendering context object */
-    public RenderContext renderContext;
-    // TODO: want renderContext to be a member of Mesh, or managed strictly by MeshNode for consistency?
-
+    /** dirty flag - vertices */
+    public boolean dirtyVertices = false;
+    
+    /** dirty flag - indices */
+    public boolean dirtyIndices = false;
+    
     /** managed? */
     public final boolean managed;
 
@@ -79,6 +79,19 @@ public class Mesh {
     public int type;
 
 
+    /** The render prim for allocating GPU buffers */
+    protected Allocate allocater;
+    
+    /** The render prim for loading GPU buffers */
+    protected LoadVertices vertexLoader;
+    
+    /** The render prim for loading GPU buffers */
+    protected LoadIndices indexLoader;
+    
+    /** The render prim for disposing of GPU buffers */
+    protected Dispose disposer;
+    
+    
     /**
      * Creates a new Mesh with the given attributes
      * 
@@ -127,6 +140,11 @@ public class Mesh {
         this.maxIndices = maxIndices;
         this.attributes = attributes;
 
+        allocater = new Allocate();
+        vertexLoader = new LoadVertices();
+        indexLoader = new LoadIndices();
+        disposer = new Dispose();
+        
         createCPUBuffers();
     }
 
@@ -146,31 +164,17 @@ public class Mesh {
     }
 
 
-    /**
-     * Prepare for rendering. This will create VBO's, etc as appropriate, before
-     * the first time the mesh is rendered.
-     */
-    public void onSurfaceCreated(RenderContext renderContext) {
-        this.renderContext = renderContext;
-        checkManagedAndDirty();
-    }
-
-
-    /**
-     * Prepare for rendering.
-     */
-    public void onSurfaceChanged(int width, int height) {
-        checkManagedAndDirty();
-    }
-
-
-    public void checkManagedAndDirty() {
+    public void checkManagedAndDirty(RenderContext renderContext) {
         if (managed) {
-            if (renderContext.isGL11
-                    && (vertexBufferObjectHandle == 0 || renderContext.gl11
-                            .glIsBuffer(vertexBufferObjectHandle) == false)) {
-                createGPUBuffers();
-                fillGPUBuffers();
+            if (renderContext.isGL11 &&
+                (vertexBufferObjectHandle == 0)) {
+                // TODO: need a way to handle case where the allocated buffer goes away
+                // (state change, etc).  But don't want to do glIsBuffer every frame,
+                // and this method may get called every from (from MeshNode)
+                //renderContext.gl11.glIsBuffer(vertexBufferObjectHandle) == false)) {
+                createGPUBuffers(renderContext);
+                loadVertices(renderContext);
+                loadIndices(renderContext);
             }
             // if( renderContext.isGL20 &&
             // (vertexBufferObjectHandle == 0 ||
@@ -181,76 +185,192 @@ public class Mesh {
             // }
         }
 
-        if (dirty)
-            fillGPUBuffers();
+        if (dirtyVertices) loadVertices(renderContext);
+        if (dirtyIndices) loadIndices(renderContext);
     }
 
 
-    private void createGPUBuffers() {
-        if (renderContext.isGL20)
-            ;// createGPUBuffers(renderContext.gl20);
-        else if (renderContext.isGL11)
-            createGPUBuffers(renderContext.gl11);
+    private void createGPUBuffers(RenderContext renderContext) {
+        if (renderContext.canUseVBO) renderContext.add(allocater);
     }
 
 
-    /** Allocate a VBO and IBO for the mesh */
-    private void createGPUBuffers(GL11 gl) {
-        if (!renderContext.canUseVBO)
-            return;
-
-        int needed = 1;
-        if (maxIndices > 0) needed++;
-        
-        int[] handle = new int[needed];
-        gl.glGenBuffers(needed, handle, 0);
-        vertexBufferObjectHandle = handle[0];
-
-        if ( maxIndices > 0) indexBufferObjectHandle = handle[1];
+    /** Fill the VBO for the mesh */
+    private void loadVertices(RenderContext renderContext) {
+        if (renderContext.canUseVBO) renderContext.add(vertexLoader);
     }
 
 
-    /** Fill the VBO / IBO for the mesh */
-    private void fillGPUBuffers() {
-        if (renderContext.isGL20)
-            ;// fillGPUBuffers(renderContext.gl20);
-        else if (renderContext.isGL11)
-            fillGPUBuffers(renderContext.gl11);
-
-        dirty = false;
+    /** Fill the IBO for the mesh */
+    private void loadIndices(RenderContext renderContext) {
+        if (renderContext.canUseVBO) renderContext.add(indexLoader);
     }
 
 
-    /** Send the VBO / IBO data to the GPU */
-    private void fillGPUBuffers(GL11 gl) {
-        gl.glBindBuffer(GL11.GL_ARRAY_BUFFER, vertexBufferObjectHandle);
-        gl.glBufferData(GL11.GL_ARRAY_BUFFER, getNumVertices() * attributes.vertexSize,
-                        vertices, isStatic ? GL11.GL_STATIC_DRAW : GL11.GL_DYNAMIC_DRAW);
-        gl.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
+    /** Frees all resources associated with this Mesh */
+    public void dispose(RenderContext renderContext) {
+        if (renderContext.canUseVBO) renderContext.add(disposer);
+    }
 
-        if (maxIndices > 0) {
-            gl.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, indexBufferObjectHandle);
-            gl.glBufferData(GL11.GL_ELEMENT_ARRAY_BUFFER, indices.limit() * 2, indices,
-                            isStatic ? GL11.GL_STATIC_DRAW : GL11.GL_DYNAMIC_DRAW);
-            gl.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    /**
+        Allocate the GPU buffer(s) for the mesh
+     */
+    protected class Allocate extends RenderPrimitive {
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if (renderContext.isGL20)
+                ;// createGPUBuffers(renderContext.gl20);
+            else if (renderContext.isGL11)
+                createGPUBuffers(renderContext,renderContext.gl11);
+        }
+
+        /** Allocate a VBO and IBO for the mesh */
+        private void createGPUBuffers(RenderContext renderContext,GL11 gl) {
+            int needed = 1;
+            if (maxIndices > 0) needed++;
+            
+            int[] handle = new int[needed];
+            gl.glGenBuffers(needed, handle, 0);
+            vertexBufferObjectHandle = handle[0];
+
+            if ( maxIndices > 0) indexBufferObjectHandle = handle[1];
         }
     }
 
 
-    // private void fillGPUBuffers( GL20 gl ) {
-    // gl.glBindBuffer( GL20.GL_ARRAY_BUFFER, vertexBufferObjectHandle );
-    // gl.glBufferData( GL20.GL_ARRAY_BUFFER, getNumVertices() *
-    // attributes.vertexSize,
-    // vertices, isStatic ? GL20.GL_STATIC_DRAW : GL20.GL_DYNAMIC_DRAW );
-    // gl.glBindBuffer( GL20.GL_ARRAY_BUFFER, 0 );
+    /**
+       Load the mesh vertex data into the GPU buffer
+     */
+    protected class LoadVertices extends RenderPrimitive {
+        /** vertex data is double-buffered so it can be loaded in render thread,
+            while it gets modified in the game thread */
+        public ByteBuffer loadBuffer;
 
-    // if( maxIndices > 0 ) {
-    // gl.glBindBuffer( GL20.GL_ELEMENT_ARRAY_BUFFER, indexBufferObjectHandle );
-    // gl.glBufferData( GL20.GL_ELEMENT_ARRAY_BUFFER, getNumIndices() * 2,
-    // indices, isStatic ? GL20.GL_STATIC_DRAW : GL20.GL_DYNAMIC_DRAW );
-    // gl.glBindBuffer( GL20.GL_ELEMENT_ARRAY_BUFFER, 0 );
-    // }
-    // }
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if (renderContext.isGL20)
+                ;
+         else if (renderContext.isGL11)
+            loadVertices(renderContext.gl11);
+
+         dirtyVertices = false;
+     }
+
+     // TODO: This complete copying on each re-load is perhaps a bit
+     // wasteful -- or maybe it's the best solution for the general case?
+     private void loadVertices(GL11 gl) {
+         ByteBuffer verticesBytes = (ByteBuffer)vertices;
+         if ( loadBuffer == null ||
+              loadBuffer.limit() < verticesBytes.limit() ) {
+             loadBuffer = ByteBuffer.allocateDirect(verticesBytes.limit());
+             Log.d("loadBuffer: allocated "+loadBuffer.limit());
+         }
+         loadBuffer.position(0);
+         loadBuffer.put(verticesBytes);
+         loadBuffer.position(0);
+         
+         gl.glBindBuffer(GL11.GL_ARRAY_BUFFER, vertexBufferObjectHandle);
+         gl.glBufferData(GL11.GL_ARRAY_BUFFER, getNumVertices() * attributes.vertexSize,
+                         loadBuffer, isStatic ? GL11.GL_STATIC_DRAW : GL11.GL_DYNAMIC_DRAW);
+         gl.glBindBuffer(GL11.GL_ARRAY_BUFFER, 0);
+     }
+
+     // private void fillGPUBuffers( GL20 gl ) {
+     // gl.glBindBuffer( GL20.GL_ARRAY_BUFFER, vertexBufferObjectHandle );
+     // gl.glBufferData( GL20.GL_ARRAY_BUFFER, getNumVertices() *
+     // attributes.vertexSize,
+     // vertices, isStatic ? GL20.GL_STATIC_DRAW : GL20.GL_DYNAMIC_DRAW );
+     // gl.glBindBuffer( GL20.GL_ARRAY_BUFFER, 0 );
+
+ }
+
+
+    /**
+       Load the mesh index data into the GPU buffer.
+       
+       Unlike the vertex data, index data is not double-buffered.  The Mesh class assumes
+       indices are static.
+     */
+    protected class LoadIndices extends RenderPrimitive {
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if (renderContext.isGL20)
+                ;
+            else if (renderContext.isGL11)
+                loadIndices(renderContext.gl11);
+
+            dirtyIndices = false;
+        }
+
+        private void loadIndices(GL11 gl) {
+            if (maxIndices > 0) {
+                gl.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, indexBufferObjectHandle);
+                gl.glBufferData(GL11.GL_ELEMENT_ARRAY_BUFFER, indices.limit() * 2, indices,
+                                GL11.GL_STATIC_DRAW);
+                                //isStatic ? GL11.GL_STATIC_DRAW : GL11.GL_DYNAMIC_DRAW);
+                gl.glBindBuffer(GL11.GL_ELEMENT_ARRAY_BUFFER, 0);
+            }
+        }
+
+
+        // private void fillGPUBuffers( GL20 gl ) {
+        // if( maxIndices > 0 ) {
+        // gl.glBindBuffer( GL20.GL_ELEMENT_ARRAY_BUFFER, indexBufferObjectHandle );
+        // gl.glBufferData( GL20.GL_ELEMENT_ARRAY_BUFFER, getNumIndices() * 2,
+        // indices, isStatic ? GL20.GL_STATIC_DRAW : GL20.GL_DYNAMIC_DRAW );
+        // gl.glBindBuffer( GL20.GL_ELEMENT_ARRAY_BUFFER, 0 );
+        // }
+        // }
+    }
+
+
+    /**
+       Release the GPU buffers when done with the mesh 
+     */
+    protected class Dispose extends RenderPrimitive {
+        int handle[] = new int[1];
+        
+        @Override
+        public void render(RenderContext renderContext, GL10 gl) {
+            if (renderContext.isGL20)
+                ;// dispose( renderContext.gl20 );
+            else if (renderContext.isGL11)
+                dispose(renderContext.gl11);
+        }
+
+        private void dispose(GL11 gl) {
+            handle[0] = vertexBufferObjectHandle;
+            gl.glDeleteBuffers(1, handle, 0);
+            vertexBufferObjectHandle = 0;
+            
+            if (maxIndices > 0) {
+                handle[0] = indexBufferObjectHandle;
+                gl.glDeleteBuffers(1, handle, 0);
+                indexBufferObjectHandle = 0;
+            }
+        }
+
+        // private void dispose( GL20 gl ) {
+        // ByteBuffer tmp = ByteBuffer.allocateDirect( 4 );
+        // tmp.order( ByteOrder.nativeOrder() );
+        // IntBuffer handle = tmp.asIntBuffer();
+        // handle.put( vertexBufferObjectHandle );
+        // handle.position(0);
+        // gl.glDeleteBuffers( 1, handle );
+
+        // if( maxIndices > 0 ) {
+        // handle.clear();
+        // handle.put( indexBufferObjectHandle );
+        // handle.position(0);
+        // gl.glDeleteBuffers( 1, handle );
+        // }
+        // }
+    }
+
+ 
+    
 
     /**
      * Sets the vertices of this Mesh. The attributes are assumed to be given in
@@ -279,8 +399,7 @@ public class Mesh {
      */
     public void setVertices(float[] vertices, int offset, int count) {
         if (useFixedPoint)
-            throw new IllegalArgumentException(
-                                               "can't set float vertices for fixed point mesh");
+            throw new IllegalArgumentException("can't set float vertices for fixed point mesh");
 
         verticesFloat.clear();
         verticesFloat.put(vertices, offset, count);
@@ -290,7 +409,7 @@ public class Mesh {
         this.vertices.limit(verticesFloat.limit() * 4);
         this.vertices.position(0);
 
-        dirty = true;
+        dirtyVertices = true;
     }
 
 
@@ -332,7 +451,7 @@ public class Mesh {
         this.vertices.limit(verticesFixed.limit() * 4);
         this.vertices.position(0);
 
-        dirty = true;
+        dirtyVertices = true;
     }
 
 
@@ -360,7 +479,7 @@ public class Mesh {
     public void setIndices(short[] indices, int offset, int count) {
         this.indices.put(indices, offset, count);
         this.indices.position(0);
-        dirty = true;
+        dirtyIndices = true;
     }
 
 
@@ -387,46 +506,6 @@ public class Mesh {
         return attributes.vertexSize;
     }
 
-
-    /** Frees all resources associated with this Mesh */
-    public void dispose() {
-        if (renderContext == null) return;
-        if (renderContext.isGL20)
-            ;// dispose( renderContext.gl20 );
-        else if (renderContext.isGL11)
-            dispose(renderContext.gl11);
-    }
-
-
-    private void dispose(GL11 gl) {
-        int handle[] = new int[1];
-        handle[0] = vertexBufferObjectHandle;
-        gl.glDeleteBuffers(1, handle, 0);
-        vertexBufferObjectHandle = 0;
-        
-        if (maxIndices > 0) {
-            handle[0] = indexBufferObjectHandle;
-            gl.glDeleteBuffers(1, handle, 0);
-            indexBufferObjectHandle = 0;
-        }
-    }
-
-
-    // private void dispose( GL20 gl ) {
-    // ByteBuffer tmp = ByteBuffer.allocateDirect( 4 );
-    // tmp.order( ByteOrder.nativeOrder() );
-    // IntBuffer handle = tmp.asIntBuffer();
-    // handle.put( vertexBufferObjectHandle );
-    // handle.position(0);
-    // gl.glDeleteBuffers( 1, handle );
-
-    // if( maxIndices > 0 ) {
-    // handle.clear();
-    // handle.put( indexBufferObjectHandle );
-    // handle.position(0);
-    // gl.glDeleteBuffers( 1, handle );
-    // }
-    // }
 
     /**
      * @return whether 16.16 fixed point is used
@@ -751,7 +830,7 @@ public class Mesh {
             }
         }
         
-        dirty = true;
+        dirtyVertices = true;
     }
 
 
@@ -823,7 +902,7 @@ public class Mesh {
             }
         }
 
-        dirty = true;
+        dirtyVertices = true;
     }
 
 

@@ -1,25 +1,13 @@
 package chum.gl.render;
 
-import chum.gl.RenderNode;
 
-import android.opengl.GLU;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.render.primitive.ProjectionTransform;
 
 
 /**
    Sets up an orthographic (2D) projection
 */
-public class OrthographicProjection extends RenderNode {
-
-    /** Whether the viewport is static (one time setup) or updates every frame */
-    public boolean isDynamic = false;
-
-    /** The width of the viewport */
-    protected int width;
-
-    /** The height of the viewport */
-    protected int height;
+public class OrthographicProjection extends ProjectionNode {
 
     /** The left edge of the projection */
     protected float left;
@@ -37,13 +25,11 @@ public class OrthographicProjection extends RenderNode {
        
     public OrthographicProjection() {
         super();
-        this.isDynamic = false;
     }
 
 
     public OrthographicProjection(boolean isDynamic) {
-        super();
-        this.isDynamic = isDynamic;
+        super(isDynamic);
     }
 
 
@@ -56,30 +42,13 @@ public class OrthographicProjection extends RenderNode {
     @Override
     public void onSurfaceChanged(int width, int height) {
         super.onSurfaceChanged(width,height);
-
-        this.width = width;
-        this.height = height;
-
         setExtents(width,height);
-
-        if ( !isDynamic )
-            setProjection(renderContext.gl10);
     }
 
-
-    /**
-       If the projection is dynamic, then the projection is re-established
-       on every frame.
-    */
-    public void renderPrefix(GL10 gl10) {
-        if ( isDynamic )
-            setProjection(gl10);
-    }
- 
 
     /**
        Called during setup ({Link onSurfaceChanged}) to set the
-       extents of the coorinates in current view.
+       extents of the coordinates in current view.
        
        This determines how the OpenGL vertex coordinates map to screen
        coordinates.
@@ -90,23 +59,17 @@ public class OrthographicProjection extends RenderNode {
     */
     protected void setExtents(int width, int height) {
         left = 0f;
-        right = (float)width;
+        right = width;
         bottom = 0f;
-        top = (float)height;
+        top = height;
     }
 
 
     /**
        Make this projection active.
-
-       Sets the matrix mode to GL_PROJECTION, then loads the orthographic
-       projection into the current matrix, and finally sets the
-       maxtrix mode back to GL_MODELVIEW.
     */
-    protected void setProjection(GL10 gl10) {
-        gl10.glMatrixMode(GL10.GL_PROJECTION);
-        gl10.glLoadIdentity();
-        GLU.gluOrtho2D(gl10,left,right,bottom,top);
-        gl10.glMatrixMode(GL10.GL_MODELVIEW);
+    @Override
+    protected void setProjection(ProjectionTransform projection) {
+        projection.setOrthographic(left,right,bottom,top,true);
     }
 }

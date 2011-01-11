@@ -7,11 +7,10 @@ import chum.gl.RenderContext;
    GameNode represents a node in the 'game graph' -- which may or may
    not represent a visible entity.  A node is visited every iteration
    of the engine (every frame), and given the opportunity to affect
-   the game state.
+   the game state, as well as contribute to the game scene(rendering)
 
    GameNodes typically define their behavior by adding one or more
    child nodes.  
-
 
    The members of this class are generally public for efficient access.
    This violates pure OO encapsulation practices, but it's a standard
@@ -31,11 +30,8 @@ public class GameNode {
     /** The number of child nodes */
     public int num_children;
     
-
-    /** The name of the node, for finding nodes in the tree
-        to link them together */
+    /** The name of the node, for finding nodes in the tree to link them together */
     public String name;
-
 
 
     /** Create a new node, not initially in the tree */
@@ -422,7 +418,16 @@ public class GameNode {
     }
 
 
+    /**
+       Do rendering of this node, which just adds RenderPrimitives to the
+       the rendering chain to be processed later in the rendering thread.
+       
+       The default implementation of render() does nothing.  RenderNode is intended
+       to be used as the base class for GameNodes that are actually visible in the scene.
+     */
+    public void render(RenderContext renderContext) {}
 
+    
     /**
        Execute some task in the context of every node, recursively.
 
@@ -467,7 +472,7 @@ public class GameNode {
 
 
     /**
-       ost a GameEvent that propagates down the tree from this node
+       Post a GameEvent that propagates down the tree from this node
 
        The event is just added to a linked list of events to be dispatched
        on the next call to dispatchEvents(), which happens during update()
@@ -524,7 +529,7 @@ public class GameNode {
     
     /**
        This method is in here as a separate method just to enable it to be
-       overridden in RenderNode.  The 'sideways' propagation really happens
+       overridden in RenderPrimitive.  The 'sideways' propagation really happens
        in dispatchEventDown(), where it pays attention to the event.lastUp field
      */
     protected boolean dispatchEventSideways(GameEvent event) {

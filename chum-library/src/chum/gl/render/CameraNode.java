@@ -1,11 +1,9 @@
 package chum.gl.render;
 
 import chum.f.Vec3;
+import chum.gl.RenderContext;
 import chum.gl.RenderNode;
-
-import android.opengl.GLU;
-
-import javax.microedition.khronos.opengles.GL10;
+import chum.gl.render.primitive.ModelViewTransform;
 
 
 /**
@@ -30,6 +28,13 @@ public class CameraNode extends RenderNode {
     /** Whether the location has changed */
     public boolean isDirty;
 
+    /** The render node for phase a rendering */
+    protected ModelViewTransform transformA = new ModelViewTransform();
+    
+    /** The render node for phase b rendering */
+    protected ModelViewTransform transformB = new ModelViewTransform();
+    
+    
 
     /**
        Create a CameraNode at the default position, default orientation.
@@ -106,9 +111,6 @@ public class CameraNode extends RenderNode {
     @Override
     public void onSurfaceChanged(int width, int height) {
         super.onSurfaceChanged(width,height);
-
-        if ( !isDynamic || isDirty )
-            setTransform(renderContext.gl10);
     }
 
 
@@ -116,28 +118,17 @@ public class CameraNode extends RenderNode {
        If the camaeria is dynamic or changed, then the view transformation
        is done again
     */
-    public void renderPrefix(GL10 gl10) {
-        if ( isDynamic || isDirty )
-            setTransform(gl10);
+    @Override
+    public boolean renderPrefix(RenderContext renderContext) {
+        if ( isDynamic || isDirty ) {
+            isDirty = false;
+            ModelViewTransform xform = renderContext.phase ? transformA : transformB;
+            xform.set(eyePos,refPos,up,true);
+            renderContext.add(xform);
+        }   
+        return true;
     }
  
-
-    /**
-       Set the camera.
-    */
-    protected void setTransform(GL10 gl10) {
-        isDirty = false;
-
-        gl10.glMatrixMode(GL10.GL_MODELVIEW);
-        gl10.glLoadIdentity();
-
-        // todo: can this be done w/out GLU.gluLookAt() -- avoiding
-        // the conversion to float?
-        GLU.gluLookAt( gl10,
-                       eyePos.x, eyePos.y, eyePos.z,
-                       refPos.x, refPos.y, refPos.z,
-                       up.x, up.y, up.z);
-    }
 
 }
 

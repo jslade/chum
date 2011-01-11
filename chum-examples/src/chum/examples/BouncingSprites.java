@@ -9,6 +9,7 @@ import chum.engine.common.FPSNode;
 import chum.f.Vec3;
 import chum.gl.Color;
 import chum.gl.Font;
+import chum.gl.RenderContext;
 import chum.gl.RenderNode;
 import chum.gl.SpriteBatch;
 import chum.gl.SpriteBatchBuilder;
@@ -18,14 +19,13 @@ import chum.gl.render.SaveMatrixNode;
 import chum.gl.render.Sprite;
 import chum.gl.render.Standard2DNode;
 import chum.gl.render.TextNode;
+import chum.gl.render.primitive.SetColor;
 import chum.input.TouchInputNode;
 import chum.sound.SoundManager;
 
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.MotionEvent;
-
-import javax.microedition.khronos.opengles.GL10;
 
 
 
@@ -253,12 +253,12 @@ public class BouncingSprites extends GameActivity
         static final float MARGIN = 20f;
         static float minx, miny, maxx, maxy;
         
-        public Color color;
+        public SetColor color = new SetColor();
         public Vec3 velocity = new Vec3();
         
         public BouncySprite(SpriteBatch batch, Color color,int shape) {
             super(batch);
-            this.color = color;
+            this.color.color.set(color);
             setImage(shape,1,false);
         }
         
@@ -312,9 +312,9 @@ public class BouncingSprites extends GameActivity
 
         
         @Override
-        public void renderPrefix(GL10 gl) {
-            gl.glColor4f(color.red,color.green,color.blue,color.alpha);
-            super.renderPrefix(gl);
+        public boolean renderPrefix(RenderContext renderContext) {
+            renderContext.add(color);
+            return super.renderPrefix(renderContext);
         }
 
         
